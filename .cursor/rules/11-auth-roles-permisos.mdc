@@ -1,0 +1,64 @@
+---
+description: Reglas de autenticación, autorización, RBAC e IDOR
+globs: ["backend/**/*.py", "frontend/**/*.ts", "mobile/**/*.dart"]
+alwaysApply: false
+---
+
+# Autenticación, Roles y Permisos
+
+## Roles oficiales
+- administrador
+- secretaria
+- barbero
+- cliente
+
+## Login
+- Login único para todos los roles.
+- Endpoint: `POST /api/v1/auth/login/`.
+- Endpoint usuario actual: `GET /api/v1/auth/me/`.
+- JWT access + refresh.
+- Redirección por rol.
+
+## Prioridad si un usuario tiene varios roles
+```txt
+administrador > secretaria > barbero > cliente
+```
+
+## Backend
+Crear permisos:
+```txt
+IsAdminRole
+IsSecretaryRole
+IsBarberRole
+IsClientRole
+IsOwnerOrAdmin
+IsAdminOrSecretary
+IsAssignedBarber
+```
+
+## Protección IDOR
+Nunca devolver objetos solo por ID sin validar propietario o rol:
+- Cliente solo sus citas/pedidos/pagos.
+- Barbero solo agenda asignada.
+- Secretaria agenda operativa.
+- Admin todo.
+
+## Angular
+- `AuthGuard`.
+- `RoleGuard`.
+- Interceptor JWT.
+- Redirección por rol.
+- Página 403.
+
+## Flutter
+- Secure storage.
+- AuthRepository.
+- AuthInterceptor.
+- RoleRedirectService.
+- Pantalla acceso denegado.
+
+## No permitido
+- Ocultar botones y asumir seguridad.
+- Confirmar permisos solo en frontend.
+- Permitir modificar roles sin auditoría.
+- Permitir eliminar último administrador activo.

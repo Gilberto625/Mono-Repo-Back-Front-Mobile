@@ -1,0 +1,5 @@
+# RASP / Datadog App and API Protection (producción, Docker, CI con Python 3.12).
+# Local en Windows: usa Python 3.12 (py -3.12). En Python 3.13/3.14 no hay rueda estable de ddtrace
+# y pip compila desde fuente (error pkg_resources o compilación C). Ver docs/RASP_IMPLEMENTACION.md §7.
+-r requirements.txt
+ddtrace>=2.16.0,<3

@@ -1,0 +1,91 @@
+<div class="backup-codes-container">
+  <div class="backup-codes-card">
+    <div class="card-header">
+      <div class="header-content">
+        <span class="header-icon">🔑</span>
+        <h1 class="card-title">Códigos de Respaldo</h1>
+        <p class="card-subtitle">Guarda estos códigos en un lugar seguro</p>
+      </div>
+    </div>
+
+    <div class="card-content">
+      <!-- Mensaje de advertencia -->
+      <div class="warning-box">
+        <span class="warning-icon">⚠️</span>
+        <div class="warning-content">
+          <h3>Importante:</h3>
+          <ul>
+            <li>Cada código solo puede usarse una vez</li>
+            <li>Guárdalos en un lugar seguro y accesible</li>
+            <li>Si generas nuevos códigos, los anteriores dejarán de funcionar</li>
+            <li>Úsalos cuando no tengas acceso a tu autenticador</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Lista de códigos -->
+      <div class="codes-section">
+        <div class="codes-header">
+          <h3>Tus códigos de respaldo:</h3>
+          <span class="codes-count">{{ backupCodes.length }} códigos</span>
+        </div>
+
+        <div class="loading-container" *ngIf="loading">
+          <div class="spinner-large"></div>
+          <p>Generando códigos de respaldo...</p>
+        </div>
+
+        <ul class="codes-list" *ngIf="!loading && backupCodes.length > 0">
+          <li *ngFor="let code of backupCodes; let i = index" class="code-item">
+            <span class="code-icon">✓</span>
+            <span class="code-number">{{ i + 1 }}.</span>
+            <span class="code-value">{{ code }}</span>
+          </li>
+        </ul>
+
+        <div class="no-codes" *ngIf="!loading && backupCodes.length === 0">
+          <span class="no-codes-icon">ℹ️</span>
+          <p>No se han generado códigos de respaldo</p>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Acciones -->
+      <div class="actions-section">
+        <button
+          class="action-button action-button-primary"
+          (click)="downloadCodes()"
+          [disabled]="loading || backupCodes.length === 0">
+          <span>⬇️</span>
+          Descargar como .txt
+        </button>
+
+        <button
+          class="action-button"
+          (click)="copyCodes()"
+          [disabled]="loading || backupCodes.length === 0">
+          <span>📋</span>
+          Copiar al portapapeles
+        </button>
+
+        <button
+          class="action-button action-button-accent"
+          (click)="generateCodes()"
+          [disabled]="loading">
+          <span>🔄</span>
+          Generar nuevos códigos
+        </button>
+      </div>
+
+      <div class="back-section">
+        <button class="back-button" (click)="goToSecurity()">
+          <span>←</span>
+          Volver a Seguridad
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

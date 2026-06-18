@@ -1,0 +1,527 @@
+<div class="layout-sidebar">
+  <app-sidebar rol="admin"></app-sidebar>
+  <main class="main-content prediccion-page">
+    <div class="stylo-wrap">
+      <header class="stylo-header">
+        <div class="stylo-logo">✂</div>
+        <div class="stylo-header-text">
+          <h1>Stylo <span>Barber</span> Connect</h1>
+          <p>Análisis de Ventas · Ley de Crecimiento y Decrecimiento</p>
+        </div>
+        <div class="stylo-header-right">
+          @if (refreshing) {
+            <span class="updating-pill">Actualizando…</span>
+          }
+        </div>
+      </header>
+
+      @if (!data) {
+        @if (loading) {
+          <div class="card">Cargando datos...</div>
+        } @else if (error) {
+          <div class="card text-error">{{ error }}</div>
+        }
+      }
+
+      @if (data) {
+        <div class="section-label">01 — Consulta de Ventas por Producto</div>
+
+        <section class="card filters-grid">
+          <div class="field">
+            <label for="pred-cat">Categoría</label>
+            <select id="pred-cat" class="form-select" [value]="categoria" (change)="onCategoriaInput($event)">
+              @for (c of data.filtros.categorias; track c.codigo) {
+                <option [value]="c.codigo">{{ c.nombre }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="pred-sub">Marca (Subcategoría)</label>
+            <select id="pred-sub" class="form-select" [value]="subcategoriaId ?? ''" (change)="onSubcategoriaInput($event)">
+              @for (s of data.filtros.subcategorias; track s.id) {
+                <option [value]="s.id">{{ s.nombre }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="pred-prod">Producto</label>
+            <select id="pred-prod" class="form-select" [value]="productoId ?? ''" (change)="onProductoInput($event)">
+              @for (p of data.filtros.productos; track p.id) {
+                <option [value]="p.id">{{ p.nombre }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="pred-desde">Fecha inicio</label>
+            <input id="pred-desde" class="form-select" type="date" [value]="desde" (change)="onDesdeInput($event)">
+          </div>
+          <div class="field">
+            <label for="pred-hasta">Fecha fin</label>
+            <input id="pred-hasta" class="form-select" type="date" [value]="hasta" (change)="onHastaInput($event)">
+          </div>
+          <div class="field">
+            <label class="sr-only" for="pred-clear">Acciones</label>
+            <button id="pred-clear" type="button" class="btn btn-secondary btn-full"
+                    (click)="limpiarRangoFechas()" [disabled]="!tieneRangoFechasActivo">
+              Limpiar
+            </button>
+          </div>
+        </section>
+
+        <!-- ── KPIs + Gráfica ── -->
+        <section class="card mt16">
+          <div class="stats-row">
+            <div class="stat-chip">
+              <div class="sc-label">Total unidades (30 días)</div>
+              <div class="sc-val gold">{{ kpiUnidadesVendidas30 }} U</div>
+            </div>
+            <div class="stat-chip">
+              <div class="sc-label">Tickets (30 días)</div>
+              <div class="sc-val pos">{{ kpiTickets30 }}</div>
+            </div>
+            <div class="stat-chip">
+              <div class="sc-label">Promedio/día</div>
+              <div class="sc-val">{{ kpiPromedioDiario30 }} U</div>
+            </div>
+            <div class="stat-chip">
+              <div class="sc-label">Scope</div>
+              <div class="sc-val sc-val-small">{{ ventasScopeLabel }}</div>
+            </div>
+          </div>
+
+          <div class="flex-end">
+            <button type="button" class="btn btn-ghost" (click)="modoGrafica='barras'">Barras</button>
+            <button type="button" class="btn btn-ghost" (click)="modoGrafica='linea'">Línea</button>
+          </div>
+
+          <div class="mt16">
+            @if (vista === 'tabla') {
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Periodo</th><th>Ventas (U)</th></tr></thead>
+                  <tbody>
+                    @for (r of seriesVisible; track $index) {
+                      <tr><td>{{ formatearEtiqueta(r.label) }}</td><td>{{ r.valor }}</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              @if (modoGrafica === 'barras') {
+                <div class="chart-with-y">
+                  <div class="y-axis y-axis-bars">
+                    <div class="y-axis-inner y-axis-inner-bars">
+                      @for (t of yTicks; track $index) {
+                        <span class="y-tick" [style.top.%]="yTickTopPct(t)">{{ formatYTick(t) }}</span>
+                      }
+                    </div>
+                  </div>
+                  <div class="bars" [attr.data-anim]="barsAnimToken" [style.background-size]="'100% ' + barGridStepPct + '%'">
+                    @for (r of serieBarrasVisible; track i; let i = $index) {
+                      <div class="bar-item"
+                           [class.bar-start-pred]="esInicioPrediccionBarra(i)"
+                           [style.animation-delay.ms]="i * 35"
+                           [title]="formatearEtiquetaTooltip(r.label) + ': ' + r.valor">
+                        <div class="bar-track">
+                          @if (!tieneValorPositivo(r.valor)) {
+                            <span class="bar-zero-marker"></span>
+                            <span class="bar-zero-value">0</span>
+                          }
+                          <div class="bar"
+                               [class.bar-pred]="r.prediccion"
+                               [class.bar-zero]="r.valor <= 0"
+                               [style.height.%]="alturaBarraPct(r.valor)"
+                               [style.animation-delay.ms]="i * 70">
+                            @if (tieneValorPositivo(r.valor)) {
+                              <span class="bar-inner-value">{{ formatCantidad(r.valor) }}</span>
+                            }
+                          </div>
+                        </div>
+                        <span class="label">{{ formatearEtiquetaCorta(r.label) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              } @else {
+                <div class="chart-with-y">
+                  <div class="y-axis y-axis-line">
+                    <div class="y-axis-inner">
+                      @for (t of yTicks; track $index) {
+                        <span class="y-tick" [style.top.%]="yTickTopPct(t)">{{ formatYTick(t) }}</span>
+                      }
+                    </div>
+                  </div>
+                  <div class="line-chart-wrap">
+                    <div class="line-plot-area">
+                      <svg class="line-chart" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        @for (gy of yGridPcts; track $index) {
+                          <polyline class="line-grid" [attr.points]="'0,' + gy + ' 100,' + gy"></polyline>
+                        }
+                        <polyline class="line-grid-zero" points="0,100 100,100"></polyline>
+                        <polyline class="line-hist" [attr.points]="puntosLineaHistorica"></polyline>
+                        <polyline class="line-pred" [attr.points]="puntosLineaPrediccion"></polyline>
+                      </svg>
+                      @for (p of serieLineaVisible; track i; let i = $index) {
+                        <span class="line-point"
+                              [class.point-pred]="p.prediccion"
+                              [style.left.%]="puntoLeftPct(i)"
+                              [style.top.%]="puntoTopPct(p.valor)"
+                              [title]="formatearEtiquetaTooltip(p.label) + ': ' + p.valor">
+                        </span>
+                        <span class="line-point-value"
+                              [class.point-value-pred]="p.prediccion"
+                              [style.left.%]="puntoLeftPct(i)"
+                              [style.top.%]="puntoTopPct(p.valor)">
+                          {{ formatCantidad(p.valor) }}
+                        </span>
+                      }
+                    </div>
+                    <div class="line-labels">
+                      @for (p of serieLineaVisible; track i; let i = $index) {
+                        <span class="line-label"
+                              [class.line-label-pred]="p.prediccion"
+                              [style.left.%]="puntoLeftPct(i)">
+                          {{ formatearEtiquetaCorta(p.label) }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+
+          <!-- ══════════════════════════════════════════
+               DETALLE DE VENTAS POR DÍA  (agrupado por semana Lun–Dom)
+          ══════════════════════════════════════════ -->
+          <div class="divider"></div>
+          <div class="section-label" style="margin-bottom:4px;">
+            Detalle de ventas por día
+          </div>
+
+          <div class="table-wrap">
+
+            @if (detalleVentasSemanas.length === 0) {
+              <p class="text-muted detail-empty">
+                Selecciona un rango de fechas para ver el detalle diario agrupado por semana.
+              </p>
+            } @else {
+
+              <!-- Nota días sin ventas -->
+              @if (detalleMencionDiasSinVentas) {
+                <p class="text-muted detail-note">{{ detalleMencionDiasSinVentas }}</p>
+              }
+
+              <!-- Semanas visibles en esta página -->
+              @for (sem of detalleSemanasVisibles; track sem.semanaKey) {
+
+                <!-- Cabecera de semana -->
+                <div class="detail-week-head">
+                  <div class="detail-week-title">
+                    <span class="detail-week-badge">Semana</span>
+                    {{ sem.inicioLabel }} — {{ sem.finLabel }}
+                  </div>
+                  <div class="detail-week-meta">
+                    <span>Total: <strong class="accent">{{ sem.totalSemana }} U</strong></span>
+                    <span class="detail-sin-ventas">
+                      Días sin ventas: <strong>{{ sem.diasSinVentas }}</strong>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Tabla: SOLO filas con ventas > 0 -->
+                @if (filasConVentas(sem.filas).length === 0) {
+                  <p class="detail-semana-vacia">Sin ventas registradas esta semana.</p>
+                } @else {
+                  <table class="tabla-detalle">
+                    <thead>
+                      <tr>
+                        <th>Fecha</th>
+                        <th>Producto</th>
+                        <th class="text-right">Ventas del día</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (fila of filasConVentas(sem.filas); track fila.fechaISO) {
+                        <tr>
+                          <td>{{ fila.fecha }}</td>
+                          <td>{{ fila.producto }}</td>
+                          <td class="text-right accent-val">{{ fila.valor }} U</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+
+              }
+
+              <!-- Paginador — al fondo, centrado -->
+              @if (detalleSemanasTotalPaginas > 1) {
+                <div class="detail-pager">
+                  <button type="button" class="btn btn-ghost btn-pager"
+                          (click)="detalleSemanasPrev()"
+                          [disabled]="detalleSemanasPaginaActual <= 0">
+                    ← Anterior
+                  </button>
+                  <span class="detail-page">
+                    Semanas {{ detalleSemanasPaginaActual * detalleSemanasPorPagina + 1 }}
+                    –
+                    {{ detallePagerHasta }}
+                    de {{ detalleVentasSemanas.length }}
+                  </span>
+                  <button type="button" class="btn btn-ghost btn-pager"
+                          (click)="detalleSemanasNext()"
+                          [disabled]="detalleSemanasPaginaActual >= (detalleSemanasTotalPaginas - 1)">
+                    Siguiente →
+                  </button>
+                </div>
+              }
+
+            }
+          </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- ══════════════════════════════════════════
+             SECCIÓN 02 — PREDICCIÓN
+        ══════════════════════════════════════════ -->
+        <div class="section-label">02 — Predicción · Ley de Crecimiento y Decrecimiento  dx/dt = kx</div>
+
+        <section class="card">
+          <div class="pred-grid">
+            <div>
+              <p class="text-muted pred-muted">
+                Ingresa dos puntos (t = 0, x₀) y (tₙ, xₙ) o usa datos reales de BD para calcular k y proyectar x(t).
+              </p>
+
+              <div class="pred-input-group">
+
+                <!-- Punto 1: condición inicial -->
+                <div class="pred-row">
+                  <div class="field">
+                    <label for="m-x0">Ventas en t = 0 (x₀)</label>
+                    <input id="m-x0" class="form-select" type="number"
+                           [(ngModel)]="modeloX0" min="0.0001" step="any"
+                           placeholder="ej. 7">
+                  </div>
+                  <div class="field">
+                    <label for="m-fecha-x0">Fecha de x₀ (t = 0)</label>
+                    <input id="m-fecha-x0" class="form-select" type="date"
+                           [(ngModel)]="modeloFechaX0"
+                           (ngModelChange)="onFechaX0Change()">
+                  </div>
+                </div>
+
+                <!-- Punto 2: condición conocida -->
+                <div class="pred-row">
+                  <div class="field">
+                    <label for="m-xn">Ventas conocidas (xₙ)</label>
+                    <input id="m-xn" class="form-select" type="number"
+                           [(ngModel)]="modeloXn" min="0.0001" step="any"
+                           placeholder="ej. 27">
+                  </div>
+                  <div class="field">
+                    <label for="m-fecha-xn">Fecha de xₙ</label>
+                    <input id="m-fecha-xn" class="form-select" type="date"
+                           [(ngModel)]="modeloFechaXn"
+                           (ngModelChange)="onFechaXnChange()">
+                  </div>
+                  <div class="field">
+                    <label for="m-tn">Días transcurridos (tₙ)</label>
+                    <input id="m-tn" class="form-select" type="number"
+                           [(ngModel)]="modeloTn" min="0.0001" step="any"
+                           placeholder="ej. 6">
+                  </div>
+                </div>
+
+                <!-- Horizonte de predicción -->
+                <div class="pred-row">
+                  <div class="field">
+                    <label for="m-tp">Predecir para los próximos</label>
+                    <select id="m-tp" class="form-select" [(ngModel)]="modeloTp">
+                      @for (n of modeloTpOpciones; track n) {
+                        <option [value]="n">{{ n }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="m-u">Unidad de tiempo</label>
+                    <select id="m-u" class="form-select" [(ngModel)]="modeloUnidad">
+                      <option value="día">Día(s)</option>
+                      <option value="semana">Semana(s)</option>
+                      <option value="mes">Mes(es)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="flex-end">
+                  <button type="button" class="btn btn-ghost"
+                          (click)="usarDatosDeBDEnModelo()">
+                    Usar datos de BD
+                  </button>
+                  <button type="button" class="btn btn-primary"
+                          (click)="calcularPrediccionModelo()">
+                    Calcular predicción
+                  </button>
+                </div>
+              </div>
+
+              <div class="formula-box mt16">
+                <div class="eq">dx/dt = kx</div>
+                <div><span class="var">x(t)</span> = x₀ · e^(k·t)</div>
+                <div class="comment">— solución de la ecuación diferencial —</div>
+                <div><span class="var">k</span> = ln(xₙ / x₀) / tₙ</div>
+                <div class="comment">— constante de proporcionalidad —</div>
+              </div>
+            </div>
+
+            <div>
+              @if (!modeloCalculado) {
+                <div class="pred-empty">
+                  ← Ingresa los datos y presiona<br><strong>Calcular predicción</strong>
+                </div>
+              } @else {
+                <div class="result-panel result-panel-compact">
+                  <div class="res-pred-hero">
+                    <div class="res-pred-label">Predicción x({{ modeloTpReal }})</div>
+                    <div class="res-pred-value">{{ formatEnteroMiles(modeloXt) }} U</div>
+                  </div>
+                  <div class="res-badge-row">
+                    @if (modeloFechaProyectada) {
+                      <span class="res-badge res-badge-date">📅 {{ modeloFechaProyectada }}</span>
+                    }
+                    <span class="res-badge"
+                          [class.res-badge-up]="modeloTendencia === 'positiva'"
+                          [class.res-badge-down]="modeloTendencia === 'negativa'"
+                          [class.res-badge-flat]="modeloTendencia === 'estable'">
+                      {{ modeloTendencia === 'positiva' ? '↑ Crecimiento (k > 0)'
+                       : modeloTendencia === 'negativa' ? '↓ Decrecimiento (k < 0)'
+                       : '→ Estable (k ≈ 0)' }}
+                    </span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          @if (mostrarCurvaModelo) {
+            <div class="curve-container">
+              <div class="curve-header">
+                <span class="curve-title">CURVA x(t) = x₀ · e^(k·t)</span>
+              </div>
+
+              <div class="curve-chart">
+                <svg viewBox="0 0 820 420" preserveAspectRatio="xMidYMid meet" class="curve-svg">
+                  <defs>
+                    <linearGradient id="curveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" style="stop-color:var(--color-accent);stop-opacity:0.3" />
+                      <stop offset="100%" style="stop-color:var(--color-accent);stop-opacity:0.05" />
+                    </linearGradient>
+                    <filter id="glow">
+                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                      <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                    <!-- Recorta todo lo que salga del área de dibujo -->
+                    <clipPath id="plotArea">
+                      <rect x="50" y="40" width="700" height="315"/>
+                    </clipPath>
+                  </defs>
+
+                  <!-- ── Eje Y: líneas de cuadrícula + etiquetas ── -->
+                  @for (tick of svgYTicks; track tick.y) {
+                    <line [attr.x1]="50" [attr.y1]="tick.y"
+                          [attr.x2]="750" [attr.y2]="tick.y"
+                          stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+                    <text [attr.x]="44" [attr.y]="tick.y"
+                          text-anchor="end" dominant-baseline="middle"
+                          fill="rgba(255,255,255,0.55)" font-size="11" font-family="'JetBrains Mono',monospace">
+                      {{ tick.label }}
+                    </text>
+                  }
+
+                  <!-- Línea del eje Y (borde izquierdo) -->
+                  <line x1="50" y1="50" x2="50" y2="355"
+                        stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+
+                  <!-- ── Eje X: líneas verticales + etiquetas ── -->
+                  @for (tick of svgXTicks; track tick.x) {
+                    <line [attr.x1]="tick.x" y1="50"
+                          [attr.x2]="tick.x" y2="350"
+                          stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                    <text [attr.x]="tick.x" y="368"
+                          text-anchor="middle" dominant-baseline="auto"
+                          fill="rgba(255,255,255,0.55)" font-size="11" font-family="'JetBrains Mono',monospace">
+                      {{ tick.label }}
+                    </text>
+                  }
+
+                  <!-- Línea del eje X (base) -->
+                  <line x1="45" y1="350" x2="755" y2="350"
+                        stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+
+                  <!-- Etiqueta eje Y (título rotado) -->
+                  <text x="12" y="200" text-anchor="middle" dominant-baseline="middle"
+                        fill="rgba(212,175,55,0.75)" font-size="11" font-family="'JetBrains Mono',monospace"
+                        transform="rotate(-90,12,200)">Unidades (U)</text>
+
+                  <!-- Etiqueta eje X (título) -->
+                  <text x="400" y="390" text-anchor="middle" dominant-baseline="auto"
+                        fill="rgba(212,175,55,0.75)" font-size="11" font-family="'JetBrains Mono',monospace">
+                    Tiempo (días)
+                  </text>
+
+                  <!-- Marca del punto tp (predicción) en eje X -->
+                  <line [attr.x1]="endX" y1="345" [attr.x2]="endX" y2="355"
+                        stroke="var(--color-accent)" stroke-width="2"/>
+                  <text [attr.x]="endX" y="368"
+                        text-anchor="middle" dominant-baseline="auto"
+                        fill="var(--color-accent)" font-size="11" font-weight="700"
+                        font-family="'JetBrains Mono',monospace">
+                    t={{ modeloTpReal }}d
+                  </text>
+
+                  <!-- Area bajo la curva -->
+                  <path [attr.d]="areaPath" fill="url(#curveGradient)" clip-path="url(#plotArea)"/>
+
+                  <!-- Línea de la curva -->
+                  <path [attr.d]="curvePath" fill="none" stroke="var(--color-accent)" stroke-width="3"
+                        filter="url(#glow)" class="curve-line" clip-path="url(#plotArea)"/>
+
+                  <!-- Punto inicial (x₀) -->
+                  <circle [attr.cx]="startX" [attr.cy]="startY" r="6" fill="#4ade80" filter="url(#glow)"/>
+                  <circle [attr.cx]="startX" [attr.cy]="startY" r="3" fill="#fff"/>
+                  <text [attr.x]="startX + 10" [attr.y]="startY > 60 ? startY - 10 : startY + 18"
+                        text-anchor="start" fill="#4ade80" font-size="11"
+                        font-family="'JetBrains Mono',monospace">
+                    x₀={{ modeloX0 }}
+                  </text>
+
+                  <!-- Punto final (xt = predicción) -->
+                  <circle [attr.cx]="endX" [attr.cy]="endY" r="8" fill="var(--color-accent)" filter="url(#glow)"/>
+                  <circle [attr.cx]="endX" [attr.cy]="endY" r="4" fill="#fff"/>
+                  <text [attr.x]="endX > 680 ? endX - 12 : endX + 12"
+                        [attr.y]="endY > 60 ? endY - 8 : endY + 18"
+                        [attr.text-anchor]="endX > 680 ? 'end' : 'start'"
+                        fill="var(--color-accent)" font-size="11" font-weight="700"
+                        font-family="'JetBrains Mono',monospace">
+                    x({{ modeloTpReal }})≈{{ modeloXt }}
+                  </text>
+
+                  <!-- Líneas de referencia punteadas hacia ejes -->
+                  <line [attr.x1]="endX" [attr.y1]="endY" [attr.x2]="50" [attr.y2]="endY"
+                        stroke="rgba(212,175,55,0.30)" stroke-width="1" stroke-dasharray="4 3"/>
+                  <line [attr.x1]="endX" [attr.y1]="endY" [attr.x2]="endX" [attr.y2]="350"
+                        stroke="rgba(212,175,55,0.30)" stroke-width="1" stroke-dasharray="4 3"/>
+                </svg>
+              </div>
+            </div>
+          }
+        </section>
+      }
+    </div>
+  </main>
+</div>

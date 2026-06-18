@@ -1,0 +1,184 @@
+<div class="layout-sidebar">
+  <app-sidebar rol="cliente"></app-sidebar>
+
+  <main class="main-content">
+    <div class="cliente-page pedidos-page">
+      <app-breadcrumb></app-breadcrumb>
+
+      <header class="pedidos-hero">
+        <div class="pedidos-hero__text">
+          <p class="pedidos-eyebrow">Tienda</p>
+          <h1 class="pedidos-title">Mis pedidos</h1>
+          <p class="pedidos-sub text-muted">Historial, estado y detalle de cada compra.</p>
+        </div>
+      </header>
+
+      @if (pedidoService.cargando()) {
+        <div class="card pedidos-panel pedidos-loading text-center">
+          <p class="text-muted">Cargando pedidos…</p>
+        </div>
+      } @else if (pedidoService.pedidos().length === 0) {
+        <div class="card pedidos-panel pedidos-empty text-center">
+          <svg class="pedidos-empty__icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+          <h2 class="pedidos-empty__title">Aún no tienes pedidos</h2>
+          <p class="text-muted mb-lg">Cuando compres en la tienda, aparecerán aquí.</p>
+          <div class="pedidos-empty-actions">
+            <a routerLink="/cliente" class="btn btn-primary">Volver al inicio</a>
+            <a routerLink="/cliente/productos" class="btn btn-secondary">Ver productos</a>
+            <a routerLink="/cliente/carrito" class="btn btn-secondary">Ir al carrito</a>
+          </div>
+        </div>
+      } @else {
+        <ul class="pedidos-lista">
+          @for (pedido of pedidoService.pedidos(); track pedido.id) {
+            <li>
+              <article class="card pedidos-panel pedido-card">
+                <div class="pedido-header">
+                  <div class="pedido-header__main">
+                    <h2 class="pedido-titulo">Pedido #{{ pedido.id }}</h2>
+                    <p class="pedido-fecha text-caption text-muted">{{ formatFecha(pedido.fecha_creacion) }}</p>
+                  </div>
+                  <div class="pedido-header__aside">
+                    <span class="badge pedido-badge" [ngClass]="getEstadoClass(pedido.estado)">
+                      {{ getEstadoLabel(pedido.estado) }}
+                    </span>
+                    <p class="pedido-total text-gold">$ {{ pedido.total }} MXN</p>
+                  </div>
+                </div>
+
+                <div class="pedido-items">
+                  @for (item of pedido.items; track item.producto_id) {
+                    <div class="pedido-item">
+                      @if (item.producto_imagen) {
+                        <img [src]="item.producto_imagen" [alt]="item.producto_nombre" class="pedido-item-img">
+                      } @else {
+                        <div class="pedido-item-img pedido-item-placeholder" aria-hidden="true">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                          </svg>
+                        </div>
+                      }
+                      <div class="pedido-item-info">
+                        <p class="pedido-item-nombre">{{ item.producto_nombre }}</p>
+                        <p class="text-caption text-muted">{{ item.cantidad }} × $ {{ item.precio_unitario }} MXN</p>
+                      </div>
+                      <p class="pedido-item-subtotal">$ {{ item.subtotal }} MXN</p>
+                    </div>
+                  }
+                </div>
+
+                <div class="pedido-footer">
+                  <span class="text-small text-muted">{{ getEntregaLabel(pedido.metodo_entrega) }}</span>
+                  @if (pedido.metodo_pago === 'transferencia') {
+                    <span class="text-small text-muted">Pago: Transferencia</span>
+                  } @else if (pedido.metodo_pago === 'efectivo') {
+                    <span class="text-small text-muted">Pago: Efectivo</span>
+                  } @else {
+                    <span class="text-small text-muted">Pago: Tarjeta</span>
+                  }
+                  @if (pedido.descuento > 0) {
+                    <span class="text-small text-success">Descuento: - $ {{ pedido.descuento }}</span>
+                  }
+                  @if (pedido.costo_envio > 0) {
+                    <span class="text-small text-muted">Envío: $ {{ pedido.costo_envio }}</span>
+                  }
+                </div>
+                @if (pedido.estado === 'comprobando_pago') {
+                  <div class="pedido-status-msg pedido-status-warning mt-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="12" y1="8" x2="12" y2="12"/>
+                      <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span class="text-small">Estamos verificando tu comprobante de transferencia</span>
+                  </div>
+                }
+                @if (pedido.estado === 'pendiente' && pedido.metodo_pago === 'efectivo') {
+                  <div class="pedido-status-msg pedido-status-info mt-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                    <span class="text-small">El pago se realizará al momento de recoger tu pedido en tienda</span>
+                  </div>
+                }
+                @if (pedido.estado === 'pago_validado') {
+                  <div class="pedido-status-msg pedido-status-success mt-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                      <polyline points="22,4 12,14.01 9,11.01"/>
+                    </svg>
+                    <span class="text-small">Tu pago fue validado correctamente</span>
+                  </div>
+                }
+                @if (pedido.estado === 'preparando') {
+                  <div class="pedido-status-msg pedido-status-info mt-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    </svg>
+                    <span class="text-small">Estamos preparando tu pedido</span>
+                  </div>
+                }
+                @if (pedido.estado === 'listo_recoger') {
+                  <div class="pedido-status-msg pedido-status-gold mt-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    </svg>
+                    <span class="text-small">Tu pedido está listo. Pasa a recogerlo a la tienda</span>
+                  </div>
+                }
+                @if (pedido.metodo_entrega === 'paqueteria' && pedido.guia_envio) {
+                  <div class="pedido-status-msg pedido-status-info mt-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M3 3h18v18H3z"/>
+                      <path d="M7 8h10M7 12h10M7 16h6"/>
+                    </svg>
+                    <span class="text-small">
+                      Guía: {{ pedido.guia_envio }}
+                      @if (pedido.paqueteria_envio) {
+                        · {{ pedido.paqueteria_envio }}
+                      }
+                    </span>
+                  </div>
+                }
+              </article>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </main>
+</div>
+
+<!-- Mobile Nav -->
+<nav class="navbar-mobile">
+  <a routerLink="/cliente" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    Inicio
+  </a>
+  <a routerLink="/cliente/servicios" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    Servicios
+  </a>
+  <a routerLink="/cliente/productos" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+    Productos
+  </a>
+  <a routerLink="/cliente/agendar" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+    Agendar
+  </a>
+  <a routerLink="/cliente/citas" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+    Citas
+  </a>
+  <a routerLink="/cliente/carrito" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    Tienda
+  </a>
+  <a routerLink="/cliente/perfil" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Perfil
+  </a>
+</nav>

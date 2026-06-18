@@ -1,0 +1,658 @@
+<div class="layout-sidebar">
+  <app-sidebar rol="admin"></app-sidebar>
+
+  <main class="main-content config-page">
+    <app-breadcrumb></app-breadcrumb>
+    <div class="page-head">
+      <div class="page-head-left">
+        <div class="page-title">
+          <h1>Configuración</h1>
+          <p class="page-sub">Ajustes generales del negocio</p>
+        </div>
+      </div>
+      <div class="page-head-right header-actions">
+        <button type="button" class="btn btn-text" (click)="restaurarDefectos()">
+          Restaurar valores por defecto
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="guardando" form="configForm">
+          {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-group mb-lg" role="tablist" aria-label="Secciones de configuración">
+      <button type="button" class="tab" [class.active]="tabActivo === 'general'" (click)="onTabChange('general')" role="tab">General</button>
+      <button type="button" class="tab" [class.active]="tabActivo === 'logo'" (click)="onTabChange('logo')" role="tab">Logo</button>
+      <button type="button" class="tab" [class.active]="tabActivo === 'horarios'" (click)="onTabChange('horarios')" role="tab">Horarios</button>
+      <button type="button" class="tab" [class.active]="tabActivo === 'sillas'" (click)="onTabChange('sillas')" role="tab">Sillas</button>
+      <button type="button" class="tab" [class.active]="tabActivo === 'pagos'" (click)="onTabChange('pagos')" role="tab">Pagos</button>
+      <button type="button" class="tab" [class.active]="tabActivo === 'envios'" (click)="onTabChange('envios')" role="tab">Envíos</button>
+      <button type="button" class="tab" [class.active]="tabActivo === 'politicas'" (click)="onTabChange('politicas')" role="tab">Políticas</button>
+      <button type="button" class="tab" [class.active]="tabActivo === 'redes'" (click)="onTabChange('redes')" role="tab">Redes y mapa</button>
+    </div>
+
+    <form id="configForm" (ngSubmit)="guardarConfiguracion()">
+      <!-- Tab General -->
+      @if (tabActivo === 'general') {
+        <div class="card mb-lg">
+          <div class="card-head">
+            <p class="overline">General</p>
+            <h3 class="card-title">Información del negocio</h3>
+          </div>
+          @if (cargandoConfig) {
+            <p class="text-muted">Cargando configuración…</p>
+          } @else {
+            <div class="grid">
+              <div class="form-group">
+                <label class="form-label">Nombre del negocio</label>
+                <input type="text" class="form-input" [(ngModel)]="config.nombre_negocio" name="nombre_negocio" [disabled]="cargandoConfig">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Teléfono de contacto</label>
+                <input type="tel" class="form-input" [(ngModel)]="config.telefono" name="telefono" [disabled]="cargandoConfig">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email de contacto</label>
+              <input type="email" class="form-input" [(ngModel)]="config.email_contacto" name="email_contacto" [disabled]="cargandoConfig">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Dirección</label>
+              <textarea class="form-input" [(ngModel)]="config.direccion" name="direccion" rows="2" [disabled]="cargandoConfig"></textarea>
+            </div>
+            <p class="text-small text-muted mt-md mb-0">Los cambios se guardan al hacer clic en «Guardar Cambios» al final de la página.</p>
+          }
+        </div>
+      }
+
+      <!-- Tab Envíos -->
+      @if (tabActivo === 'envios') {
+        <div class="card mb-lg">
+          <div class="card-head">
+            <p class="overline">Logística</p>
+            <h3 class="card-title">Configuración de envíos</h3>
+          </div>
+          <p class="text-small text-muted mb-lg">Define los costos que se aplican en checkout para moto mandado y paquetería.</p>
+          <div class="grid">
+            <div class="form-group">
+              <label class="form-label">Costo recoger en local</label>
+              <div class="form-input-inline">
+                <input type="number" class="form-input" [(ngModel)]="costosEnvio.recoger_local" [ngModelOptions]="{standalone: true}" min="0" step="0.01">
+                <span>MXN</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Costo moto mandado</label>
+              <div class="form-input-inline">
+                <input type="number" class="form-input" [(ngModel)]="costosEnvio.moto_mandado" [ngModelOptions]="{standalone: true}" min="0" step="0.01">
+                <span>MXN</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Costo paquetería</label>
+              <div class="form-input-inline">
+                <input type="number" class="form-input" [(ngModel)]="costosEnvio.paqueteria" [ngModelOptions]="{standalone: true}" min="0" step="0.01">
+                <span>MXN</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-inner mt-md">
+            <div class="card-head card-head-sm">
+              <p class="overline">Checkout</p>
+              <h4 class="card-title">Paqueterías sugeridas</h4>
+            </div>
+            <p class="text-small text-muted mb-sm">Estas opciones se mostrarán en checkout para seleccionar proveedor (separa por coma, punto y coma o salto de línea).</p>
+            <textarea class="form-input" rows="3" [(ngModel)]="paqueteriasTexto" [ngModelOptions]="{standalone: true}" placeholder="DHL, Estafeta, FedEx, Paquetexpress"></textarea>
+            <p class="text-small mt-sm mb-0">Vista previa: {{ paqueteriasPreview() }}</p>
+          </div>
+        </div>
+      }
+
+      <!-- Tab Logo -->
+      @if (tabActivo === 'logo') {
+        <div class="card mb-lg">
+          <div class="card-head">
+            <p class="overline">Marca</p>
+            <h3 class="card-title">Logo del negocio</h3>
+          </div>
+          <p class="text-small text-muted mb-lg">Elige entre usar un logo con texto personalizable o subir una imagen (PNG transparente recomendado, max 2 MB).</p>
+
+          <!-- Selector tipo de logo -->
+          <div class="logo-tipo-selector mb-lg">
+            <button type="button" class="logo-tipo-btn" [class.active]="logoTipo === 'texto'" (click)="logoTipo = 'texto'">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="4,7 4,4 20,4 20,7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/>
+              </svg>
+              Texto
+            </button>
+            <button type="button" class="logo-tipo-btn" [class.active]="logoTipo === 'imagen'" (click)="logoTipo = 'imagen'">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21,15 16,10 5,21"/>
+              </svg>
+              Imagen
+            </button>
+          </div>
+
+          <!-- Opción: Texto -->
+          @if (logoTipo === 'texto') {
+            <div class="card-inner mb-lg">
+              <h4 class="mb-sm">Personalizar texto del logo</h4>
+              <p class="text-small text-muted mb-md">La primera parte aparece en color blanco y la segunda en color dorado/acento.</p>
+
+              <div class="grid">
+                <div class="form-group">
+                  <label class="form-label">Primera parte (blanco)</label>
+                  <input type="text" class="form-input" [(ngModel)]="logoTexto" [ngModelOptions]="{standalone: true}" placeholder="Ej: Stylo, Tony">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Segunda parte (dorado)</label>
+                  <input type="text" class="form-input" [(ngModel)]="logoTextoAcento" [ngModelOptions]="{standalone: true}" placeholder="Ej: Barber, Stylo">
+                </div>
+              </div>
+
+              <!-- Preview texto -->
+              <div class="logo-preview-container">
+                <p class="text-small text-muted mb-sm">Vista previa:</p>
+                <div class="logo-preview-box">
+                  <span class="logo-preview-texto">{{ logoTexto }} <span class="logo-preview-acento">{{ logoTextoAcento }}</span></span>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Opción: Imagen -->
+          @if (logoTipo === 'imagen') {
+            <div class="card-inner mb-lg">
+              <h4 class="mb-sm">Subir imagen de logo</h4>
+              <p class="text-small text-muted mb-md">Sube un PNG con fondo transparente. Resolución recomendada: 400x150px o similar horizontal. Tamaño máximo: 2 MB.</p>
+
+              @if (logoPreview) {
+                <div class="logo-preview-container mb-md">
+                  <p class="text-small text-muted mb-sm">Vista previa:</p>
+                  <div class="logo-preview-box">
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" [src]="logoPreview" alt="Logo preview" class="logo-preview-img">
+                  </div>
+                  <button type="button" class="btn btn-text btn-sm mt-sm btn-danger-text" (click)="eliminarLogo()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    Eliminar logo
+                  </button>
+                </div>
+              }
+
+              <div class="logo-upload-area">
+                <input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp" (change)="onLogoFileSelected($event)" class="sr-only">
+                <label for="logoFile" class="logo-upload-label" [class.uploading]="subiendoLogo">
+                  @if (subiendoLogo) {
+                    <span class="spinner-sm" aria-hidden="true"></span>
+                    <span>Subiendo...</span>
+                  } @else {
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <span>Haz clic para seleccionar una imagen</span>
+                    <span class="text-small text-muted">PNG, JPG o WebP (max 2 MB)</span>
+                  }
+                </label>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Tab Horarios -->
+      @if (tabActivo === 'horarios') {
+        <div class="card mb-lg">
+          <div class="card-head">
+            <p class="overline">Operación</p>
+            <h3 class="card-title">Horarios de atención</h3>
+          </div>
+          <p class="text-small mb-lg">Define los horarios de apertura y cierre del establecimiento</p>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Día</th>
+                  <th scope="col">Abierto</th>
+                  <th scope="col">Hora apertura</th>
+                  <th scope="col">Hora cierre</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (h of horariosPorDia; track h.dia) {
+                  <tr>
+                    <td>{{ h.dia }}</td>
+                    <td>
+                      <input type="checkbox" class="config-checkbox-dia" [(ngModel)]="h.abierto" [ngModelOptions]="{standalone: true}">
+                    </td>
+                    <td>
+                      <input type="time" class="form-input form-input-time" [(ngModel)]="h.apertura" [ngModelOptions]="{standalone: true}" [disabled]="!h.abierto">
+                    </td>
+                    <td>
+                      <input type="time" class="form-input form-input-time" [(ngModel)]="h.cierre" [ngModelOptions]="{standalone: true}" [disabled]="!h.abierto">
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- Tab Sillas -->
+      @if (tabActivo === 'sillas') {
+        <div class="card mb-lg">
+          <div class="flex-between mb-md">
+            <div>
+              <p class="overline">Capacidad</p>
+              <h3 class="mb-0">Sillas de atención</h3>
+              <p class="text-small mb-0">Número de sillas disponibles para agendar citas simultáneas</p>
+            </div>
+            <a routerLink="/admin/sillas" class="btn btn-secondary btn-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Agregar silla
+            </a>
+          </div>
+
+          @if (loadingSillas) {
+            <p class="text-muted">Cargando sillas...</p>
+          } @else {
+            <div class="config-sillas-grid">
+              @for (silla of sillas; track silla.id) {
+                <div class="config-silla-card card" [class.inactiva]="!silla.activa">
+                  <h4 class="mb-xs">Silla {{ silla.numero }}</h4>
+                  <p class="text-small mb-sm">{{ silla.nombre || 'Sin asignar' }}</p>
+                  @if (silla.activa) {
+                    <span class="badge badge-success">Activa</span>
+                  } @else {
+                    <span class="badge badge-gray">Inactiva</span>
+                  }
+                </div>
+              } @empty {
+                <p class="text-muted">No hay sillas configuradas. <a routerLink="/admin/sillas">Agregar silla</a></p>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Tab Pagos -->
+      @if (tabActivo === 'pagos') {
+        <div class="card mb-lg">
+          <div class="card-head">
+            <p class="overline">Checkout</p>
+            <h3 class="card-title">Configuración de pagos</h3>
+          </div>
+
+          <!-- Anticipo por penalización -->
+          <div class="card-inner mb-lg">
+            <h4 class="mb-sm">Porcentaje de anticipo por penalización</h4>
+            <p class="text-small text-muted mb-md">
+              La primera cita no requiere anticipo. Si el cliente falta sin avisar o no se presenta,
+              las siguientes citas requerirán pagar este porcentaje como anticipo de reserva.
+            </p>
+            <div class="form-input-inline">
+              <input type="number" class="form-input" [(ngModel)]="config.porcentaje_anticipo"
+                     name="porcentaje_anticipo" min="0" max="100">
+              <span>%</span>
+            </div>
+          </div>
+
+          <!-- Métodos de pago -->
+          <div class="card-inner mb-lg">
+            <h4 class="mb-sm">Métodos de pago aceptados</h4>
+            <div class="grid mb-md">
+              <label class="form-label inline-check">
+                <input type="checkbox" [(ngModel)]="pagoEfectivoActivo" name="pago_efectivo_activo">
+                Habilitar efectivo
+              </label>
+              <label class="form-label inline-check">
+                <input type="checkbox" [(ngModel)]="pagoTransferenciaActivo" name="pago_transferencia_activo">
+                Habilitar transferencia bancaria
+              </label>
+              <label class="form-label inline-check">
+                <input type="checkbox" [(ngModel)]="pagoTarjetaActivo" name="pago_tarjeta_activo">
+                Habilitar tarjeta (terminal Clip)
+              </label>
+            </div>
+
+            <div class="metodos-pago-lista">
+              <div class="metodo-pago-item">
+                <div class="metodo-pago-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg>
+                </div>
+                <div>
+                  <p class="metodo-pago-nombre">Efectivo</p>
+                  <p class="text-small text-muted">Pago en el establecimiento</p>
+                </div>
+              </div>
+
+              <div class="metodo-pago-item">
+                <div class="metodo-pago-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+                </div>
+                <div class="metodo-pago-detalle">
+                  <p class="metodo-pago-nombre">Transferencia bancaria</p>
+                  <p class="text-small text-muted mb-sm">El cliente realizará la transferencia a esta cuenta</p>
+                  <div class="grid">
+                    <div class="form-group mb-0">
+                      <label class="form-label">Nombre del banco</label>
+                      <input type="text" class="form-input" [(ngModel)]="config.banco_nombre" name="banco_nombre" placeholder="Ej: BBVA, Banorte, Santander">
+                    </div>
+                    <div class="form-group mb-0">
+                      <label class="form-label">Número de cuenta / CLABE</label>
+                      <input type="text" class="form-input" [(ngModel)]="config.banco_cuenta" name="banco_cuenta" placeholder="Ej: 012345678901234567">
+                    </div>
+                    <div class="form-group mb-0">
+                      <label class="form-label">Titular de la cuenta</label>
+                      <input type="text" class="form-input" [(ngModel)]="config.banco_titular" name="banco_titular" placeholder="Ej: Juan Pérez López">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="metodo-pago-item">
+                <div class="metodo-pago-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                </div>
+                <div class="metodo-pago-detalle">
+                  <p class="metodo-pago-nombre">Tarjeta de crédito / débito (Clip)</p>
+                  <p class="text-small text-muted mb-sm">Configura credenciales para cobro dinámico (monto exacto por pedido/cita).</p>
+                  <label class="form-label inline-check">
+                    <input type="checkbox" [(ngModel)]="clipHabilitado" name="clip_habilitado" [disabled]="!pagoTarjetaActivo">
+                    Permitir pagos con Clip
+                  </label>
+                  <div class="form-group mb-0 mt-sm">
+                    <label class="form-label">API Key (Clip)</label>
+                    @if (clipApiKeyPruebaMasked) {
+                      <p class="text-small text-muted mt-xs">Configurada actualmente: {{ clipApiKeyPruebaMasked }}</p>
+                    }
+                    <input type="text" class="form-input" [(ngModel)]="clipApiKeyPrueba" name="clip_api_key"
+                           placeholder="Pega una nueva API Key para actualizar"
+                           [disabled]="!pagoTarjetaActivo || !clipHabilitado" autocomplete="off">
+                  </div>
+                  <div class="form-group mb-0 mt-sm">
+                    <label class="form-label">API Secret (Clip)</label>
+                    @if (clipApiSecretPruebaConfigurada) {
+                      <p class="text-small text-muted mt-xs">Estado: Secret configurado (oculto por seguridad)</p>
+                    }
+                    <input type="password" class="form-input" [(ngModel)]="clipApiSecretPrueba" name="clip_api_secret"
+                           placeholder="Pega un nuevo API Secret para actualizar"
+                           [disabled]="!pagoTarjetaActivo || !clipHabilitado" autocomplete="new-password">
+                    <p class="text-small text-muted mt-xs mb-0">Solo usuarios administradores pueden editar estas credenciales.</p>
+                  </div>
+                  <div class="form-group mb-0 mt-sm">
+                    <label class="form-label">Token de autenticación (Clip)</label>
+                    @if (clipAuthTokenConfigurado) {
+                      <p class="text-small text-muted mt-xs">Estado: token configurado (oculto por seguridad)</p>
+                    }
+                    <input type="password" class="form-input" [(ngModel)]="clipAuthToken" name="clip_auth_token"
+                           placeholder="Basic xxxxxxxxx..."
+                           [disabled]="!pagoTarjetaActivo || !clipHabilitado" autocomplete="new-password">
+                    <p class="text-small text-muted mt-xs mb-0">Puedes usar Token de autenticación en lugar de API Key/API Secret.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Tab Políticas -->
+      @if (tabActivo === 'politicas') {
+        <!-- Reglas de negocio -->
+        <div class="card mb-lg">
+          <h3 class="mb-md">Reglas del Negocio</h3>
+          <p class="text-small text-muted mb-lg">Estas reglas definen cómo funciona el sistema de citas y penalizaciones. Puedes modificarlas en cualquier momento.</p>
+
+          <!-- Regla 1: Reserva sin anticipo -->
+          <div class="regla-card mb-md">
+            <div class="regla-header">
+              <div class="regla-numero">1</div>
+              <div>
+                <h4 class="mb-0">Citas por reserva sin anticipo</h4>
+                <p class="text-small text-muted mb-0">La primera cita y mientras el cliente sea puntual, no se cobra anticipo</p>
+              </div>
+            </div>
+            <div class="regla-contenido">
+              <p class="text-small">El cliente agenda su cita y solo paga al llegar al establecimiento. No se requiere ningún pago por adelantado.</p>
+            </div>
+          </div>
+
+          <!-- Regla 2: Inasistencia activa penalización -->
+          <div class="regla-card mb-md">
+            <div class="regla-header">
+              <div class="regla-numero">2</div>
+              <div>
+                <h4 class="mb-0">Penalización por inasistencia</h4>
+                <p class="text-small text-muted mb-0">Si el cliente falta sin avisar, se activa el cobro de anticipo</p>
+              </div>
+            </div>
+            <div class="regla-contenido">
+              <p class="text-small mb-md">Cuando un cliente no se presenta a su cita sin cancelar con anticipación, las siguientes citas requerirán pagar un anticipo antes de confirmar la reserva.</p>
+              <div class="grid">
+                <div class="form-group mb-0">
+                  <label class="form-label">Porcentaje de anticipo por penalización</label>
+                  <div class="form-input-inline">
+                    <input type="number" class="form-input" [(ngModel)]="config.porcentaje_anticipo"
+                           name="porcentaje_anticipo_pol" min="0" max="100">
+                    <span>% del precio del servicio</span>
+                  </div>
+                </div>
+                <div class="form-group mb-0">
+                  <label class="form-label">Tiempo máximo de espera</label>
+                  <div class="form-input-inline">
+                    <input type="number" class="form-input" [(ngModel)]="config.tiempo_espera_maximo"
+                           name="tiempo_espera_maximo" min="5" max="60">
+                    <span>minutos</span>
+                  </div>
+                  <p class="text-small text-muted mt-xs mb-0">Si no llega en este tiempo, se marca como inasistencia</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Regla 3: Cómo quitar la penalización -->
+          <div class="regla-card mb-md">
+            <div class="regla-header">
+              <div class="regla-numero">3</div>
+              <div>
+                <h4 class="mb-0">Liberación de penalización</h4>
+                <p class="text-small text-muted mb-0">El cliente puede recuperar el beneficio de reserva sin anticipo</p>
+              </div>
+            </div>
+            <div class="regla-contenido">
+              <p class="text-small mb-md">Para que se le retire la penalización, el cliente debe acudir puntualmente a un número consecutivo de citas pagando el anticipo. Una vez cumplidas, vuelve a agendar sin anticipo.</p>
+              <div class="form-group mb-0">
+                <label class="form-label">Citas consecutivas para liberar penalización</label>
+                <div class="form-input-inline">
+                  <input type="number" class="form-input" [(ngModel)]="config.citas_penalizacion"
+                         name="citas_penalizacion" min="1" max="50">
+                  <span>citas seguidas</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumen visual -->
+        <div class="card mb-lg">
+          <h3 class="mb-md">Resumen de reglas activas</h3>
+          <div class="resumen-reglas">
+            <div class="resumen-item">
+              <span class="resumen-label">Anticipo por penalización</span>
+              <span class="resumen-valor">{{ config.porcentaje_anticipo }}%</span>
+            </div>
+            <div class="resumen-item">
+              <span class="resumen-label">Tiempo de espera antes de marcar inasistencia</span>
+              <span class="resumen-valor">{{ config.tiempo_espera_maximo }} min</span>
+            </div>
+            <div class="resumen-item">
+              <span class="resumen-label">Citas para quitar penalización</span>
+              <span class="resumen-valor">{{ config.citas_penalizacion }} citas</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Tab Redes Sociales y Mapa -->
+      @if (tabActivo === 'redes') {
+        <div class="card mb-lg">
+          <div class="card-head">
+            <p class="overline">Presencia</p>
+            <h3 class="card-title">Redes sociales</h3>
+          </div>
+          <p class="text-small text-muted mb-lg">Agrega las URLs de las redes sociales del negocio. Estas se mostrarán en la página pública de Contáctanos y en el pie de página.</p>
+
+          <div class="grid">
+            <div class="form-group">
+              <label class="form-label">
+                <span class="label-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" opacity="0.7"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                  Facebook
+                </span>
+              </label>
+              <input type="url" class="form-input" [(ngModel)]="config.facebook_url" name="facebook_url" placeholder="https://www.facebook.com/tu-pagina">
+            </div>
+            <div class="form-group">
+              <label class="form-label">
+                <span class="label-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" opacity="0.7"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" fill="none" stroke="#1a1a2e" stroke-width="1.5"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="#1a1a2e" stroke-width="2"/></svg>
+                  Instagram
+                </span>
+              </label>
+              <input type="url" class="form-input" [(ngModel)]="config.instagram_url" name="instagram_url" placeholder="https://www.instagram.com/tu-cuenta">
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="form-group">
+              <label class="form-label">
+                <span class="label-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" opacity="0.7"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                  X (antes Twitter)
+                </span>
+              </label>
+              <input type="url" class="form-input" [(ngModel)]="config.x_url" name="x_url" placeholder="https://x.com/tu-cuenta">
+            </div>
+            <div class="form-group">
+              <label class="form-label">
+                <span class="label-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" opacity="0.7"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.88-2.89 2.89 2.89 0 0 1 2.88-2.89c.28 0 .54.04.79.1v-3.4a6.27 6.27 0 0 0-.79-.05A6.34 6.34 0 0 0 3.16 15.28a6.34 6.34 0 0 0 6.33 6.34 6.34 6.34 0 0 0 6.34-6.34V8.83a8.19 8.19 0 0 0 4.76 1.52v-3.4a4.85 4.85 0 0 1-1-.26z"/></svg>
+                  TikTok
+                </span>
+              </label>
+              <input type="url" class="form-input" [(ngModel)]="config.tiktok_url" name="tiktok_url" placeholder="https://www.tiktok.com/@tu-cuenta">
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="form-group">
+              <label class="form-label">
+                <span class="label-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" opacity="0.7"><path d="M16.75 13.96c.25.13 1.47.72 1.68.81.21.1.36.15.51-.08.15-.23.58-.81.71-.97.13-.17.26-.19.49-.06.23.13.96.35 1.82.9.67.42 1.12.75 1.28 1.17.16.42.01 2.39-.58 3.44-.59 1.05-1.39 1.38-2.02 1.59-.63.2-1.42.18-2.01.08-.59-.1-1.35-.31-2.33-.73-.98-.42-2.11-.97-3.64-2.28-1.53-1.31-2.56-2.93-2.86-3.42-.3-.49-1.21-1.61-1.21-3.07s.76-2.18 1.04-2.48c.28-.3.61-.37.81-.37.2 0 .4 0 .58.01.18.01.42-.07.66.5.25.58.83 2 .9 2.14.07.14.11.31.02.48-.09.17-.14.28-.28.43-.14.15-.3.34-.43.46-.14.13-.29.27-.12.53.17.26.76 1.25 1.63 2.02 1.12 1 2.06 1.31 2.35 1.46.29.14.46.12.63-.07.17-.2.73-.85.92-1.14.19-.29.39-.24.66-.14zM12.02 2C6.49 2 2 6.47 2 11.99c0 2.17.7 4.18 1.88 5.81L2.65 22l4.33-1.2a9.96 9.96 0 0 0 5.04 1.37h.01c5.53 0 10.01-4.47 10.01-9.99C22.04 6.47 17.56 2 12.02 2z"/></svg>
+                  WhatsApp
+                </span>
+              </label>
+              <input type="url" class="form-input" [(ngModel)]="config.whatsapp_url" name="whatsapp_url" placeholder="https://wa.me/5217711234567">
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-lg">
+          <div class="card-head">
+            <p class="overline">Ubicación</p>
+            <h3 class="card-title">Ubicación en mapa</h3>
+          </div>
+          <p class="text-small text-muted mb-lg">Agrega las URLs de Google Maps y Apple Maps para que los clientes puedan encontrar el negocio facilmente.</p>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                URL de Google Maps
+              </span>
+            </label>
+            <input type="url" class="form-input" [(ngModel)]="config.google_maps_url" name="google_maps_url" placeholder="https://maps.google.com/?q=...">
+            <p class="text-small text-muted mt-xs mb-0">Busca tu negocio en Google Maps, da clic en "Compartir" y pega el enlace aqui.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                URL de Apple Maps
+              </span>
+            </label>
+            <input type="url" class="form-input" [(ngModel)]="config.apple_maps_url" name="apple_maps_url" placeholder="https://maps.apple.com/?q=...">
+            <p class="text-small text-muted mt-xs mb-0">Busca tu negocio en Apple Maps (iPhone), comparte el enlace y pegalo aqui.</p>
+          </div>
+        </div>
+      }
+
+      <div class="footer-spacer"></div>
+    </form>
+  </main>
+</div>
+
+<!-- Modal 2FA para actualizar credenciales Clip -->
+@if (showClip2FAModal) {
+  <div class="modal-overlay show" (click)="cerrarModalClip2FA()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-clip-2fa-body">
+        <h3 class="mb-md">Verificación en dos pasos</h3>
+        <p class="text-small text-muted mb-md">Para guardar los cambios en las credenciales de Clip, ingresa el código de 6 dígitos que se envió a tu correo.</p>
+        <div class="form-group">
+          <label class="form-label">Código de verificación</label>
+          <input type="text" class="form-input" [(ngModel)]="clip2FACodigo" name="clip2fa_codigo"
+                 placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+        </div>
+        <div class="flex-between mt-lg">
+          <button type="button" class="btn btn-text" (click)="cerrarModalClip2FA()">Cancelar</button>
+          <button type="button" class="btn btn-primary" (click)="confirmarClip2FA()" [disabled]="enviandoClip2FA || !clip2FACodigo.trim()">
+            {{ enviandoClip2FA ? 'Guardando...' : 'Confirmar y guardar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Mobile Nav -->
+<nav class="navbar-mobile">
+  <a routerLink="/admin" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+      <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+    </svg>
+    Dashboard
+  </a>
+  <a routerLink="/admin/empleados" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+    </svg>
+    Empleados
+  </a>
+  <a routerLink="/admin/servicios" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+    Servicios
+  </a>
+  <a routerLink="/admin/productos" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8"/>
+    </svg>
+    Productos
+  </a>
+  <a routerLink="/admin/configuracion" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+    Config
+  </a>
+</nav>

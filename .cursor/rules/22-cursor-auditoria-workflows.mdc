@@ -1,0 +1,68 @@
+---
+description: Workflows para pedirle a Cursor auditorías, generación de módulos y revisión de cobertura
+alwaysApply: false
+---
+
+# Workflows para Cursor
+
+## Cuando el usuario pida "audita el proyecto"
+Cursor debe revisar:
+1. Estructura backend.
+2. Estructura frontend.
+3. Estructura mobile.
+4. Reglas de negocio.
+5. Módulos faltantes.
+6. Endpoints faltantes.
+7. Permisos.
+8. Seguridad.
+9. Responsive.
+10. Documentación.
+
+## Cuando el usuario pida "crea un módulo"
+Cursor debe generar en este orden:
+1. Backend app/service/serializer/view/permission/url/test.
+2. Contrato API.
+3. Servicio Angular.
+4. Página Angular.
+5. Modelo Angular.
+6. Repository/model Flutter si aplica.
+7. Pruebas mínimas.
+8. Auditoría.
+
+## Cuando el usuario pida "completa el frontend"
+Verificar que existan:
+- Landing.
+- Navbar.
+- Footer.
+- Auth.
+- Layouts por rol.
+- Cliente.
+- Secretaria.
+- Barbero.
+- Admin.
+- Citas.
+- Productos.
+- Inventario.
+- Pedidos.
+- Ventas.
+- Pagos.
+- Notificaciones.
+- Reportes.
+- Configuración.
+- Legal.
+- Auditoría.
+
+## Cuando el usuario pida "integra Clip"
+Usar regla `14-pagos-clip-implementacion.mdc`.
+
+## Cuando el usuario pida "hazlo responsive"
+Usar regla `04-ux-ui-responsive-awwwards.mdc`.
+
+## Cuando el usuario pida "sin romper arquitectura"
+Revisar siempre:
+- No duplicar lógica.
+- No mover reglas al frontend.
+- No exponer secretos.
+- No saltarse permisos.
+- No modificar stock sin movimiento.
+- No confirmar pagos desde UI.

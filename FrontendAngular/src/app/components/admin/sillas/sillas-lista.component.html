@@ -1,0 +1,162 @@
+<div class="layout-sidebar">
+  <app-sidebar rol="admin"></app-sidebar>
+
+  <main class="main-content sillas-page">
+    <app-breadcrumb></app-breadcrumb>
+
+    <div class="page-head">
+      <div class="page-head-left">
+        <div class="page-title">
+          <h1>Sillas</h1>
+          <p class="page-sub">Gestiona las sillas para barberos. Solo los barberos pueden tener silla asignada.</p>
+        </div>
+        @if (listaRefreshing) {
+          <p class="text-muted text-small mb-0" aria-live="polite">Actualizando lista…</p>
+        }
+      </div>
+
+      <div class="page-head-right">
+        <button type="button" class="btn {{ mostrarFormNueva ? 'btn-secondary' : 'btn-primary' }}" (click)="toggleFormNueva()">
+          @if (mostrarFormNueva) {
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            Cancelar
+          } @else {
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Agregar silla
+          }
+        </button>
+      </div>
+    </div>
+
+    <!-- Formulario agregar silla (inline, mismo estilo que filtros del resto del admin) -->
+    @if (mostrarFormNueva) {
+      <div class="card mb-lg">
+        <div class="card-head">
+          <div>
+            <div class="overline">Registro</div>
+            <h3 class="card-title">Nueva silla</h3>
+          </div>
+        </div>
+        <p class="text-muted mb-lg">Completa los datos para registrar una nueva silla de trabajo.</p>
+        <form (ngSubmit)="guardarSilla()" class="form-inline-sillas">
+          <div class="form-row-sillas">
+            <div class="form-group mb-0 field-numero">
+              <label class="form-label" for="sillaNumero">Número de silla *</label>
+              <input id="sillaNumero" type="text" class="form-input" [(ngModel)]="form.numero" name="numero" placeholder="Ej: 1, 2, A" required>
+            </div>
+            <div class="form-group mb-0 field-nombre">
+              <label class="form-label" for="sillaNombre">Nombre (opcional)</label>
+              <input id="sillaNombre" type="text" class="form-input" [(ngModel)]="form.nombre" name="nombre" placeholder="Ej: Silla principal">
+            </div>
+            <div class="form-group mb-0 form-actions-silla">
+              <button type="submit" class="btn btn-primary" [disabled]="guardando">
+                {{ guardando ? 'Guardando...' : 'Agregar silla' }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- Stats -->
+    <div class="stats-grid mb-lg">
+      <div class="stat-card">
+        <div class="stat-card-icon stat-icon-total">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="7" width="18" height="10" rx="2"/>
+            <path d="M7 17v3"/><path d="M17 17v3"/>
+          </svg>
+        </div>
+        <p class="stat-card-value">{{ sillas.length }}</p>
+        <p class="stat-card-label">Total sillas</p>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon stat-icon-named">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M8 16h5"/>
+          </svg>
+        </div>
+        <p class="stat-card-value text-success">{{ sillasConNombre }}</p>
+        <p class="stat-card-label">Con nombre</p>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon stat-icon-plain">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><path d="M8 12h8"/>
+          </svg>
+        </div>
+        <p class="stat-card-value text-gold">{{ sillasSinNombre }}</p>
+        <p class="stat-card-label">Sin nombre</p>
+      </div>
+    </div>
+
+    <!-- Tabla de sillas -->
+    <div class="table-wrap" [class.table-container--refreshing]="listaRefreshing">
+      <div class="table-container">
+        <table>
+        <thead>
+          <tr>
+            <th scope="col">Número</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (silla of sillas; track silla.id) {
+            <tr>
+              <td>
+                <span class="silla-numero-wrap">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="7" width="18" height="10" rx="2"/>
+                    <path d="M7 17v3"/><path d="M17 17v3"/>
+                  </svg>
+                  <span class="silla-numero">{{ silla.numero }}</span>
+                </span>
+              </td>
+              <td>{{ silla.nombre || '-' }}</td>
+              <td>
+                <button type="button" class="btn btn-text btn-sm text-error" (click)="quitarSilla(silla)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>
+                  </svg>
+                  Quitar
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3" class="text-center p-xl">
+                @if (loading) {
+                  <p class="text-muted">Cargando...</p>
+                } @else {
+                  <div class="empty-sillas">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="3" y="7" width="18" height="10" rx="2"/>
+                      <path d="M7 17v3"/><path d="M17 17v3"/>
+                    </svg>
+                    <p class="text-muted mb-sm">No hay sillas registradas todavía.</p>
+                    <button type="button" class="btn btn-secondary btn-sm" (click)="toggleFormNueva()">Agregar primera silla</button>
+                  </div>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<nav class="navbar-mobile">
+  <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="navbar-mobile-item">Dashboard</a>
+  <a routerLink="/admin/empleados" routerLinkActive="active" class="navbar-mobile-item">Empleados</a>
+  <a routerLink="/admin/sillas" routerLinkActive="active" class="navbar-mobile-item">Sillas</a>
+  <a routerLink="/admin/servicios" routerLinkActive="active" class="navbar-mobile-item">Servicios</a>
+  <a routerLink="/admin/productos" routerLinkActive="active" class="navbar-mobile-item">Productos</a>
+  <a routerLink="/admin/configuracion" routerLinkActive="active" class="navbar-mobile-item">Config</a>
+</nav>

@@ -1,0 +1,283 @@
+/* Stylo Barber — tokens por tema (oscuro por defecto, claro persistente vía data-theme) */
+
+:root,
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --surface-page: #0a100e;
+  --surface-muted: #121c18;
+  --surface-card: rgba(28, 40, 34, 0.82);
+  --surface-elevated: #16221c;
+  --nav-bg: rgba(8, 14, 11, 0.88);
+  --nav-border: rgba(212, 175, 55, 0.12);
+  --footer-surface: #070c0a;
+
+  --color-primary: #1e2b24;
+  --color-primary-light: #2d4037;
+  --color-primary-dark: #141c18;
+  --color-accent: #d4af37;
+  --color-accent-dark: #b8941f;
+  --color-white: #ffffff;
+  --color-black: #212121;
+
+  --border-color: rgba(90, 107, 103, 0.65);
+  --border-color-light: rgba(255, 255, 255, 0.12);
+  --divider-color: rgba(255, 255, 255, 0.08);
+  --card-border: rgba(255, 255, 255, 0.07);
+
+  --text-on-dark: #eef3f0;
+  --text-on-dark-secondary: rgba(238, 243, 240, 0.9);
+  --text-on-dark-tertiary: rgba(238, 243, 240, 0.58);
+  --text-on-dark-disabled: rgba(238, 243, 240, 0.38);
+
+  --text-on-light: #1a2822;
+  --text-on-light-secondary: rgba(26, 40, 34, 0.78);
+  --text-on-light-tertiary: rgba(26, 40, 34, 0.52);
+  --text-on-light-disabled: rgba(26, 40, 34, 0.35);
+
+  --color-success: #3ecf82;
+  --color-success-light: rgba(62, 207, 130, 0.14);
+  --color-warning: #e09b3d;
+  --color-warning-light: rgba(224, 155, 61, 0.15);
+  --color-error: #f04646;
+  --color-error-light: rgba(240, 70, 70, 0.12);
+  --color-info: #5ba4d4;
+  --color-info-light: rgba(91, 164, 212, 0.12);
+
+  --color-primary-gold: #d4af37;
+  --color-gray-light: rgba(255, 255, 255, 0.06);
+  --color-gray-medium: #9e9e9e;
+  --color-gray-dark: #6b6b6b;
+  --color-text-black: #1a2822;
+
+  --form-input-bg: rgba(255, 255, 255, 0.08);
+  --form-input-bg-focus: rgba(255, 255, 255, 0.13);
+  --form-select-chevron: %23ffffff;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 14px 36px rgba(0, 0, 0, 0.48);
+  --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.55);
+  --shadow-glow-gold: 0 0 28px rgba(212, 175, 55, 0.14);
+
+  --legal-card-bg: rgba(255, 255, 255, 0.04);
+  --faq-cat-bg: rgba(255, 255, 255, 0.04);
+}
+
+/* ═══════════════════════════════════════════════════════
+   TEMA CLARO — paleta crema cálida con verde oscuro real
+   Razón: el tema claro anterior usaba --surface-page: #eef5f1
+   (verde-grisáceo frío) y --surface-card: #ffffff sin sombras
+   suficientes, lo que hacía que todo luciera plano y poco
+   distinguible. Esta versión usa una base crema cálida (#F5F0E8)
+   que complementa el dorado de la marca, con texto oscuro
+   de alto contraste y sombras más pronunciadas.
+═══════════════════════════════════════════════════════ */
+html[data-theme="light"] {
+  color-scheme: light;
+
+  /* ── Fondos ── */
+  /* Crema cálido en lugar del verde-gris frío anterior */
+  --surface-page:     #F5F0E8;
+  --surface-muted:    #EDE8DF;
+  --surface-card:     #FFFFFF;
+  --surface-elevated: #FAFAF7;
+  --nav-bg:           rgba(255, 255, 255, 0.92);
+  --nav-border:       rgba(180, 145, 30, 0.18);
+  --footer-surface:   #E8E2D8;
+
+  /* ── Primarios ── */
+  --color-primary:       #EAF0EC;
+  --color-primary-light: #FFFFFF;
+  --color-primary-dark:  #D4E2D8;
+  /* Acento dorado ligeramente más oscuro para contraste sobre fondo claro */
+  --color-accent:        #C9A227;
+  --color-accent-dark:   #A8841A;
+
+  /* ── Bordes ── */
+  --border-color:       #B8C4BC;
+  --border-color-light: rgba(50, 65, 61, 0.16);
+  --divider-color:      rgba(50, 65, 61, 0.10);
+  --card-border:        rgba(50, 65, 61, 0.12);
+
+  /* ── Texto — negro verdoso, contraste AA/AAA ── */
+  --text-on-dark:          #1A2820;
+  --text-on-dark-secondary: rgba(26, 40, 32, 0.82);
+  --text-on-dark-tertiary:  rgba(26, 40, 32, 0.55);
+  --text-on-dark-disabled:  rgba(26, 40, 32, 0.32);
+
+  --text-on-light:          #1A2820;
+  --text-on-light-secondary: rgba(26, 40, 32, 0.80);
+  --text-on-light-tertiary:  rgba(26, 40, 32, 0.52);
+  --text-on-light-disabled:  rgba(26, 40, 32, 0.32);
+
+  /* ── Semánticos (sin cambios) ── */
+  --color-success: #2db56e;
+  --color-success-light: rgba(45, 181, 110, 0.14);
+  --color-warning: #c97f1a;
+  --color-warning-light: rgba(201, 127, 26, 0.14);
+  --color-error: #d63b3b;
+  --color-error-light: rgba(214, 59, 59, 0.11);
+  --color-info: #3a88c4;
+  --color-info-light: rgba(58, 136, 196, 0.12);
+
+  --color-primary-gold: #C9A227;
+  --color-gray-light:   rgba(26, 40, 32, 0.06);
+  --color-gray-medium:  #7A8A82;
+  --color-gray-dark:    #4A5A52;
+  --color-text-black:   #1A2820;
+
+  /* ── Formularios ── */
+  --form-input-bg:       rgba(255, 255, 255, 0.95);
+  --form-input-bg-focus: #FFFFFF;
+  --form-select-chevron: %231A2820;
+
+  /* ── Sombras — más pronunciadas (fondo claro las necesita) ── */
+  --shadow-sm: 0 1px 4px rgba(16, 40, 28, 0.10), 0 2px 8px rgba(16, 40, 28, 0.06);
+  --shadow-md: 0 4px 16px rgba(16, 40, 28, 0.12), 0 2px 6px rgba(16, 40, 28, 0.07);
+  --shadow-lg: 0 10px 32px rgba(16, 40, 28, 0.14), 0 4px 12px rgba(16, 40, 28, 0.08);
+  --shadow-xl: 0 18px 48px rgba(16, 40, 28, 0.16), 0 8px 20px rgba(16, 40, 28, 0.10);
+  --shadow-glow-gold: 0 0 24px rgba(201, 162, 39, 0.28);
+
+  --legal-card-bg: #FFFFFF;
+  --faq-cat-bg:    rgba(255, 255, 255, 0.92);
+}
+
+/* ── Chevron de select en modo claro ── */
+html[data-theme="light"] .form-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%231A2820' stroke-width='2'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+/* ── Dot-grid de fondo — más sutil en claro ── */
+html[data-theme="light"] body::before {
+  background-image: radial-gradient(rgba(50, 65, 61, 0.09) 1px, transparent 1px);
+  opacity: 0.6;
+}
+
+/* ── Cards de dashboard en modo claro ── */
+html[data-theme="light"] .card,
+html[data-theme="light"] .stat-card,
+html[data-theme="light"] .kpi {
+  background: #FFFFFF;
+  border-color: rgba(50, 65, 61, 0.12);
+  box-shadow: 0 2px 12px rgba(16, 40, 28, 0.08), 0 1px 3px rgba(16, 40, 28, 0.05);
+}
+
+html[data-theme="light"] .card:hover,
+html[data-theme="light"] .stat-card:hover,
+html[data-theme="light"] .kpi:hover {
+  box-shadow: 0 6px 24px rgba(16, 40, 28, 0.13), 0 0 16px rgba(201, 162, 39, 0.18);
+  border-color: rgba(201, 162, 39, 0.35);
+}
+
+/* Línea superior en hover — claro */
+html[data-theme="light"] .card::before {
+  background: linear-gradient(90deg, transparent, rgba(201, 162, 39, 0.35) 50%, transparent);
+}
+
+/* ── Sidebar en modo claro ── */
+html[data-theme="light"] .sidebar {
+  background: #EDE8DF;
+  border-right-color: rgba(50, 65, 61, 0.14);
+}
+
+html[data-theme="light"] .sidebar-link:hover,
+html[data-theme="light"] .nav-item:hover {
+  background: rgba(201, 162, 39, 0.10);
+  border-color: rgba(201, 162, 39, 0.18);
+  color: #1A2820;
+}
+
+html[data-theme="light"] .sidebar-link.active,
+html[data-theme="light"] .nav-item.active {
+  background: rgba(201, 162, 39, 0.14);
+  border-color: rgba(201, 162, 39, 0.28);
+  color: #8B6914;
+}
+
+html[data-theme="light"] .sidebar-section-label,
+html[data-theme="light"] .nav-section {
+  color: rgba(26, 40, 32, 0.42);
+}
+
+html[data-theme="light"] .sidebar-badge {
+  background: rgba(201, 162, 39, 0.14);
+  color: #8B6914;
+  border-color: rgba(201, 162, 39, 0.28);
+}
+
+html[data-theme="light"] .sidebar-badge.alert {
+  background: rgba(214, 59, 59, 0.10);
+  color: #a82828;
+  border-color: rgba(214, 59, 59, 0.25);
+}
+
+/* ── Tablas en modo claro ── */
+html[data-theme="light"] thead th {
+  background: rgba(50, 65, 61, 0.04);
+  color: rgba(26, 40, 32, 0.52);
+  border-bottom-color: rgba(50, 65, 61, 0.12);
+}
+
+html[data-theme="light"] tbody tr {
+  border-bottom-color: rgba(50, 65, 61, 0.08);
+}
+
+html[data-theme="light"] tbody tr:hover {
+  background: rgba(50, 65, 61, 0.04);
+}
+
+/* ── Badges en modo claro ── */
+html[data-theme="light"] .badge-gold {
+  background: rgba(201, 162, 39, 0.14);
+  color: #8B6914;
+  border-color: rgba(201, 162, 39, 0.28);
+}
+
+/* ── Barras de demanda ── */
+html[data-theme="light"] .demand-bar {
+  background: rgba(50, 65, 61, 0.10);
+}
+
+/* ── Textos de utilidad ── */
+html[data-theme="light"] .text-muted {
+  color: rgba(26, 40, 32, 0.52);
+}
+
+html[data-theme="light"] .text-gold {
+  color: #A8841A;
+}
+
+/* ── Auth card en claro ── */
+html[data-theme="light"] .auth-card {
+  background: #FFFFFF;
+  border-color: rgba(50, 65, 61, 0.14);
+  box-shadow: var(--shadow-lg);
+}
+
+html[data-theme="light"] .auth-title {
+  color: #1A2820;
+}
+
+html[data-theme="light"] .auth-sub {
+  color: rgba(26, 40, 32, 0.55);
+}
+
+html[data-theme="light"] .auth-label,
+html[data-theme="light"] .auth-card .input-label {
+  color: rgba(26, 40, 32, 0.80);
+}
+
+html[data-theme="light"] .auth-footer-link {
+  color: rgba(26, 40, 32, 0.72);
+}
+
+html[data-theme="light"] .auth-footer-link a {
+  color: #A8841A;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

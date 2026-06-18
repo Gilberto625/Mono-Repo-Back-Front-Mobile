@@ -1,0 +1,63 @@
+---
+description: Reportes, dashboard, KPIs y predicción de ventas
+globs: ["backend/apps/reports/**/*.py", "frontend/src/app/features/admin/reports/**/*", "frontend/src/app/features/admin/dashboard/**/*"]
+alwaysApply: false
+---
+
+# Reportes y Dashboard
+
+## Principio
+Los reportes pesados no consultan directamente tablas transaccionales en cada carga.
+
+## Arquitectura
+```txt
+negocio -> stg -> rpt -> Django Reports API -> Angular/Flutter
+```
+
+## KPIs admin
+- Ventas del día.
+- Ingresos del mes.
+- Citas del día.
+- Citas confirmadas/canceladas.
+- Pedidos pendientes.
+- Productos stock bajo.
+- Servicios más solicitados.
+- Productos más vendidos.
+- Ticket promedio.
+- Barbero con mayor demanda.
+
+## Vistas materializadas
+Usar:
+```txt
+rpt.mv_ventas_diarias
+rpt.mv_productos_mas_vendidos
+rpt.mv_servicios_mas_solicitados
+rpt.mv_resumen_diario
+```
+
+## Endpoints
+```txt
+GET /api/v1/admin/dashboard/
+GET /api/v1/admin/reports/sales/
+GET /api/v1/admin/reports/products/top/
+GET /api/v1/admin/reports/services/top/
+GET /api/v1/admin/reports/inventory/low-stock/
+POST /api/v1/admin/reports/refresh/
+```
+
+## Angular
+- Cards KPI.
+- Gráficas.
+- Filtros por fecha.
+- Estados loading/error/empty.
+- Responsive.
+- No hacer cálculos financieros críticos en UI.
+
+## Flutter
+- Admin móvil solo resumen.
+- No replicar dashboard completo al inicio.
+
+## Predicción
+- Implementación inicial simple.
+- No presentar como IA avanzada si solo es cálculo estadístico.
+- Indicar modo prueba/demo cuando aplique.

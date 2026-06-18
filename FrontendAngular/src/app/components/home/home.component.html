@@ -1,0 +1,112 @@
+<div class="home-container">
+  <!-- Toolbar -->
+  <header class="home-toolbar">
+    <span class="toolbar-title">Stylo Barber Connect</span>
+    <span class="spacer"></span>
+    <button class="toolbar-button" routerLink="/profile" aria-label="Perfil">
+      Perfil
+    </button>
+    <button class="toolbar-button" (click)="logout()" aria-label="Cerrar sesión">
+      Cerrar Sesión
+    </button>
+  </header>
+
+  <!-- Contenido principal -->
+  <main class="content">
+    <div class="welcome-section">
+      <h1 class="welcome-title">¡Bienvenido, {{ currentUser?.username }}!</h1>
+      <p class="welcome-subtitle">Has iniciado sesión exitosamente en el sistema</p>
+    </div>
+
+    <!-- Products Section -->
+    <section class="products-section">
+      <h2 class="section-title">Productos y Servicios Disponibles</h2>
+      <div class="products-grid">
+        <div class="product-card" *ngFor="let product of products">
+          <div class="product-icon">{{ product.icon }}</div>
+          <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-description">{{ product.description }}</p>
+          <div class="product-footer">
+            <span class="product-price">${{ product.price }}</span>
+            <button class="add-to-cart-btn" (click)="addToCart(product)">
+              🛒 Agregar
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="cards-grid">
+      <!-- Card de Información del Usuario -->
+      <div class="card info-card">
+        <div class="card-header">
+          <h2 class="card-title">Información del Usuario</h2>
+        </div>
+        <div class="card-content">
+          <div class="info-item">
+            <strong>Nombre de Usuario:</strong>
+            <p>{{ currentUser?.username }}</p>
+          </div>
+          <div class="info-item">
+            <strong>Email:</strong>
+            <p>{{ currentUser?.email }}</p>
+          </div>
+          <div class="info-item">
+            <strong>ID de Usuario:</strong>
+            <p>{{ currentUser?.id }}</p>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="card-button card-button-primary" routerLink="/profile">
+            Ver Perfil Completo
+          </button>
+        </div>
+      </div>
+
+      <!-- Card de Seguridad -->
+      <div class="card security-card">
+        <div class="card-header">
+          <h2 class="card-title">Seguridad</h2>
+        </div>
+        <div class="card-content">
+          <div class="security-features">
+            <div class="feature-item">
+              <span>Autenticación 2FA activa</span>
+            </div>
+            <div class="feature-item">
+              <span>Sesiones seguras</span>
+            </div>
+            <div class="feature-item">
+              <span>Protección CSRF</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="card-button card-button-primary" routerLink="/security">
+            Centro de Seguridad
+          </button>
+        </div>
+      </div>
+
+      <!-- Card de Acciones Rápidas -->
+      <div class="card actions-card">
+        <div class="card-header">
+          <h2 class="card-title">Acciones Rápidas</h2>
+        </div>
+        <div class="card-content">
+          <div class="quick-actions">
+            <button class="action-button action-button-primary" routerLink="/profile">
+              Mi Perfil
+            </button>
+            <button class="action-button action-button-accent" routerLink="/security">
+              Seguridad
+            </button>
+            <button class="action-button" routerLink="/change-password">
+              Cambiar Contraseña
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

@@ -1,0 +1,394 @@
+<div class="auth-page register-shell">
+  <div class="auth-page__glow auth-page__glow--1" aria-hidden="true"></div>
+  <div class="auth-page__glow auth-page__glow--2" aria-hidden="true"></div>
+
+  <div class="auth-toolbar">
+    <button
+      type="button"
+      class="auth-theme-toggle"
+      (click)="theme.toggle()"
+      [attr.aria-label]="theme.isDark() ? 'Activar modo claro' : 'Activar modo oscuro'"
+    >
+      @if (theme.isDark()) {
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      } @else {
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+        </svg>
+      }
+    </button>
+  </div>
+
+  <div class="auth-layout">
+    <div class="auth-card register-card">
+      <a routerLink="/" class="auth-back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        Volver al inicio
+      </a>
+
+      <div class="register-brand-block">
+        <p class="auth-brand register-brand">Stylo <span>Barber</span></p>
+      </div>
+
+      <div class="auth-eyebrow register-eyebrow">
+        <span class="auth-eyebrow__dot"></span>
+        Cuenta nueva
+      </div>
+      <h1 class="auth-title register-title-main">Registro</h1>
+      <p class="auth-sub register-sub-compact">Paso {{ registerStep }} de {{ totalSteps }} · {{ stepTitle }}</p>
+
+      <nav class="register-progress" aria-label="Progreso del registro">
+        @for (s of [1, 2, 3, 4]; track s) {
+          <span
+            class="register-progress-dot"
+            [class.active]="registerStep === s"
+            [class.done]="registerStep > s"
+            [attr.aria-current]="registerStep === s ? 'step' : null"
+          >
+            {{ s }}
+          </span>
+        }
+      </nav>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+        <div class="register-step-body">
+          <!-- Paso 1: Datos personales -->
+          @if (registerStep === 1) {
+            <div class="form-grid register-step-grid">
+              <div class="form-section-label">Datos personales</div>
+              <div class="form-row">
+                <label for="nombre" class="input-label">Nombre *</label>
+                <div class="input-wrapper">
+                  <input
+                    id="nombre"
+                    type="text"
+                    formControlName="nombre"
+                    placeholder="Juan"
+                    class="input-field"
+                    autocomplete="given-name"
+                    [class.input-error]="registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched"
+                  >
+                  <div class="input-feedback error" *ngIf="registerForm.get('nombre')?.hasError('required') && registerForm.get('nombre')?.touched">
+                    El nombre es obligatorio
+                  </div>
+                  <div class="input-feedback error" *ngIf="registerForm.get('nombre')?.hasError('whitespace') && registerForm.get('nombre')?.touched">
+                    El nombre no puede estar vacío
+                  </div>
+                  <div class="input-feedback error" *ngIf="registerForm.get('nombre')?.hasError('minlength') && registerForm.get('nombre')?.touched">
+                    Mínimo 2 caracteres
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <label for="apellidopaterno" class="input-label">Apellido paterno *</label>
+                <div class="input-wrapper">
+                  <input
+                    id="apellidopaterno"
+                    type="text"
+                    formControlName="apellidopaterno"
+                    placeholder="Pérez"
+                    class="input-field"
+                    autocomplete="family-name"
+                    [class.input-error]="registerForm.get('apellidopaterno')?.invalid && registerForm.get('apellidopaterno')?.touched"
+                  >
+                  <div class="input-feedback error" *ngIf="registerForm.get('apellidopaterno')?.hasError('required') && registerForm.get('apellidopaterno')?.touched">
+                    El apellido paterno es obligatorio
+                  </div>
+                  <div class="input-feedback error" *ngIf="registerForm.get('apellidopaterno')?.hasError('whitespace') && registerForm.get('apellidopaterno')?.touched">
+                    El apellido paterno no puede estar vacío
+                  </div>
+                  <div class="input-feedback error" *ngIf="registerForm.get('apellidopaterno')?.hasError('minlength') && registerForm.get('apellidopaterno')?.touched">
+                    Mínimo 2 caracteres
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <label for="apellidomaterno" class="input-label">Apellido materno *</label>
+                <div class="input-wrapper">
+                  <input
+                    id="apellidomaterno"
+                    type="text"
+                    formControlName="apellidomaterno"
+                    placeholder="García"
+                    class="input-field"
+                    autocomplete="family-name"
+                    [class.input-error]="registerForm.get('apellidomaterno')?.invalid && registerForm.get('apellidomaterno')?.touched"
+                  >
+                  <div class="input-feedback error" *ngIf="registerForm.get('apellidomaterno')?.hasError('required') && registerForm.get('apellidomaterno')?.touched">
+                    El apellido materno es obligatorio
+                  </div>
+                  <div class="input-feedback error" *ngIf="registerForm.get('apellidomaterno')?.hasError('whitespace') && registerForm.get('apellidomaterno')?.touched">
+                    El apellido materno no puede estar vacío
+                  </div>
+                  <div class="input-feedback error" *ngIf="registerForm.get('apellidomaterno')?.hasError('minlength') && registerForm.get('apellidomaterno')?.touched">
+                    Mínimo 2 caracteres
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Paso 2: Cuenta y contacto -->
+          @if (registerStep === 2) {
+            <div class="form-grid register-step-grid">
+              <div class="form-section-label">Cuenta y contacto</div>
+              <div class="form-row">
+                <label for="username" class="input-label">Usuario *</label>
+                <div class="input-wrapper">
+                  <input
+                    id="username"
+                    type="text"
+                    formControlName="username"
+                    placeholder="juanperez"
+                    class="input-field"
+                    autocomplete="username"
+                    [class.input-error]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched"
+                  >
+                  <div class="input-feedback error" *ngIf="registerForm.get('username')?.hasError('required') && registerForm.get('username')?.touched">
+                    El usuario es obligatorio
+                  </div>
+                  <div class="input-feedback error" *ngIf="registerForm.get('username')?.hasError('whitespace') && registerForm.get('username')?.touched">
+                    El usuario no puede estar vacío
+                  </div>
+                  <div class="input-feedback error" *ngIf="registerForm.get('username')?.hasError('minlength') && registerForm.get('username')?.touched">
+                    Mínimo 4 caracteres
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <label for="correo" class="input-label">Correo electrónico *</label>
+                <div class="input-wrapper">
+                  <input
+                    id="correo"
+                    type="email"
+                    formControlName="correo"
+                    placeholder="juan@example.com"
+                    class="input-field"
+                    autocomplete="email"
+                    [class.input-error]="registerForm.get('correo')?.invalid && registerForm.get('correo')?.touched"
+                  >
+                  <div class="input-feedback error" *ngIf="registerForm.get('correo')?.hasError('required') && registerForm.get('correo')?.touched">
+                    El correo es obligatorio
+                  </div>
+                  <div class="input-feedback error" *ngIf="registerForm.get('correo')?.hasError('whitespace') && registerForm.get('correo')?.touched">
+                    El correo no puede estar vacío
+                  </div>
+                  <div class="input-feedback error" *ngIf="registerForm.get('correo')?.hasError('email') && registerForm.get('correo')?.touched">
+                    Ingresa un correo válido
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <label for="telefono" class="input-label">Teléfono *</label>
+                <div class="input-wrapper">
+                  <input
+                    id="telefono"
+                    type="tel"
+                    formControlName="telefono"
+                    placeholder="10 dígitos"
+                    class="input-field"
+                    autocomplete="tel"
+                    inputmode="numeric"
+                    maxlength="10"
+                    [class.input-error]="registerForm.get('telefono')?.invalid && registerForm.get('telefono')?.touched"
+                  >
+                  <div class="input-feedback error" *ngIf="registerForm.get('telefono')?.hasError('required') && registerForm.get('telefono')?.touched">
+                    El teléfono es obligatorio
+                  </div>
+                  <div class="input-feedback error" *ngIf="registerForm.get('telefono')?.hasError('pattern') && registerForm.get('telefono')?.touched">
+                    Debe contener exactamente 10 dígitos
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Paso 3: Contraseña -->
+          @if (registerStep === 3) {
+            <div class="form-grid register-step-grid">
+              <div class="form-section-label">Contraseña</div>
+              <div class="form-row form-row-full">
+                <label for="contrasena" class="input-label">Contraseña *</label>
+                <p class="password-caption">Incluye al menos 1 carácter especial (por ejemplo: !&#64;#$%^&amp;*).</p>
+                <div class="input-wrapper">
+                  <div class="password-input-container">
+                    <input
+                      id="contrasena"
+                      type="password"
+                      [type]="hidePassword ? 'password' : 'text'"
+                      formControlName="contrasena"
+                      placeholder="Ingresa tu contraseña"
+                      class="input-field password-field"
+                      autocomplete="new-password"
+                      [class.input-error]="registerForm.get('contrasena')?.invalid && registerForm.get('contrasena')?.touched"
+                    >
+                    <button
+                      type="button"
+                      class="password-toggle-btn"
+                      (click)="togglePasswordVisibility()"
+                      [attr.aria-label]="hidePassword ? 'Ver contraseña' : 'Ocultar contraseña'"
+                      [attr.title]="hidePassword ? 'Ver contraseña' : 'Ocultar contraseña'"
+                    >
+                      <span class="sr-only">{{ hidePassword ? 'Ver contraseña' : 'Ocultar contraseña' }}</span>
+                      <svg *ngIf="hidePassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                      </svg>
+                      <svg *ngIf="!hidePassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="password-requirements requirements-compact">
+                    <p class="requirements-title">La contraseña debe contener:</p>
+                    <ul class="requirements-list requirements-compact-list">
+                      <li [class.requirement-met]="passwordRequirements.minLength" [class.requirement-unmet]="!passwordRequirements.minLength">
+                        <span class="requirement-icon">{{ passwordRequirements.minLength ? '✓' : '○' }}</span>
+                        Al menos 8 caracteres
+                      </li>
+                      <li [class.requirement-met]="passwordRequirements.hasUpperCase" [class.requirement-unmet]="!passwordRequirements.hasUpperCase">
+                        <span class="requirement-icon">{{ passwordRequirements.hasUpperCase ? '✓' : '○' }}</span>
+                        Una letra mayúscula (A-Z)
+                      </li>
+                      <li [class.requirement-met]="passwordRequirements.hasLowerCase" [class.requirement-unmet]="!passwordRequirements.hasLowerCase">
+                        <span class="requirement-icon">{{ passwordRequirements.hasLowerCase ? '✓' : '○' }}</span>
+                        Una letra minúscula (a-z)
+                      </li>
+                      <li [class.requirement-met]="passwordRequirements.hasNumber" [class.requirement-unmet]="!passwordRequirements.hasNumber">
+                        <span class="requirement-icon">{{ passwordRequirements.hasNumber ? '✓' : '○' }}</span>
+                        Un número (0-9)
+                      </li>
+                      <li [class.requirement-met]="passwordRequirements.hasSymbol" [class.requirement-unmet]="!passwordRequirements.hasSymbol">
+                        <span class="requirement-icon">{{ passwordRequirements.hasSymbol ? '✓' : '○' }}</span>
+                        Un carácter especial (!&#64;#$%^&amp;*...)
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="form-row form-row-full">
+                <label for="confirmarContrasena" class="input-label">Confirmar contraseña *</label>
+                <div class="input-wrapper">
+                  <div class="password-input-container">
+                    <input
+                      id="confirmarContrasena"
+                      type="password"
+                      [type]="hideConfirmPassword ? 'password' : 'text'"
+                      formControlName="confirmarContrasena"
+                      placeholder="Confirma tu contraseña"
+                      class="input-field password-field"
+                      autocomplete="new-password"
+                      [class.input-error]="registerForm.get('confirmarContrasena')?.invalid && registerForm.get('confirmarContrasena')?.touched"
+                    >
+                    <button
+                      type="button"
+                      class="password-toggle-btn"
+                      (click)="toggleConfirmPasswordVisibility()"
+                      [attr.aria-label]="hideConfirmPassword ? 'Ver contraseña' : 'Ocultar contraseña'"
+                      [attr.title]="hideConfirmPassword ? 'Ver contraseña' : 'Ocultar contraseña'"
+                    >
+                      <span class="sr-only">{{ hideConfirmPassword ? 'Ver contraseña' : 'Ocultar contraseña' }}</span>
+                      <svg *ngIf="hideConfirmPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                      </svg>
+                      <svg *ngIf="!hideConfirmPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Paso 4: Recuperación y términos -->
+          @if (registerStep === 4) {
+            <div class="form-grid register-step-grid">
+              <div class="form-section-label">Recuperación de cuenta</div>
+              <div class="form-row">
+                <label for="preguntasecreta" class="input-label">Pregunta secreta *</label>
+                <div class="input-wrapper">
+                  <select
+                    id="preguntasecreta"
+                    formControlName="preguntasecreta"
+                    class="input-field select-field"
+                    [class.input-error]="registerForm.get('preguntasecreta')?.invalid && registerForm.get('preguntasecreta')?.touched"
+                  >
+                    <option value="" disabled>Selecciona una pregunta</option>
+                    <option value="¿Cuál es el nombre de tu primera mascota?">¿Cuál es el nombre de tu primera mascota?</option>
+                    <option value="¿Cuál es el nombre de tu madre?">¿Cuál es el nombre de tu madre?</option>
+                    <option value="¿En qué ciudad naciste?">¿En qué ciudad naciste?</option>
+                    <option value="¿Cuál es el nombre de tu mejor amigo de la infancia?">¿Cuál es el nombre de tu mejor amigo de la infancia?</option>
+                    <option value="¿Cuál es el modelo de tu primer automóvil?">¿Cuál es el modelo de tu primer automóvil?</option>
+                    <option value="¿Cuál es el nombre de tu escuela primaria?">¿Cuál es el nombre de tu escuela primaria?</option>
+                  </select>
+                  <div class="input-feedback error" *ngIf="registerForm.get('preguntasecreta')?.hasError('required') && registerForm.get('preguntasecreta')?.touched">
+                    Debes seleccionar una pregunta secreta
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <label for="respuestasecreta" class="input-label">Respuesta secreta *</label>
+                <div class="input-wrapper">
+                  <input
+                    id="respuestasecreta"
+                    type="text"
+                    formControlName="respuestasecreta"
+                    placeholder="Tu respuesta"
+                    class="input-field"
+                    autocomplete="off"
+                    [class.input-error]="registerForm.get('respuestasecreta')?.invalid && registerForm.get('respuestasecreta')?.touched"
+                  >
+                  <div class="input-feedback error" *ngIf="registerForm.get('respuestasecreta')?.hasError('required') && registerForm.get('respuestasecreta')?.touched">
+                    La respuesta secreta es obligatoria
+                  </div>
+                  <div class="input-feedback error" *ngIf="registerForm.get('respuestasecreta')?.hasError('whitespace') && registerForm.get('respuestasecreta')?.touched">
+                    La respuesta no puede estar vacía
+                  </div>
+                </div>
+              </div>
+              <div class="form-row form-row-full terms-row">
+                <label class="terms-label">
+                  <input type="checkbox" formControlName="aceptaTerminos" class="terms-checkbox">
+                  <span>
+                    Acepto los <a routerLink="/nosotros">Términos y Condiciones</a> y el
+                    <a routerLink="/nosotros">Aviso de Privacidad</a>. *
+                  </span>
+                </label>
+                <div class="input-feedback error" *ngIf="registerForm.get('aceptaTerminos')?.invalid && registerForm.get('aceptaTerminos')?.touched">
+                  Debes aceptar los términos y el aviso de privacidad para registrarte.
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="register-step-footer">
+          @if (registerStep > 1) {
+            <button type="button" class="btn btn-secondary" (click)="prevStep()" [disabled]="loading">Atrás</button>
+          }
+          @if (registerStep !== totalSteps) {
+            <button type="button" class="btn btn-primary btn--premium-primary" (click)="nextStep()" [disabled]="loading">Siguiente</button>
+          } @else {
+            <button type="submit" class="btn btn-primary btn--premium-primary submit-button" [disabled]="loading || registerForm.invalid">
+              <span *ngIf="!loading">Registrar</span>
+              <span *ngIf="loading" class="spinner"></span>
+            </button>
+          }
+        </div>
+
+        <div class="auth-footer-link register-footer-link">
+          <p>¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión aquí</a></p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

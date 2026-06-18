@@ -1,0 +1,74 @@
+---
+description: Notificaciones, Brevo, Firebase, Cloudinary/S3, Google Maps, WhatsApp y Alexa
+globs: ["backend/apps/notifications/**/*.py", "backend/apps/integrations/**/*.py", "frontend/src/app/features/**/notifications/**/*", "mobile/lib/features/notifications/**/*"]
+alwaysApply: false
+---
+
+# Notificaciones e Integraciones
+
+## Principio
+Django genera eventos y decide canales. Angular/Flutter solo muestran estado.
+
+## Notificaciones internas
+- Crear notificación base.
+- Crear notificación por usuario.
+- Marcar leída/no leída.
+- Usuario solo ve las suyas.
+- Admin ve alertas globales.
+
+## Eventos
+```txt
+cita_creada
+cita_confirmada
+cita_cancelada
+cita_recordatorio_1_dia
+cita_recordatorio_90_min
+anticipo_validado
+pedido_creado
+pedido_pagado
+pedido_entregado
+stock_bajo
+pago_clip_confirmado
+```
+
+## Brevo
+Uso:
+- verificación cuenta.
+- recuperación contraseña.
+- confirmación cita.
+- recordatorios.
+- pedidos.
+Regla: API/SMTP key solo backend.
+
+## Firebase
+Uso:
+- push Flutter.
+- recordatorios.
+- pedidos.
+- alertas.
+Regla: Firebase Admin solo backend; Flutter registra FCM token.
+
+## Cloudinary/S3
+Uso:
+- productos.
+- servicios.
+- landing.
+- comprobantes.
+Regla: firma o subida segura desde backend.
+
+## Google Maps
+- Key pública restringida por dominio/API.
+- Ubicación landing.
+- No usar key de servidor en frontend.
+
+## WhatsApp
+Fase inicial:
+- link directo controlado.
+Fase futura:
+- WhatsApp Business Cloud API con webhooks.
+
+## Alexa
+Futura:
+- consultas de agenda/resumen.
+- Account linking OAuth.
+- No permitir acciones críticas por voz inicialmente.

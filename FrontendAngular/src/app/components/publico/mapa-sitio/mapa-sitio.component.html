@@ -1,0 +1,43 @@
+<app-navbar [isLoggedIn]="false"></app-navbar>
+
+<div class="page-container">
+  <div class="container">
+    <div class="page-header page-header--premium" appScrollReveal>
+      <h1>Mapa del Sitio</h1>
+      <p class="text-muted">Navega fácilmente por todas las secciones de nuestro sitio web</p>
+    </div>
+
+    <div class="sitemap-content">
+      <div class="grid" appScrollReveal="stagger" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-xl);">
+        @for (seccion of secciones; track seccion.titulo) {
+          <div class="card card--premium-hover">
+            <h3 class="mb-md" style="color: var(--color-accent);">{{ seccion.titulo }}</h3>
+            <ul class="sitemap-links">
+              @for (enlace of seccion.enlaces; track enlace.route) {
+                <li>
+                  <a [routerLink]="enlace.route" class="sitemap-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                    {{ enlace.label }}
+                  </a>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+
+      <div class="card mt-xl card--premium-hover" appScrollReveal style="text-align: center;">
+        <h3 class="mb-md">¿Necesitas ayuda?</h3>
+        <p class="text-muted mb-lg">Si no encuentras lo que buscas, estamos aquí para ayudarte</p>
+        <div class="flex" style="gap: var(--spacing-md); justify-content: center; flex-wrap: wrap;">
+          <a routerLink="/ayuda" class="btn btn-primary">Ver Ayuda</a>
+          <a routerLink="/contacto" class="btn btn-secondary">Contáctanos</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

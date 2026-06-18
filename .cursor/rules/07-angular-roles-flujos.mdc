@@ -1,0 +1,79 @@
+---
+description: Reglas de pantallas y flujos por rol: cliente, secretaria, barbero y administrador
+globs: ["frontend/src/app/features/client/**/*", "frontend/src/app/features/secretary/**/*", "frontend/src/app/features/barber/**/*", "mobile/**/*.dart", "backend/apps/**/*.py"]
+alwaysApply: false
+---
+
+# Flujos por Rol
+
+## Cliente
+Pantallas mínimas:
+- Home cliente.
+- Catálogo servicios.
+- Agendar cita.
+- Mis citas.
+- Detalle cita.
+- Productos.
+- Carrito/pedido.
+- Mis pedidos.
+- Pagos Clip.
+- Notificaciones.
+- Perfil.
+
+Reglas:
+- Solo ve sus citas/pedidos/pagos.
+- Puede cancelar solo si cumple política.
+- Si requiere anticipo, pasa por Clip.
+- No ve panel interno.
+
+## Secretaria
+Pantallas mínimas:
+- Agenda general.
+- Crear cita presencial.
+- Confirmar asistencia.
+- Marcar inasistencia.
+- Validar transferencia.
+- Ver pagos Clip.
+- Pedidos.
+- Ventas mostrador.
+- Notificaciones operativas.
+
+Reglas:
+- Puede gestionar agenda de barberos y sillas.
+- Puede registrar citas presenciales.
+- Puede validar pagos manuales.
+- No modifica configuración global.
+
+## Barbero
+Pantallas mínimas:
+- Mi agenda.
+- Próxima cita.
+- Detalle de servicio.
+- Mis servicios.
+- Actualizar duración estimada.
+
+Reglas:
+- Solo ve citas asignadas.
+- No cobra.
+- No confirma pagos.
+- No cambia estados globales de cita salvo permisos explícitos.
+
+## Administrador
+Control completo con auditoría:
+- Usuarios, empleados, roles, productos, inventario, reportes, configuración, legal, apariencia, integraciones.
+
+## Redirección por rol
+Después de login:
+```txt
+administrador -> /admin/dashboard
+secretaria    -> /secretaria/agenda
+barbero       -> /barbero/agenda
+cliente       -> /cliente/inicio
+```
+
+## Flutter
+Prioridad móvil:
+1. Cliente.
+2. Barbero.
+3. Secretaria.
+4. Admin limitado.

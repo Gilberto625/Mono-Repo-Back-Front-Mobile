@@ -1,0 +1,75 @@
+---
+description: Reglas de desarrollo móvil Flutter para Stylo Barber Connect
+globs: ["mobile/**/*.dart", "mobile/pubspec.yaml"]
+alwaysApply: false
+---
+
+# Flutter Mobile
+
+## Rol de Flutter
+Flutter es cliente móvil de la misma API Django que usa Angular.
+
+## Prioridad funcional
+1. Cliente: citas, productos, pedidos, pagos, notificaciones.
+2. Barbero: agenda asignada.
+3. Secretaria: consultas y acciones rápidas.
+4. Admin: dashboard resumido, no panel completo inicial.
+
+## Estructura recomendada
+```txt
+mobile/lib/
+├── app/
+│   ├── app.dart
+│   ├── routes.dart
+│   └── theme/
+├── core/
+│   ├── api/
+│   ├── auth/
+│   ├── storage/
+│   ├── errors/
+│   └── constants/
+├── shared/
+│   ├── widgets/
+│   ├── models/
+│   └── utils/
+└── features/
+    ├── auth/
+    ├── client/
+    ├── appointments/
+    ├── products/
+    ├── orders/
+    ├── payments/
+    ├── notifications/
+    ├── barber/
+    └── secretary/
+```
+
+## Estado
+Usar una estrategia clara:
+- Riverpod recomendado.
+- Bloc aceptado si ya existe.
+- No mezclar patrones sin motivo.
+
+## Seguridad móvil
+- Guardar JWT en `flutter_secure_storage`.
+- No guardar contraseñas.
+- No guardar API keys de Clip, Brevo, Firebase Admin o S3.
+- Manejar 401 cerrando sesión.
+- Manejar 403 mostrando acceso denegado.
+- No imprimir tokens en logs.
+
+## Pagos Clip en Flutter
+- Flutter solicita pago a Django.
+- Django responde `checkout_url`.
+- Flutter abre URL con `url_launcher`.
+- Flutter consulta estado a Django.
+- Flutter no confirma pago.
+
+## UI móvil
+- Dark-first.
+- Componentes táctiles.
+- Cards limpias.
+- Formularios verticales.
+- Bottom navigation por rol.
+- Feedback loading/error/empty.
+- No depender de hover.

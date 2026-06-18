@@ -1,0 +1,28 @@
+---
+description: Contexto global obligatorio de Stylo Barber Connect para Cursor
+alwaysApply: true
+---
+
+# Stylo Barber Connect — Contexto Global
+
+Proyecto para Tony Stylo Barbería. Sistema multicanal con **Angular Web**, **Flutter Mobile**, **Django REST Framework** y **PostgreSQL Neon**.
+
+## Regla central
+- Django + PostgreSQL son la fuente oficial del negocio.
+- Angular y Flutter son interfaces de usuario.
+- Clip solo procesa pagos.
+- Nunca mover reglas críticas al frontend.
+
+## Roles
+- Administrador: control total, configuración, reportes, inventario, usuarios, legal, apariencia.
+- Secretaria: agenda, asistencia, pagos operativos, pedidos, ventas mostrador.
+- Barbero: agenda asignada, servicios y tiempos.
+- Cliente: registro, citas, productos, pedidos, historial y notificaciones.
+
+## Decisiones obligatorias
+- API versionada bajo `/api/v1/`.
+- Backend valida permisos, reglas de cita, stock, pagos y estados.
+- Frontend web 100% responsive.
+- Flutter consume la misma API que Angular.
+- Diseño dark-first premium: negro, dorado, verde.
+- No exponer secretos en Angular, Flutter ni repositorio.

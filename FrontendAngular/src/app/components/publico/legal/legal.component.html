@@ -1,0 +1,34 @@
+<app-navbar [isLoggedIn]="false"></app-navbar>
+
+<div class="page-container">
+  <div class="container">
+    <div class="page-header page-header--premium" appScrollReveal>
+      <h1>{{ tipoFiltro ? '' : 'Nosotros' }}</h1>
+      @if (!tipoFiltro) {
+        <p class="text-muted">Conoce nuestra misión, visión, valores y más</p>
+      }
+    </div>
+
+    @if (loading) {
+      <div class="text-center p-xl">
+        <p class="text-muted">Cargando contenido...</p>
+      </div>
+    } @else if (contenidos.length === 0) {
+      <div class="text-center p-xl">
+        <p class="text-muted">No hay contenido disponible por el momento.</p>
+      </div>
+    } @else {
+      <div class="legal-grid" appScrollReveal="stagger">
+        @for (c of contenidos; track c.tipo) {
+          <div class="legal-card card--premium-hover">
+            <div class="legal-card-icon" [innerHTML]="getIcono(c.tipo)"></div>
+            <h2 class="legal-card-titulo">{{ c.titulo }}</h2>
+            <p class="legal-card-contenido">{{ c.contenido }}</p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<app-footer></app-footer>

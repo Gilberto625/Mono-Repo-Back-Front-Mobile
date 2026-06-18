@@ -1,0 +1,43 @@
+---
+description: Reglas de negocio oficiales de Tony Stylo Barbería
+alwaysApply: true
+---
+
+# Dominio de Negocio — Tony Stylo Barbería
+
+Usar estas reglas como verdad del sistema.
+
+## Citas
+- Alta demanda: viernes, sábado y domingo.
+- Agendar en alta demanda: mínimo 3 días antes.
+- Agendar en baja/media: mínimo 1 día antes.
+- Cancelar en alta demanda: mínimo 2 días antes.
+- Cancelar en baja/media: mínimo 1 día antes.
+- Primera cita de cliente nuevo: sin anticipo.
+- Si el cliente no asiste, las siguientes 10 citas requieren anticipo del 50%.
+- Si cumple esas 10 citas asistiendo, se libera la penalización.
+- Anticipo no reembolsable por inasistencia.
+- Si asiste, el anticipo se descuenta del total.
+- Tolerancia de espera: 5 a 10 minutos.
+- Pasada la tolerancia, secretaria puede cancelar y liberar silla.
+
+## Roles operativos
+- Secretaria controla agenda, barbero, silla, asistencia, cobros operativos, pagos y ventas.
+- Barbero no cobra, no cambia estados de pago y no gestiona citas globales.
+- Administrador configura reglas, empleados, servicios, productos, inventario, apariencia, legal y reportes.
+- Cliente solo gestiona sus citas, pedidos, pagos e historial.
+
+## Productos e inventario
+- El inventario oficial vive en Stylo Barber Connect, no en Clip.
+- Todo cambio de stock debe generar movimiento de inventario.
+- No descontar stock directamente sin movimiento.
+- Stock disponible = stock actual - stock reservado.
+- Pedido pendiente de pago reserva stock.
+- Pago confirmado convierte reserva en salida real.
+- Pago expirado libera stock reservado.
+
+## Pagos
+- Métodos: efectivo, transferencia y Clip.
+- Clip confirma por webhook o consulta backend.
+- El frontend nunca confirma pagos.
+- Django calcula totales, anticipos y montos.

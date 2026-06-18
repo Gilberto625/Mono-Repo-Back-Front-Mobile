@@ -1,0 +1,81 @@
+---
+description: Reglas para productos, imágenes, inventario, pedidos y ventas de mostrador
+globs: ["backend/apps/products/**/*.py", "backend/apps/inventory/**/*.py", "backend/apps/orders/**/*.py", "backend/apps/sales/**/*.py", "frontend/src/app/features/**/products/**/*", "frontend/src/app/features/**/inventory/**/*", "mobile/lib/features/products/**/*", "mobile/lib/features/orders/**/*"]
+alwaysApply: false
+---
+
+# Productos, Inventario, Pedidos y Ventas
+
+## Principio
+El stock nunca se modifica directamente; siempre mediante movimientos.
+
+## Productos
+Campos mínimos:
+- nombre
+- descripción
+- categoría
+- marca
+- precio
+- activo
+- disponible_venta
+- stock_minimo
+- imágenes
+
+## Imágenes
+- Validar extensión, MIME, tamaño y dimensiones.
+- Usar Cloudinary/S3 mediante backend.
+- Admin puede subir imágenes de producto, servicio y landing.
+- No permitir SVG inseguro.
+
+## Inventario
+Conceptos:
+```txt
+stock_actual
+stock_reservado
+stock_disponible = stock_actual - stock_reservado
+```
+
+Tipos de movimiento:
+```txt
+entrada
+salida
+ajuste
+reserva
+liberacion_reserva
+reverso
+devolucion
+```
+
+## Pedidos
+Estados:
+```txt
+pendiente_pago
+pagado
+aceptado
+en_camino
+entregado
+cancelado
+pago_expirado
+pago_rechazado
+```
+
+Flujo Clip:
+1. Cliente crea pedido.
+2. Django valida stock.
+3. Django calcula total.
+4. Django reserva stock.
+5. Django genera link Clip.
+6. Clip confirma.
+7. Django descuenta stock real.
+8. Django genera historial, notificación y auditoría.
+
+## Venta mostrador
+- Secretaria/admin registra venta.
+- Backend calcula total.
+- Si es Clip, generar pago externo.
+- Si es efectivo/transferencia, seguir reglas de validación.
+- Venta cancelada genera reverso de inventario.
+- No borrar ventas históricas.
+
+## Reportes
+Toda venta/pedido/cambio de inventario debe alimentar reportes.

@@ -1,0 +1,196 @@
+<div class="layout-sidebar">
+  <app-sidebar rol="admin"></app-sidebar>
+
+  <main class="main-content monitoreo-page">
+    <app-breadcrumb></app-breadcrumb>
+
+    @if (loading) {
+      <section class="card loading-panel">
+        <p>Cargando monitoreo real de base de datos...</p>
+      </section>
+    }
+
+    @if (error) {
+      <section class="card error-panel">
+        <p>{{ error }}</p>
+      </section>
+    }
+
+    <header class="page-head">
+      <div class="page-head-left">
+        <div class="db-badge">PostgreSQL</div>
+        <div class="page-title">
+          <h1>Monitoreo BD</h1>
+          <p class="page-sub">Estado técnico, latencia, actividad y operaciones recientes.</p>
+        </div>
+        <div class="status-pills">
+          <span class="pill ok"><span class="dot"></span>Conectada</span>
+          <button type="button" class="pill action" [class.off]="!live" (click)="toggleLive()">
+            <span class="dot"></span>En vivo: {{ live ? 'activado' : 'pausado' }}
+          </button>
+          <span class="pill">Motor: {{ motor }}</span>
+        </div>
+      </div>
+
+      <div class="page-head-right">
+        <div class="card summary-card">
+          <p class="summary-label">Última actualización</p>
+          <p class="summary-value">{{ ultimaActualizacion | date:'dd/MM/yyyy, hh:mm:ss a' }}</p>
+          <div class="summary-actions">
+            <button type="button" class="btn btn-secondary btn-sm" (click)="refresh()">Actualizar</button>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="exportarSnapshotCsv()">Exportar snapshot CSV</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="metrics-grid">
+      @for (m of metrics; track m.label) {
+        <article class="stat-card metric-card" [class.warn]="m.status === 'warn'" [class.danger]="m.status === 'danger'">
+          <p class="metric-label">{{ m.label }}</p>
+          <p class="metric-value" [class.ok]="m.status === 'ok'" [class.accent]="m.status === 'accent'" [class.warn-text]="m.status === 'warn'" [class.danger-text]="m.status === 'danger'">
+            {{ m.value }}
+          </p>
+          <p class="metric-sub">{{ m.sub }}</p>
+          @if (m.label === 'Conexiones') {
+            <div class="bar-bg">
+              <div class="bar-fill" [style.width.%]="pctConexiones()"></div>
+            </div>
+          }
+        </article>
+      }
+    </section>
+
+    <section class="card controls-panel">
+      <div class="panel-head">
+        <h3>Controles</h3>
+      </div>
+      <div class="controls-grid">
+        <div class="control">
+          <label for="monEsquema">Esquema</label>
+          <select id="monEsquema" class="form-select" [value]="esquemaFiltro" (change)="onEsquemaInput($event)">
+            <option value="">Todos</option>
+            @for (e of esquemasDisponibles; track e) {
+              <option [value]="e">{{ e }}</option>
+            }
+          </select>
+        </div>
+        <div class="control">
+          <label for="monTabla">Tabla</label>
+          <select id="monTabla" class="form-select" [value]="tablaFiltro" (change)="onTablaInput($event)" [disabled]="tablasDisponibles.length === 0">
+            <option value="">Todas</option>
+            @for (t of tablasDisponibles; track t) {
+              <option [value]="t">{{ t }}</option>
+            }
+          </select>
+        </div>
+        <div class="control control-wide">
+          <label for="monLogFiltro">Buscar en logs</label>
+          <input id="monLogFiltro" type="text" class="form-input" [value]="logFiltro" (input)="onLogFiltroInput($event)" placeholder="SELECT, UPDATE, negocio, …">
+        </div>
+        <div class="control">
+          <label for="monUmbralLat">Umbral latencia warn (ms)</label>
+          <input id="monUmbralLat" type="number" class="form-input" [value]="umbralLatenciaWarn" (input)="onUmbralLatenciaWarnInput($event)" min="1">
+        </div>
+        <div class="control">
+          <label for="monUmbralLog">Umbral log warn (ms)</label>
+          <input id="monUmbralLog" type="number" class="form-input" [value]="umbralLogWarn" (input)="onUmbralLogWarnInput($event)" min="1">
+        </div>
+      </div>
+    </section>
+
+    <section class="lower-grid">
+      <article class="card panel">
+        <div class="panel-head">
+          <h3>Estadisticas por tabla</h3>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Tabla</th>
+                <th>Esquema</th>
+                <th class="text-right">Filas</th>
+                <th class="text-right">Lecturas</th>
+                <th class="text-right">Escrituras</th>
+                <th>Actividad</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (t of tablasFiltradas; track t.esquema + '.' + t.tabla) {
+                <tr>
+                  <td>{{ t.tabla }}</td>
+                  <td><span class="schema">{{ t.esquema }}</span></td>
+                  <td class="text-right">{{ t.filas }}</td>
+                  <td class="text-right accent">{{ t.lecturas }}</td>
+                  <td class="text-right">{{ t.escrituras }}</td>
+                  <td>
+                    <div class="activity-bg">
+                      <div class="activity-fill" [style.width.%]="actividadPct(t.lecturas)"></div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card panel">
+        <div class="panel-head">
+          <h3>Salud de PostgreSQL</h3>
+        </div>
+        <ul class="health-list">
+          @for (s of salud; track s.label) {
+            <li>
+              <span>{{ s.label }}</span>
+              <strong [class.ok]="s.estado === 'ok'" [class.warn-text]="s.estado === 'warn'">{{ s.valor }}</strong>
+            </li>
+          }
+        </ul>
+      </article>
+    </section>
+
+    <section class="card panel logs-panel">
+      <div class="panel-head">
+        <h3>Operaciones recientes</h3>
+      </div>
+      @if (logsFiltrados.length) {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Esquema</th>
+                <th>Operación</th>
+                <th class="text-right">Duración</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of logsFiltrados; track l.hora + '|' + l.operacion + '|' + $index) {
+                <tr>
+                  <td>{{ l.hora }}</td>
+                  <td><span class="schema">{{ l.esquema }}</span></td>
+                  <td class="op-col">{{ l.operacion }}</td>
+                  <td class="text-right">{{ l.duracionMs }} ms</td>
+                  <td>
+                    <span class="log-state" [class.ok]="estadoDuracion(l.duracionMs) === 'ok'" [class.warn-text]="estadoDuracion(l.duracionMs) === 'warn'" [class.danger-text]="estadoDuracion(l.duracionMs) === 'danger'">
+                      {{ estadoDuracion(l.duracionMs) }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty-logs">
+          <p class="text-muted mb-0">No hay operaciones recientes (o `pg_stat_statements` no está habilitado).</p>
+        </div>
+      }
+    </section>
+
+  </main>
+</div>
+

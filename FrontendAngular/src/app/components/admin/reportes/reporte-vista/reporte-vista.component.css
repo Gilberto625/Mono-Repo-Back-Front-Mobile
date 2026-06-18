@@ -1,0 +1,411 @@
+/* Filtro de período: Periodo + Desde + Hasta + Aplicar */
+.reporte-filtro-periodo {
+  background: var(--color-primary-light);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+}
+
+.reporte-filtro-periodo-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--spacing-lg);
+}
+
+.reporte-filtro-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.reporte-filtro-label {
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-on-dark-secondary);
+}
+
+.reporte-filtro-select,
+.reporte-filtro-input {
+  min-width: 140px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-on-dark);
+  font-size: 14px;
+}
+
+/* Opciones visibles en dropdown nativo (evita texto blanco sobre fondo blanco) */
+.reporte-filtro-select option {
+  color: #111;
+  background: #fff;
+}
+
+.reporte-filtro-select:focus,
+.reporte-filtro-input:focus {
+  outline: none;
+  border-color: var(--color-primary-gold);
+}
+
+.reporte-filtro-apply .btn-primary {
+  white-space: nowrap;
+}
+
+/* Gráfica pastel: Distribución de Ingresos */
+.reporte-pie-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-md) 0;
+}
+
+.reporte-pie-container {
+  flex-shrink: 0;
+}
+
+.reporte-pie-circle {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--reporte-pie-servicios, rgba(255, 255, 255, 0.9)) 0deg 0deg,
+    var(--reporte-pie-productos, #2dd4bf) 0deg 360deg
+  );
+}
+
+.reporte-pie-circle-empty {
+  background: var(--divider-color) !important;
+}
+
+:host {
+  --reporte-pie-servicios: rgba(255, 255, 255, 0.85);
+  --reporte-pie-productos: #2dd4bf;
+}
+
+.reporte-pie-legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.reporte-pie-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 14px;
+  color: var(--text-on-dark);
+}
+
+.reporte-pie-legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.reporte-pie-legend-servicios {
+  background: var(--reporte-pie-servicios, rgba(255, 255, 255, 0.85));
+  border: 1px solid var(--border-color);
+}
+
+.reporte-pie-legend-productos {
+  background: var(--reporte-pie-productos, #2dd4bf);
+}
+
+.reporte-vista-header {
+  margin-bottom: var(--spacing-xl);
+}
+
+.reporte-vista-header-main {
+  margin-bottom: var(--spacing-sm);
+}
+
+.reporte-marca {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.reporte-marca-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+}
+
+.reporte-marca-logo-texto {
+  min-width: 56px;
+  max-width: 120px;
+  min-height: 56px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-on-dark);
+  font-weight: var(--font-weight-semibold);
+  font-size: 12px;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.reporte-marca-texto {
+  min-width: 0;
+}
+
+.reporte-marca-nombre {
+  margin: 0 0 2px 0;
+  font-size: 1rem;
+}
+
+.reporte-fuente-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.reporte-fuente-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  border: 1px solid transparent;
+}
+
+.reporte-fuente-chip-ok {
+  background: rgba(45, 212, 191, 0.12);
+  border-color: rgba(45, 212, 191, 0.4);
+  color: #22d3ee;
+}
+
+.reporte-fuente-chip-warning {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+}
+
+.reporte-marca {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.reporte-marca-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+}
+
+.reporte-marca-logo-texto {
+  min-width: 56px;
+  max-width: 120px;
+  min-height: 56px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-on-dark);
+  font-weight: var(--font-weight-semibold);
+  font-size: 12px;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.reporte-marca-texto {
+  min-width: 0;
+}
+
+.reporte-marca-nombre {
+  margin: 0 0 2px 0;
+  font-size: 1rem;
+}
+
+.reporte-header-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.reporte-header-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.reporte-vista-header .volver-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+  color: var(--color-accent);
+  padding-left: 0;
+}
+
+.reporte-vista-header .volver-link svg {
+  flex-shrink: 0;
+}
+
+.reporte-vista-header h1 {
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.reporte-vista-body {
+  padding: var(--spacing-xl);
+}
+
+.reporte-valor {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-primary-gold);
+}
+
+.reporte-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.reporte-table th,
+.reporte-table td {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.reporte-table th.text-right,
+.reporte-table td.text-right {
+  text-align: right;
+}
+
+.reporte-table thead th {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-on-dark-tertiary);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Vista ventas (día/semana/mes) - layout como 13-vista-reporte */
+.reporte-ventas-layout {
+  margin-top: 0;
+}
+
+.reporte-ventas-header-actions {
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  align-items: flex-start;
+}
+
+.reporte-ventas-titulo {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: 1.5rem;
+}
+
+.reporte-ventas-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.reporte-ventas-buttons .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Barras del gráfico */
+.reporte-barras-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-lg);
+  min-height: 220px;
+  background: var(--color-primary-light);
+  border-radius: var(--radius-md);
+}
+
+.reporte-barra-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex: 1;
+  min-width: 0;
+}
+
+.reporte-barra-fondo {
+  width: 100%;
+  max-width: 36px;
+  height: 180px;
+  background: var(--divider-color);
+  border-radius: 4px 4px 0 0;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.reporte-barra-fill {
+  width: 100%;
+  min-height: 4px;
+  background: var(--color-primary-gold);
+  border-radius: 4px 4px 0 0;
+  transition: height 0.3s ease;
+}
+
+.reporte-barra-label {
+  font-size: 11px;
+  color: var(--text-on-dark-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Tabla con tfoot */
+.reporte-table-full tfoot td {
+  font-weight: var(--font-weight-bold);
+  border-top: 2px solid var(--border-color);
+  padding-top: var(--spacing-md);
+}
+
+.reporte-table-tfoot {
+  background: var(--color-primary-light);
+}
+
+.inventario-resumen-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.inventario-auditoria {
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(100, 181, 246, 0.35);
+  background: rgba(100, 181, 246, 0.1);
+}
+
+@media (max-width: 640px) {
+  .reporte-header-actions {
+    width: 100%;
+  }
+
+  .reporte-header-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -1,0 +1,269 @@
+@if (esCliente) {
+  <div class="layout-sidebar">
+    <app-sidebar rol="cliente"></app-sidebar>
+    <main class="main-content">
+      <app-breadcrumb></app-breadcrumb>
+      <ng-container *ngTemplateOutlet="contenido"></ng-container>
+    </main>
+  </div>
+} @else {
+  <app-navbar></app-navbar>
+  <ng-container *ngTemplateOutlet="contenido"></ng-container>
+  <app-footer></app-footer>
+}
+
+<ng-template #contenido>
+  @if (!esCliente) {
+    <div class="pm-pd-page">
+      <div class="container">
+        <ng-container *ngTemplateOutlet="cuerpoDetalle"></ng-container>
+      </div>
+    </div>
+  } @else {
+    <ng-container *ngTemplateOutlet="cuerpoDetalle"></ng-container>
+  }
+</ng-template>
+
+<ng-template #cuerpoDetalle>
+  @if (loading()) {
+    <div class="pm-pd-loading" [class.pm-pd-loading--public]="!esCliente">
+      <div class="pm-pd-loading__ring" aria-hidden="true"></div>
+      <p class="pm-pd-loading__text">Cargando producto…</p>
+    </div>
+  } @else {
+    @if (producto(); as p) {
+      <article class="pm-pd" [class.pm-pd--public]="!esCliente" [class.pm-pd--cliente]="esCliente">
+        @if (!esCliente) {
+          <header class="pm-pd-masthead" appScrollReveal>
+            <button type="button" class="pm-pd-back" (click)="volver()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              Volver a productos
+            </button>
+            <div class="pm-pd-eyebrow">
+              <span class="pm-pd-eyebrow__dot"></span>
+              Tienda
+            </div>
+            @if (p.destacado || p.nuevo) {
+              <div class="pm-pd-badges" aria-label="Etiquetas del producto">
+                @if (p.destacado) {
+                  <span class="pm-pd-chip pm-pd-chip--hot">Más vendido</span>
+                }
+                @if (p.nuevo) {
+                  <span class="pm-pd-chip pm-pd-chip--new">Nuevo</span>
+                }
+              </div>
+            }
+            <h1 class="pm-pd-headline">{{ p.nombre }}</h1>
+            <p class="pm-pd-lede">
+              <span class="pm-pd-lede__accent">${{ p.precio }} MXN</span>
+              <span class="pm-pd-lede__sep">·</span>
+              <span>{{ p.categoria | titlecase }}</span>
+              @if (p.pesoVolumen) {
+                <span class="pm-pd-lede__sep">·</span>
+                <span class="pm-pd-lede__presentacion">{{ p.pesoVolumen }}</span>
+              }
+              <span class="pm-pd-lede__sep">·</span>
+              @if (p.stock > p.stockMinimo) {
+                <span class="pm-pd-lede__stock pm-pd-lede__stock--ok">En stock ({{ p.stock }})</span>
+              } @else if (p.stock > 0) {
+                <span class="pm-pd-lede__stock pm-pd-lede__stock--low">Últimas unidades ({{ p.stock }})</span>
+              } @else {
+                <span class="pm-pd-lede__stock pm-pd-lede__stock--out">Agotado</span>
+              }
+            </p>
+          </header>
+        } @else {
+          <div class="pm-pd-nav" appScrollReveal>
+            <button type="button" class="pm-pd-back" (click)="volver()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              Volver a productos
+            </button>
+          </div>
+        }
+
+        <div class="pm-pd-grid">
+          <div class="pm-pd-media" appScrollReveal="reveal-left">
+            <div class="pm-pd-media__glow" aria-hidden="true"></div>
+            @if (imagenes(p).length > 0) {
+              <div class="pm-pd-viewer">
+                <div
+                  class="pm-pd-frame"
+                  [class.pm-pd-frame--interactive]="imagenes(p).length > 1"
+                  (touchstart)="onTouchStart($event)"
+                  (touchend)="onTouchEnd($event)"
+                  (click)="onGaleriaPrincipalClick($event)"
+                >
+                  <img
+                    class="pm-pd-frame__img"
+                    [src]="imagenes(p)[imagenActual()]"
+                    [alt]="p.nombre"
+                    [class.pm-pd-frame__img--rtl]="animandoImagen() && direccionAnimacion() === 'rtl'"
+                    [class.pm-pd-frame__img--ltr]="animandoImagen() && direccionAnimacion() === 'ltr'"
+                  />
+                  @if (imagenes(p).length > 1) {
+                    <span class="pm-pd-gallery-hint" aria-hidden="true">Toca los lados para cambiar foto</span>
+                  }
+                </div>
+                @if (imagenes(p).length > 1) {
+                  <div class="pm-pd-thumbs" role="tablist" aria-label="Miniaturas">
+                    @for (img of imagenes(p); track $index) {
+                      <button
+                        type="button"
+                        class="pm-pd-thumb"
+                        [class.pm-pd-thumb--active]="imagenActual() === $index"
+                        (click)="setImagenActual($index)"
+                        [attr.aria-selected]="imagenActual() === $index"
+                        [attr.aria-label]="'Vista ' + ($index + 1)"
+                      >
+                        <img [src]="img" alt="" />
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="pm-pd-frame pm-pd-frame--empty">
+                <div class="pm-pd-frame__placeholder" aria-hidden="true">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path
+                      d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="pm-pd-panel" appScrollReveal="reveal-right">
+            @if (esCliente) {
+              @if (p.destacado || p.nuevo) {
+                <div class="pm-pd-badges pm-pd-badges--inline">
+                  @if (p.destacado) {
+                    <span class="pm-pd-chip pm-pd-chip--hot">Más vendido</span>
+                  }
+                  @if (p.nuevo) {
+                    <span class="pm-pd-chip pm-pd-chip--new">Nuevo</span>
+                  }
+                </div>
+              }
+              <span class="pm-pd-tag">{{ p.categoria | titlecase }}</span>
+              <h1 class="pm-pd-title">{{ p.nombre }}</h1>
+              @if (p.pesoVolumen) {
+                <p class="pm-pd-presentacion pm-pd-presentacion--cliente">{{ p.pesoVolumen }}</p>
+              }
+            }
+
+            <div class="pm-pd-copy">
+              <p>{{ p.descripcion }}</p>
+            </div>
+
+            <div class="pm-pd-kpis">
+              <div class="pm-pd-kpi">
+                <span class="pm-pd-kpi__label">Precio</span>
+                <span class="pm-pd-kpi__value pm-pd-kpi__value--gold">${{ p.precio }} <small>MXN</small></span>
+              </div>
+              @if (p.pesoVolumen) {
+                <div class="pm-pd-kpi">
+                  <span class="pm-pd-kpi__label">Contenido</span>
+                  <span class="pm-pd-kpi__value">{{ p.pesoVolumen }}</span>
+                </div>
+              }
+              <div class="pm-pd-kpi">
+                <span class="pm-pd-kpi__label">Disponibilidad</span>
+                @if (p.stock > p.stockMinimo) {
+                  <span class="pm-pd-kpi__value pm-pd-kpi__value--row pm-pd-kpi__value--ok">
+                    <span class="pm-pd-dot pm-pd-dot--ok"></span>
+                    En stock · {{ p.stock }}
+                  </span>
+                } @else if (p.stock > 0) {
+                  <span class="pm-pd-kpi__value pm-pd-kpi__value--row pm-pd-kpi__value--warn">
+                    <span class="pm-pd-dot pm-pd-dot--warn"></span>
+                    Últimas · {{ p.stock }}
+                  </span>
+                } @else {
+                  <span class="pm-pd-kpi__value pm-pd-kpi__value--row pm-pd-kpi__value--out">
+                    <span class="pm-pd-dot pm-pd-dot--out"></span>
+                    Agotado
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div class="pm-pd-actions">
+              @if (esCliente) {
+                @if (!agregado()) {
+                  <button
+                    type="button"
+                    class="pm-pd-cta"
+                    (click)="agregarAlCarrito()"
+                    [disabled]="p.stock <= 0"
+                    [class.pm-pd-cta--disabled]="p.stock <= 0"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="9" cy="21" r="1" />
+                      <circle cx="20" cy="21" r="1" />
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                    </svg>
+                    Agregar al carrito
+                  </button>
+                } @else {
+                  <button type="button" class="pm-pd-cta pm-pd-cta--success" (click)="irACarrito()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Ver carrito
+                  </button>
+                }
+              } @else {
+                <a routerLink="/login" class="pm-pd-cta">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="21" r="1" />
+                    <circle cx="20" cy="21" r="1" />
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                  </svg>
+                  Iniciar sesión para comprar
+                </a>
+                <p class="pm-pd-hint">Necesitas una cuenta de cliente para añadir productos al carrito.</p>
+              }
+            </div>
+
+            <ul class="pm-pd-trust" appScrollReveal="stagger">
+              <li class="pm-pd-trust__item">
+                <span class="pm-pd-trust__icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                </span>
+                <span>Productos seleccionados para barbería y cuidado profesional.</span>
+              </li>
+              <li class="pm-pd-trust__item">
+                <span class="pm-pd-trust__icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="3" width="15" height="13" />
+                    <path d="M16 8h4l3 4v5h-7V8z" />
+                    <circle cx="5.5" cy="18.5" r="2.5" />
+                    <circle cx="18.5" cy="18.5" r="2.5" />
+                  </svg>
+                </span>
+                <span>Envío y recogida según disponibilidad en tu zona.</span>
+              </li>
+              <li class="pm-pd-trust__item">
+                <span class="pm-pd-trust__icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                </span>
+                <span>Calidad comprobada en nuestra tienda Stylo.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </article>
+    }
+  }
+</ng-template>

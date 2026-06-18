@@ -1,0 +1,559 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+# STYLO BARBER CONNECT - CONTEXTO MAESTRO GLOBAL PARA CURSOR
+
+## 1. Propósito de esta regla
+
+Esta regla es el contexto maestro de Stylo Barber Connect.
+
+Debe aplicarse siempre en cualquier conversación, generación de código, refactorización, diseño UI, backend, frontend, Flutter, base de datos, seguridad, pagos, citas, inventario, reportes o documentación.
+
+Esta regla NO reemplaza a las reglas especializadas. Su función es:
+
+- Dar identidad global del proyecto.
+- Recordar arquitectura principal.
+- Mantener reglas críticas siempre presentes.
+- Indicar qué reglas especializadas deben respetarse.
+- Evitar que Cursor genere código genérico o fuera de contexto.
+- Mantener coherencia entre Angular, Django, Flutter y PostgreSQL.
+
+---
+
+## 2. Identidad del proyecto
+
+Proyecto: Stylo Barber Connect  
+Empresa: Tony Stylo Barbería  
+Tipo: Plataforma web + móvil para barbería premium.  
+Objetivo: Digitalizar citas, agenda, productos, inventario, pagos, ventas, notificaciones, reportes, configuración, legal y operación por roles.
+
+Actores principales:
+
+- Cliente.
+- Secretaria.
+- Barbero.
+- Administrador.
+
+---
+
+## 3. Arquitectura oficial
+
+La arquitectura oficial es:
+
+```txt
+Angular Web
+    |
+    v
+Django REST Framework API
+    |
+    v
+PostgreSQL Neon
+
+Flutter Mobile
+    |
+    v
+Django REST Framework API
+    |
+    v
+PostgreSQL Neon
+
+Django Integrations
+    |
+    +--> Clip
+    +--> Brevo SMTP
+    +--> Firebase
+    +--> Cloudinary/S3
+    +--> Google Maps
+    +--> WhatsApp
+    +--> Alexa futura
+```
+
+Regla principal:
+
+```txt
+Django + PostgreSQL son la fuente oficial del negocio.
+Angular y Flutter son interfaces.
+Clip solo cobra.
+```
+
+---
+
+## 4. Stack obligatorio
+
+Backend:
+
+- Django.
+- Django REST Framework.
+- PostgreSQL Neon.
+- JWT.
+- RBAC.
+- Services, selectors, serializers, permissions.
+- Seguridad OWASP.
+
+Frontend web:
+
+- Angular.
+- SCSS.
+- Arquitectura modular.
+- Guards.
+- Interceptors.
+- Servicios HTTP.
+- Diseño responsive.
+- Dark-first premium.
+
+Mobile:
+
+- Flutter.
+- Dart.
+- API compartida con Angular.
+- Secure storage.
+- Diseño visual equivalente.
+- Android/iOS.
+
+Base de datos:
+
+- PostgreSQL Neon.
+- Esquemas: `private`, `negocio`, `stg`, `rpt`.
+- Stock por movimientos.
+- Reportes en `rpt`.
+- No conexión directa desde frontend.
+
+---
+
+## 5. Reglas de negocio críticas
+
+Citas:
+
+- Alta demanda: viernes, sábado y domingo.
+- Anticipación alta demanda: 3 días.
+- Anticipación baja/media: 1 día.
+- Cancelación alta demanda: 2 días.
+- Cancelación baja/media: 1 día.
+- Primera cita sin anticipo.
+- Cliente con inasistencia: siguientes 10 citas con anticipo del 50%.
+- Anticipo no reembolsable por inasistencia.
+- Si asiste, el anticipo se descuenta del total.
+- Tolerancia: 5 a 10 minutos.
+- Pasada la tolerancia, secretaria puede marcar inasistencia y liberar silla.
+
+Inventario:
+
+- El stock oficial vive en PostgreSQL.
+- No modificar stock directo.
+- Todo cambio de stock debe generar movimiento.
+- Usar `stock_actual`, `stock_reservado` y movimientos.
+- Clip no controla inventario.
+
+Pagos:
+
+- Clip solo procesa pagos.
+- Django calcula montos.
+- Angular/Flutter no envían montos finales.
+- Webhook Clip se procesa solo en Django.
+- Redirección de Clip no confirma pago.
+- Confirmar pago solo con webhook o consulta backend a Clip.
+
+---
+
+## 6. Reglas de Clip
+
+Stylo Barber Connect decide:
+
+- Si una cita requiere anticipo.
+- Cuánto se debe pagar.
+- Si se aparta horario.
+- Si se confirma la cita.
+- Si se descuenta inventario.
+- Si se libera una silla.
+- Si se genera pedido.
+- Si se actualizan reportes.
+
+Clip solamente:
+
+- Cobra.
+- Genera link de pago.
+- Procesa tarjeta/pago.
+- Manda webhook.
+- Confirma si el pago fue completado.
+
+Reglas obligatorias:
+
+- No usar catálogo de Clip como inventario principal.
+- Productos oficiales en Stylo Barber Connect.
+- Django crea link de pago.
+- Guardar `payment_request_id`.
+- Guardar `receipt_no` cuando exista.
+- Procesar webhook de forma idempotente.
+- No duplicar descuento de inventario.
+- No duplicar confirmación de cita.
+- No guardar `CLIP_API_KEY` en Angular ni Flutter.
+
+---
+
+## 7. Estilo visual oficial
+
+La estética debe ser premium, dark-first, inspirada en la barbería real.
+
+Paleta oficial:
+
+```txt
+Negro carbón:        #070908
+Negro suave:         #0D1110
+Verde pared claro:   #739177
+Verde pared medio:   #637F6E
+Verde principal:     #5F7B6B
+Verde sombra:        #485846
+Verde profundo:      #2F3A31
+Dorado oro:          #D4AF37
+Dorado suave:        #F0CC55
+Texto claro:         #F5F5F0
+Texto secundario:    #BAC2B7
+```
+
+Reglas visuales:
+
+- No usar verde claro como fondo plano completo.
+- Usar negro carbón como fondo principal.
+- Usar verde salvia como atmósfera, glow, bordes, hover, cards y gradientes.
+- Usar dorado solo para acentos premium.
+- La página debe verse como barbería boutique, no como plantilla escolar.
+- Usar glassmorphism controlado.
+- Usar bordes finos.
+- Usar sombras premium.
+- Usar animaciones suaves.
+- Usar scroll reveal.
+- Usar aparición de imágenes con fade, blur, clip-path o slide.
+
+---
+
+## 8. Reglas de UX/UI
+
+Cada pantalla debe cumplir:
+
+- Responsive.
+- Desktop, laptop, tablet, iPhone y Android.
+- No depender solo de hover.
+- Botones táctiles mínimo 44px.
+- Estados loading, empty y error.
+- Formularios claros.
+- Mensajes de error visibles.
+- Accesibilidad mínima.
+- Contraste suficiente.
+- `prefers-reduced-motion`.
+- Transiciones elegantes, no exageradas.
+- Cards con selección visible.
+- Stepper para procesos largos.
+- Resumen lateral en desktop.
+- Resumen colapsable o inferior en móvil.
+
+---
+
+## 9. Módulos obligatorios
+
+Frontend Angular debe cubrir:
+
+- Landing pública.
+- Navbar.
+- Hero.
+- Servicios.
+- Barberos.
+- Galería.
+- Productos.
+- Agendado de cita.
+- Login/registro.
+- Panel cliente.
+- Panel secretaria.
+- Panel barbero.
+- Panel administrador.
+- Configuración.
+- Apariencia.
+- Legal.
+- Reportes.
+- Auditoría.
+
+Flutter debe cubrir:
+
+- Login.
+- Registro.
+- Home cliente.
+- Servicios.
+- Agendado.
+- Mis citas.
+- Productos.
+- Pedidos.
+- Notificaciones.
+- Perfil.
+- Futuro: vistas rápidas para barbero, secretaria y admin.
+
+Backend Django debe cubrir:
+
+- Auth.
+- Usuarios.
+- Roles.
+- Permisos.
+- Servicios.
+- Barberos.
+- Citas.
+- Disponibilidad.
+- Anticipos.
+- Clip.
+- Productos.
+- Inventario.
+- Pedidos.
+- Ventas.
+- Notificaciones.
+- Reportes.
+- Configuración.
+- Legal.
+- Auditoría.
+- Integraciones.
+
+---
+
+## 10. Reglas por rol
+
+Cliente:
+
+- Puede registrarse.
+- Puede iniciar sesión.
+- Puede ver servicios/productos.
+- Puede agendar cita.
+- Puede pagar anticipo si aplica.
+- Puede comprar productos.
+- Puede ver historial propio.
+
+Secretaria:
+
+- Controla agenda operativa.
+- Registra citas presenciales.
+- Asigna barbero/silla.
+- Confirma asistencia.
+- Marca inasistencia.
+- Valida transferencias.
+- Gestiona pedidos.
+- Registra ventas mostrador.
+
+Barbero:
+
+- Ve agenda asignada.
+- Ve detalle de servicios.
+- Puede actualizar duración de servicios si aplica.
+- No cobra.
+- No gestiona pagos.
+- No cambia estados críticos de citas.
+
+Administrador:
+
+- Control total.
+- Usuarios y roles.
+- Empleados.
+- Servicios.
+- Productos.
+- Inventario.
+- Reportes.
+- Configuración.
+- Apariencia.
+- Legal.
+- Auditoría.
+
+---
+
+## 11. Reglas de backend Django
+
+Al generar código Django:
+
+- Usar services para lógica de negocio.
+- Usar selectors para consultas.
+- Usar serializers para validación/contratos.
+- Usar permissions para RBAC.
+- Usar transactions en operaciones críticas.
+- Usar `select_for_update` en pagos, stock, citas y pedidos cuando aplique.
+- No poner lógica compleja en views.
+- No confiar en datos del frontend.
+- No aceptar montos del frontend como monto final.
+- No permitir IDOR.
+- Validar propietario o rol en cada endpoint.
+- No exponer errores técnicos al usuario final.
+- Auditar acciones críticas.
+
+---
+
+## 12. Reglas de Angular
+
+Al generar código Angular:
+
+- Usar arquitectura modular.
+- Separar core, shared, features, data-access y layouts.
+- Usar guards por rol.
+- Usar interceptors para JWT y errores.
+- Usar servicios para HTTP.
+- No calcular montos finales.
+- No confirmar pagos.
+- No modificar inventario.
+- No saltar reglas del backend.
+- Usar SCSS con tokens.
+- Usar componentes reutilizables.
+- Usar diseño responsive.
+- Usar animaciones y scroll reveal solo en pantallas públicas o premium.
+
+---
+
+## 13. Reglas de Flutter
+
+Al generar Flutter:
+
+- Usar arquitectura por features.
+- Separar core, shared, features, data, domain y presentation.
+- Usar secure storage para tokens.
+- No guardar secretos.
+- Consumir la misma API que Angular.
+- No duplicar reglas críticas.
+- Usar tema visual equivalente.
+- Usar widgets reutilizables.
+- Usar navegación por rol.
+- Abrir Clip mediante URL externa.
+- Consultar estado de pago a Django.
+
+---
+
+## 14. Reglas de base de datos
+
+Base de datos oficial:
+
+- PostgreSQL Neon.
+- Esquema `negocio` para tablas del negocio.
+- Esquema `private` para Django/auth si aplica.
+- Esquema `stg` para staging/reportes.
+- Esquema `rpt` para vistas y reportes.
+
+Reglas:
+
+- No conectar Angular o Flutter directo a PostgreSQL.
+- Usar usuario backend con privilegios mínimos.
+- No usar DBA en Django.
+- No borrar históricos.
+- No modificar stock sin movimiento.
+- No cambiar estados sin historial.
+- No publicar cambios sin backup.
+
+---
+
+## 15. Reglas de auditoría
+
+Auditar:
+
+- Login.
+- Login fallido.
+- Cambio de rol.
+- Creación/cancelación/reprogramación de cita.
+- Confirmación de asistencia.
+- Inasistencia.
+- Creación de pago Clip.
+- Webhook Clip.
+- Pago confirmado/rechazado.
+- Movimiento de inventario.
+- Pedido creado/cambiado.
+- Venta registrada/cancelada.
+- Cambio de configuración.
+- Cambio de apariencia.
+- Publicación legal.
+- Exportación de reportes.
+- Acceso denegado.
+
+No registrar:
+
+- Contraseñas.
+- JWT completo.
+- API keys.
+- Datos de tarjeta.
+- Secretos.
+- Tokens externos.
+
+---
+
+## 16. Reglas de seguridad
+
+Seguir principios OWASP:
+
+- Autenticación segura.
+- Autorización por rol y objeto.
+- Protección IDOR.
+- Validación backend.
+- CORS seguro.
+- Variables de entorno.
+- Sin secretos en repositorio.
+- SAST.
+- DAST.
+- SCA.
+- Rate limit en endpoints críticos.
+- Webhooks seguros.
+- Manejo seguro de errores.
+
+---
+
+## 17. Reglas de activación de reglas especializadas
+
+Cuando trabajes en ciertos módulos, considera las siguientes reglas MDC especializadas:
+
+- Angular general: `03-angular-frontend.mdc`.
+- UX/UI y responsive: `04-ux-ui-responsive-awwwards.mdc`.
+- Landing/navbar: `05-angular-landing-navbar-public.mdc`.
+- Admin dashboard: `06-angular-admin-dashboard.mdc`.
+- Roles y flujos: `07-angular-roles-flujos.mdc`.
+- Flutter: `08-flutter-mobile.mdc`.
+- Django: `09-django-backend.mdc`.
+- API REST: `10-api-rest-contratos.mdc`.
+- Auth y permisos: `11-auth-roles-permisos.mdc`.
+- Citas y agenda: `12-citas-agenda-pagos.mdc`.
+- Productos/inventario/ventas: `13-productos-inventario-ventas.mdc`.
+- Clip: `14-pagos-clip-implementacion.mdc`.
+- Base de datos: `15-base-datos-postgresql-neon.mdc`.
+- Seguridad: `16-seguridad-owasp.mdc`.
+- Notificaciones e integraciones: `17-notificaciones-integraciones.mdc`.
+- Reportes: `18-reportes-dashboard.mdc`.
+- Configuración/apariencia/legal: `19-configuracion-apariencia-legal.mdc`.
+- Auditoría: `20-auditoria-trazabilidad.mdc`.
+- QA/deploy: `21-qa-deploy.mdc`.
+- Workflows Cursor: `22-cursor-auditoria-workflows.mdc`.
+- Estilo premium real: `23-estilo-premium-barberia-real-animaciones.mdc`.
+
+---
+
+## 18. Regla de comportamiento para Cursor
+
+Antes de generar código, Cursor debe preguntarse:
+
+1. ¿Qué rol usa esta pantalla o endpoint?
+2. ¿Qué regla de negocio aplica?
+3. ¿Angular, Flutter o Django debe resolver esto?
+4. ¿El frontend está intentando hacer algo que debe hacer backend?
+5. ¿Hay permisos por rol?
+6. ¿Hay riesgo de IDOR?
+7. ¿Se debe auditar?
+8. ¿Se debe actualizar historial?
+9. ¿Se debe validar stock/horario/silla?
+10. ¿Se debe usar Clip o solo registrar pago manual?
+11. ¿La pantalla cumple estilo premium?
+12. ¿Es responsive?
+
+---
+
+## 19. Regla final obligatoria
+
+No generar código genérico.
+
+Todo código debe respetar:
+
+```txt
+Stylo Barber Connect
+Tony Stylo Barbería
+Angular + Django REST + PostgreSQL Neon + Flutter
+Clip como procesador de pago
+Verde salvia grisáceo + negro carbón + dorado
+Dark-first premium
+Roles: cliente, secretaria, barbero, administrador
+Seguridad, auditoría y reglas de negocio reales
+```

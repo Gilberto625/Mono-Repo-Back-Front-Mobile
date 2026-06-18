@@ -1,0 +1,212 @@
+<div class="layout-sidebar admin-dash">
+  <app-sidebar rol="admin"></app-sidebar>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <span>Inicio</span>
+        <span class="sep">›</span>
+        <span>Panel Administrador</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-sync">
+          <div class="sync-dot"></div>
+          @if (statsRefreshing) { <span>Actualizando</span> } @else { <span>En vivo</span> }
+        </div>
+        <div class="topbar-date">{{ fechaHoy }}</div>
+        <div class="topbar-avatar">{{ inicialesAdmin }}</div>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <div>
+        <div class="page-title">¡Hola, <span>{{ nombreAdmin }}</span>!</div>
+        <div class="page-sub">Resumen del día — {{ fechaHoy }}</div>
+      </div>
+      @if (error) {
+        <button type="button" class="btn btn-secondary btn-sm" (click)="cargarDatos()">Reintentar</button>
+      }
+    </div>
+
+    @if (error) {
+      <div class="alert alert-error dash-alert">
+        <p class="mb-0">{{ error }}</p>
+      </div>
+    }
+
+    <div class="kpi-grid" [class.kpi-grid--pending]="statsPending">
+      <div class="kpi">
+        <div class="kpi-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><circle cx="16" cy="15" r="1"/>
+          </svg>
+        </div>
+        <div class="kpi-label">Ventas del día</div>
+        <div class="kpi-value">${{ stats.ventas_dia | number }}</div>
+        <div class="kpi-sub">{{ porcentajeVentasTexto || '— sin cambio' }}</div>
+      </div>
+
+      <div class="kpi">
+        <div class="kpi-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><path d="M9 13l2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="kpi-label">Citas del día</div>
+        <div class="kpi-value">{{ stats.citas_hoy }}</div>
+        <div class="kpi-sub">{{ stats.citas_pendientes }} pendientes</div>
+      </div>
+
+      <div class="kpi">
+        <div class="kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M6 9v10"/><path d="M18 9v10"/><path d="M9 15h6"/>
+          </svg>
+        </div>
+        <div class="kpi-label">Barberos activos</div>
+        <div class="kpi-value">{{ stats.barberos_activos }}</div>
+        <div class="kpi-sub">{{ stats.barberos_en_descanso }} en descanso</div>
+      </div>
+
+      <div class="kpi">
+        <div class="kpi-icon amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8"/><path d="M3.3 7l8.7 5 8.7-5"/><line x1="12" y1="12" x2="12" y2="22"/>
+          </svg>
+        </div>
+        <div class="kpi-label">Alertas inventario</div>
+        <div class="kpi-value">{{ stats.productos_stock_bajo }}</div>
+        <div class="kpi-sub">Stock bajo</div>
+      </div>
+    </div>
+
+    <div class="mid-grid">
+      <div class="card dash-card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l2.3-2.3"/>
+              <path d="M3 21l6.9-6.9M13.5 3.5l7 7"/>
+            </svg>
+            Top servicios hoy
+          </div>
+          <a routerLink="/admin/servicios" class="card-action">Ver todos →</a>
+        </div>
+        <div class="svc-list">
+          @if (statsPending) {
+            <div class="svc-item svc-empty">Cargando…</div>
+          } @else {
+            @for (servicio of topServicios; track servicio.id; let i = $index) {
+              <div class="svc-item">
+                <div class="svc-rank" [class.gold]="i === 0">{{ i + 1 }}</div>
+                <div class="svc-name">{{ servicio.nombre }}</div>
+                <span class="svc-count">{{ servicio.cantidad }} servicios</span>
+                <span class="svc-total">${{ servicio.total }}</span>
+              </div>
+            } @empty {
+              <div class="svc-item svc-empty">No hay citas hoy</div>
+            }
+          }
+        </div>
+      </div>
+
+      <div class="card dash-card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+            Horarios con mayor demanda
+          </div>
+        </div>
+        <div class="demand-list">
+          @if (statsPending) {
+            <div class="demand-row"><span class="demand-hour">—</span><div class="demand-bar"></div><span class="demand-pct">—</span></div>
+          } @else {
+            @for (horario of horariosPopulares; track horario.hora) {
+              <div class="demand-row">
+                <span class="demand-hour">{{ horario.hora }}</span>
+                <div class="demand-bar"><div class="demand-fill" [style.width.%]="horario.porcentaje"></div></div>
+                <span class="demand-pct">{{ horario.porcentaje }}%</span>
+              </div>
+            } @empty {
+              <div class="svc-item svc-empty">No hay citas hoy</div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="card dash-card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8"/><path d="M3.3 7l8.7 5 8.7-5"/>
+            </svg>
+            Inventario bajo
+          </div>
+          <a routerLink="/admin/inventario" class="card-action">Ver todo →</a>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Producto</th>
+                <th scope="col">Stock</th>
+                <th scope="col">Mínimo</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (statsPending) {
+                <tr><td colspan="5" class="text-center text-muted">Cargando…</td></tr>
+              } @else {
+                @for (producto of productosStockBajo; track producto.id) {
+                  <tr>
+                    <td>{{ producto.nombre }}</td>
+                    <td>{{ producto.stock }}</td>
+                    <td>{{ getStockMinimo(producto) }}</td>
+                    <td><span class="badge badge-warn">Bajo</span></td>
+                    <td><button type="button" class="btn-sm" (click)="abrirModalReabastecer(producto)">Reabastecer</button></td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="5" class="text-center">✓ Inventario normal</td></tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Reabastecer (usa estilos globales existentes) -->
+    @if (modalReabastecerVisible) {
+      <div class="modal-overlay show" (click)="cerrarModalReabastecer()">
+        <div class="modal card" (click)="$event.stopPropagation()">
+          <div class="flex-between mb-md">
+            <h3 class="mb-0">Reabastecer</h3>
+            <button type="button" class="btn btn-text btn-sm" (click)="cerrarModalReabastecer()">✕</button>
+          </div>
+          <p class="text-muted mb-md">{{ productoReabastecer!.nombre }}</p>
+          <p class="text-small mb-md">Stock actual: <strong>{{ productoReabastecer!.stock }}</strong> · Mínimo: <strong>{{ getStockMinimo(productoReabastecer!) }}</strong></p>
+          <div class="form-group mb-md">
+            <label class="form-label" for="reabastecer-cantidad">Cantidad a sumar</label>
+            <input id="reabastecer-cantidad" type="number" class="form-input" min="1" [(ngModel)]="cantidadReabastecer" placeholder="Ej. 10">
+          </div>
+          @if (errorReabastecer) {
+            <p class="text-error text-small mb-md">{{ errorReabastecer }}</p>
+          }
+          <div class="flex-between flex-gap">
+            <button type="button" class="btn btn-text" (click)="cerrarModalReabastecer()">Cancelar</button>
+            <button type="button" class="btn btn-primary" [disabled]="guardandoStock || cantidadReabastecer < 1" (click)="guardarReabastecer()">
+              {{ guardandoStock ? 'Guardando...' : 'Sumar al stock' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </main>
+</div>

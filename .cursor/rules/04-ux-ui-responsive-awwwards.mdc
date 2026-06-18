@@ -1,0 +1,75 @@
+---
+description: Diseño UX/UI premium, responsive y dark-first para Angular y Flutter
+globs: ["frontend/**/*.scss", "frontend/**/*.html", "frontend/**/*.ts", "mobile/**/*.dart"]
+alwaysApply: false
+---
+
+# UX/UI Premium — Dark First + Responsive
+
+## Identidad visual
+- Estética: barbería premium, elegante, oscura, moderna.
+- Dark mode principal; light mode secundario.
+- Paleta:
+  - Negro profundo: `#0A0A0A`
+  - Carbon: `#111111`
+  - Gris oscuro: `#1C1C1C`
+  - Dorado: `#D4AF37`
+  - Dorado hover: `#F0CC55`
+  - Verde base: `#32413D`
+  - Verde light: `#4A6158`
+  - Texto claro: `#F5F5F0`
+  - Texto secundario: `#9A9A8A`
+
+## Tipografía
+- Display: Cormorant Garamond o Playfair Display.
+- Body: Inter o DM Sans.
+- Mono/números: JetBrains Mono.
+- Usar `clamp()` para títulos y hero.
+
+## Responsive obligatorio
+Diseñar y probar:
+- 360px Android pequeño.
+- 390px iPhone.
+- 430px móvil grande.
+- 768px tablet.
+- 1024px laptop.
+- 1280px desktop.
+- 1440px+ desktop amplio.
+
+## Reglas mobile
+- No depender de hover.
+- Botones táctiles mínimo 44px.
+- Sidebar se convierte en drawer/bottom navigation.
+- Tablas se convierten en cards.
+- Formularios a una columna.
+- Modales full-screen en móvil si son complejos.
+- Cursor personalizado desactivado en móvil.
+- Three.js/partículas reducidas o desactivadas en móvil.
+
+## Componentes base
+- `app-button`
+- `app-card`
+- `app-input`
+- `app-select`
+- `app-modal`
+- `app-table`
+- `app-empty-state`
+- `app-error-state`
+- `app-loader`
+- `app-badge`
+- `app-stat-card`
+- `app-confirm-dialog`
+
+## Animaciones
+- Usar microinteracciones elegantes, no saturadas.
+- Reveal al scroll.
+- Transiciones de rutas suaves.
+- Hover dorado en botones desktop.
+- Respetar `prefers-reduced-motion`.
+
+## Accesibilidad
+- Contraste suficiente.
+- Labels visibles.
+- Focus visible.
+- Navegación por teclado.
+- Textos de error claros en español.

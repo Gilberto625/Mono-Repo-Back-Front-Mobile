@@ -1,0 +1,75 @@
+---
+description: Seguridad OWASP, SAST, DAST, secretos, permisos y producción
+globs: ["backend/**/*.py", "frontend/**/*.ts", "frontend/**/*.html", "mobile/**/*.dart", ".github/**/*.yml"]
+alwaysApply: false
+---
+
+# Seguridad OWASP — Stylo Barber Connect
+
+## Principios
+- Seguridad por diseño.
+- Validar siempre en backend.
+- Mínimo privilegio.
+- Permisos por rol y objeto.
+- No confiar en Angular ni Flutter.
+- No guardar secretos en Git.
+
+## Secretos prohibidos
+```txt
+.env
+CLIP_API_KEY
+BREVO_API_KEY
+FIREBASE_ADMIN_CREDENTIALS
+CLOUDINARY_API_SECRET
+AWS_SECRET_ACCESS_KEY
+DATABASE_URL
+DJANGO_SECRET_KEY
+JWT_SECRET
+```
+
+## Backend
+- JWT obligatorio.
+- CORS solo dominios permitidos.
+- DEBUG=False en producción.
+- ALLOWED_HOSTS configurado.
+- Sanitizar entradas.
+- Usar ORM o SQL parametrizado.
+- Rate limit en auth, pagos y webhooks.
+- Headers de seguridad.
+- No exponer tracebacks.
+
+## Frontend
+- No usar `innerHTML` sin sanitizar.
+- No usar `bypassSecurityTrust*` salvo justificado.
+- No guardar secretos.
+- No imprimir tokens en consola.
+- Manejar 401/403.
+
+## Flutter
+- JWT en secure storage.
+- No logs con tokens.
+- No API keys secretas.
+- Validar sesión expirada.
+
+## SAST/SCA/DAST
+- Python: Bandit, pip-audit, Safety.
+- Angular: ESLint, npm audit.
+- Flutter: flutter analyze, pub outdated.
+- DAST: OWASP ZAP contra staging.
+- Secret scanning en GitHub.
+
+## Pagos
+- Nunca guardar datos de tarjeta.
+- Clip procesa pago.
+- Django confirma webhook.
+- Idempotencia obligatoria.
+
+## Auditoría
+Registrar:
+- login fallido.
+- acceso denegado.
+- cambios de roles.
+- pagos.
+- inventario.
+- configuración.
+- webhooks.

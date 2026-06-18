@@ -1,0 +1,346 @@
+/* ============================================
+   SETUP TOTP COMPONENT - TEMA BARBERIA OSCURO
+   ============================================ */
+
+.setup-totp-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  padding: var(--spacing-lg);
+}
+
+.setup-totp-card {
+  max-width: 650px;
+  width: 100%;
+  background-color: var(--color-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  padding: var(--spacing-xl);
+  box-sizing: border-box;
+}
+
+.card-header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.header-content {
+  text-align: center;
+  width: 100%;
+}
+
+.header-icon {
+  font-size: 48px;
+  color: var(--color-accent);
+  margin: 0 auto var(--spacing-md);
+  display: block;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--text-on-dark);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.card-subtitle {
+  font-size: 14px;
+  color: var(--text-on-dark-secondary);
+  margin: 0;
+}
+
+.card-content {
+  padding: 0;
+}
+
+/* Stepper Styles */
+.stepper-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.step {
+  border-left: 3px solid var(--border-color);
+  padding-left: var(--spacing-lg);
+  position: relative;
+  opacity: 0.5;
+  transition: opacity var(--transition-base);
+}
+
+.step.active {
+  opacity: 1;
+  border-left-color: var(--color-accent);
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.step-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--border-color);
+  color: var(--text-on-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-semibold);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.step.active .step-number {
+  background: var(--color-accent);
+  color: var(--color-white);
+}
+
+.step-title {
+  font-size: 18px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-on-dark);
+  margin: 0;
+}
+
+.step-content {
+  padding-left: 44px;
+}
+
+.step-description {
+  color: var(--text-on-dark-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-lg);
+}
+
+/* QR Code */
+.qr-container {
+  display: flex;
+  justify-content: center;
+  margin: var(--spacing-lg) 0;
+}
+
+.qr-code {
+  max-width: 250px;
+  width: 100%;
+  height: auto;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  background: var(--color-white);
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: var(--spacing-md);
+}
+
+.spinner-large {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Secret Key */
+.secret-key-container {
+  margin: var(--spacing-lg) 0;
+}
+
+.form-field {
+  margin-bottom: var(--spacing-md);
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-on-dark);
+  margin-bottom: var(--spacing-sm);
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 20px;
+  color: var(--text-on-dark-tertiary);
+  z-index: 1;
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 44px;
+  color: var(--text-on-dark);
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  transition: all var(--transition-base);
+}
+
+.form-input:focus {
+  outline: none;
+  border: 2px solid var(--color-accent);
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.form-input:disabled {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-on-dark-tertiary);
+  cursor: not-allowed;
+}
+
+.copy-button {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
+  color: var(--text-on-dark-tertiary);
+}
+
+.copy-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-accent);
+}
+
+.error-message {
+  color: var(--color-error);
+  font-size: 12px;
+  margin-top: var(--spacing-xs);
+}
+
+/* Step Actions */
+.step-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+  margin-top: var(--spacing-lg);
+}
+
+.step-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background-color: var(--color-accent);
+  color: var(--color-white);
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+}
+
+.step-button:hover:not(:disabled) {
+  background-color: var(--color-accent-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.4);
+}
+
+.step-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.step-button:disabled {
+  background-color: var(--border-color);
+  color: var(--text-on-dark-disabled);
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+.step-button-primary {
+  background-color: var(--color-accent);
+  color: var(--color-white);
+}
+
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+/* Cancel Button */
+.cancel-container {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--divider-color);
+  text-align: center;
+}
+
+.cancel-button {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-on-dark);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.cancel-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--text-on-dark-tertiary);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .setup-totp-card {
+    padding: var(--spacing-lg);
+  }
+
+  .step-content {
+    padding-left: 0;
+  }
+
+  .step {
+    padding-left: var(--spacing-md);
+  }
+
+  .step-actions {
+    flex-direction: column;
+  }
+
+  .step-button {
+    width: 100%;
+    justify-content: center;
+  }
+}

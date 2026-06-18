@@ -1,0 +1,91 @@
+---
+description: Reglas para módulo de citas, agenda, anticipos y pagos relacionados
+globs: ["backend/apps/appointments/**/*.py", "backend/apps/payments/**/*.py", "frontend/src/app/features/**/appointments/**/*", "mobile/lib/features/appointments/**/*"]
+alwaysApply: false
+---
+
+# Citas, Agenda y Anticipos
+
+## Principio
+La disponibilidad real se calcula y valida en Django.
+
+## Depende de
+- Cliente.
+- Servicio.
+- Barbero.
+- Silla.
+- Horario negocio.
+- Descanso/barbero.
+- Días libres/vacaciones.
+- Duración del servicio.
+- Reglas de anticipación/cancelación.
+- Citas existentes.
+
+## Estados cita
+```txt
+pendiente
+esperando_pago
+confirmada
+reprogramada
+completada
+cancelada
+no_asistio
+pago_expirado
+```
+
+## Disponibilidad
+Endpoint sugerido:
+```txt
+GET /api/v1/client/appointments/availability/
+```
+
+Validar:
+- Día laboral.
+- Alta/baja demanda.
+- Anticipación mínima.
+- Servicio activo.
+- Barbero disponible.
+- Silla disponible.
+- No cruce de horarios.
+- Duración correcta.
+
+## Crear cita cliente
+Si no requiere anticipo:
+```txt
+cita.estado = confirmada o pendiente_operativa
+```
+
+Si requiere anticipo:
+```txt
+cita.estado = esperando_pago
+crear anticipo
+generar pago Clip si elige Clip
+apartado temporal de horario/silla
+```
+
+## Secretaria
+Puede:
+- Crear cita presencial.
+- Asignar barbero.
+- Asignar silla.
+- Confirmar asistencia.
+- Marcar inasistencia.
+- Reprogramar.
+- Cancelar por tolerancia.
+
+## Barbero
+Puede:
+- Consultar agenda asignada.
+- Ver detalle de cita.
+- Actualizar duración de servicio si tiene permiso.
+
+## Historial
+Todo cambio genera:
+- `cita_estado_historial`
+- `auditoria_evento`
+
+## Reglas no negociables
+- No confirmar cita con anticipo hasta que pago sea validado.
+- No liberar silla sin historial.
+- No cancelar sin motivo.
+- No reprogramar sin validar disponibilidad.

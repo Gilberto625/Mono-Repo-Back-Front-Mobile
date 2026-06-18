@@ -1,0 +1,192 @@
+<div class="layout-sidebar">
+  <app-sidebar rol="admin"></app-sidebar>
+
+  <main class="main-content">
+    <app-breadcrumb></app-breadcrumb>
+
+    <div class="flex-between mb-lg">
+      <div>
+        <h1>Contenido Institucional</h1>
+        <p class="text-muted">Administra misión, visión, valores, política de privacidad y términos y condiciones</p>
+      </div>
+      @if (hayTiposDisponibles) {
+        <button type="button" class="btn" [class]="mostrarFormNuevo ? 'btn-secondary' : 'btn-primary'" (click)="toggleFormNuevo()">
+          @if (mostrarFormNuevo) {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            Cancelar
+          } @else {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Agregar contenido
+          }
+        </button>
+      }
+    </div>
+
+    <!-- Formulario nuevo -->
+    @if (mostrarFormNuevo) {
+      <div class="card mb-lg">
+        <h3 class="mb-md">Nuevo contenido</h3>
+        <div class="form-group">
+          <label class="form-label">Tipo de contenido *</label>
+          <select class="form-select" [(ngModel)]="nuevoForm.tipo" name="nuevo_tipo">
+            <option value="" disabled>Selecciona un tipo</option>
+            @for (entry of tiposDisponibles | keyvalue; track entry.key) {
+              <option [value]="entry.key">{{ entry.value }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Título</label>
+          <input type="text" class="form-input" [(ngModel)]="nuevoForm.titulo" name="nuevo_titulo" placeholder="Se usará el nombre del tipo si se deja vacío">
+          <div class="campo-meta text-small" [class.text-error]="nuevoTituloChars > MAX_TITULO">
+            {{ nuevoTituloChars }}/{{ MAX_TITULO }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contenido</label>
+          <textarea class="form-input" [(ngModel)]="nuevoForm.contenido" name="nuevo_contenido" rows="8" placeholder="Escribe aquí el contenido..."></textarea>
+          <div class="campo-meta text-small" [class.text-error]="nuevoContenidoChars > maxContenidoNuevo">
+            {{ nuevoContenidoChars }}/{{ maxContenidoNuevo }}
+          </div>
+          <p class="text-small text-muted">{{ maxContenidoNuevoLabel }}</p>
+        </div>
+        <div class="preview-card mb-md">
+          <p class="text-small text-muted mb-xs">Vista previa</p>
+          <h4 class="preview-title">{{ tituloNuevoPreview }}</h4>
+          <p class="preview-content">{{ contenidoNuevoPreview }}</p>
+        </div>
+        <button type="button" class="btn btn-primary" (click)="crear()" [disabled]="guardando || !puedeCrear">
+          {{ guardando ? 'Guardando...' : 'Crear contenido' }}
+        </button>
+      </div>
+    }
+
+    <!-- Loading -->
+    @if (loading) {
+      <div class="card">
+        <p class="text-muted">Cargando contenidos...</p>
+      </div>
+    } @else {
+      <!-- Lista de contenidos -->
+      @if (contenidos.length === 0 && !mostrarFormNuevo) {
+        <div class="card text-center p-xl">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto var(--spacing-md); opacity: 0.3;">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <p class="text-muted mb-md">No hay contenido institucional creado aún.</p>
+          <p class="text-small text-muted">Haz clic en "Agregar contenido" para crear misión, visión, valores, etc.</p>
+        </div>
+      }
+
+      @for (c of contenidos; track c.id) {
+        <div class="contenido-card mb-md" [class.inactivo]="!c.activo">
+          <!-- Vista normal -->
+          @if (editando?.id !== c.id) {
+            <div class="contenido-header">
+              <div class="contenido-info">
+                <span class="contenido-tipo-badge">{{ c.tipo_display }}</span>
+                <h3 class="mb-0">{{ c.titulo }}</h3>
+              </div>
+              <div class="contenido-actions">
+                <button type="button" class="btn btn-sm" [class]="c.activo ? 'btn-success-outline' : 'btn-secondary'" (click)="toggleActivo(c)" title="{{ c.activo ? 'Desactivar' : 'Activar' }}">
+                  {{ c.activo ? 'Activo' : 'Inactivo' }}
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" (click)="iniciarEdicion(c)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Editar
+                </button>
+                <button type="button" class="btn btn-sm btn-text text-error" (click)="eliminar(c)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  Eliminar
+                </button>
+              </div>
+            </div>
+            <div class="contenido-body">
+              @if (c.contenido) {
+                <p class="contenido-texto">{{ c.contenido }}</p>
+              } @else {
+                <p class="text-muted text-small">Sin contenido. Haz clic en Editar para agregar texto.</p>
+              }
+            </div>
+            @if (c.fecha_actualizacion) {
+              <div class="contenido-footer">
+                <span class="text-small text-muted">Última actualización: {{ c.fecha_actualizacion | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+            }
+          } @else {
+            <!-- Vista edición -->
+            <div class="contenido-edit">
+              <div class="contenido-header">
+                <span class="contenido-tipo-badge">{{ c.tipo_display }}</span>
+                <h3 class="mb-md">Editando: {{ c.tipo_display }}</h3>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Título</label>
+                <input type="text" class="form-input" [(ngModel)]="editForm.titulo" [ngModelOptions]="{standalone: true}">
+                <div class="campo-meta text-small" [class.text-error]="editTituloChars > MAX_TITULO">
+                  {{ editTituloChars }}/{{ MAX_TITULO }}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Contenido</label>
+                <textarea class="form-input" [(ngModel)]="editForm.contenido" [ngModelOptions]="{standalone: true}" rows="10"></textarea>
+                <div class="campo-meta text-small" [class.text-error]="editContenidoChars > maxContenidoEdicion">
+                  {{ editContenidoChars }}/{{ maxContenidoEdicion }}
+                </div>
+                <p class="text-small text-muted">{{ maxContenidoEdicionLabel }}</p>
+              </div>
+              <div class="preview-card mb-md">
+                <p class="text-small text-muted mb-xs">Vista previa</p>
+                <h4 class="preview-title">{{ tituloEdicionPreview }}</h4>
+                <p class="preview-content">{{ contenidoEdicionPreview }}</p>
+              </div>
+              <div class="form-group">
+                <label class="form-check-label">
+                  <input type="checkbox" [(ngModel)]="editForm.activo" [ngModelOptions]="{standalone: true}">
+                  <span>Visible en la página pública</span>
+                </label>
+              </div>
+              <div class="contenido-edit-actions">
+                <button type="button" class="btn btn-text" (click)="cancelarEdicion()">Cancelar</button>
+                <button type="button" class="btn btn-primary" (click)="guardarEdicion()" [disabled]="guardando || !puedeGuardarEdicion">
+                  {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </main>
+</div>
+
+<nav class="navbar-mobile">
+  <a routerLink="/admin" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a routerLink="/admin/empleados" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Empleados
+  </a>
+  <a routerLink="/admin/servicios" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>
+    Servicios
+  </a>
+  <a routerLink="/admin/contenido-legal" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Legal
+  </a>
+  <a routerLink="/admin/configuracion" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>
+    Config
+  </a>
+</nav>

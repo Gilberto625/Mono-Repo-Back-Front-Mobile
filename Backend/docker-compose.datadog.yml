@@ -1,0 +1,56 @@
+# Agente Datadog — alineado con el `docker run` del asistente (US5, APM por socket + TCP).
+#
+# Uso:
+#   export DD_API_KEY=...   # o en .env (no commitear)
+#   docker compose --env-file .env -f docker-compose.datadog.yml up -d
+#
+# El bloque del instalador:
+#   DD_APM_INSTRUMENTATION_LIBRARIES=... DD_APM_INSTRUMENTATION_ENABLED=docker DD_NO_AGENT_INSTALL=true bash ...
+# sirve para ejecutar install_script_agent7.sh EN EL HOST (instrumentación automática de contenedores).
+# Con Compose puro suele bastar este archivo; esas variables no hacen falta dentro del servicio dd-agent.
+#
+# Linux/VPS recomendado. En Windows revisa la guía Docker del Agent.
+#
+# https://docs.datadoghq.com/agent/docker/
+
+services:
+  dd-agent:
+    image: registry.datadoghq.com/agent:7
+    container_name: dd-agent
+    environment:
+      - DD_API_KEY=${DD_API_KEY}
+      - DD_SITE=${DD_SITE:-us5.datadoghq.com}
+      - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
+      - DD_APM_ENABLED=true
+      - DD_APM_NON_LOCAL_TRAFFIC=true
+      - DD_APM_RECEIVER_SOCKET=/var/run/datadog/apm.socket
+      - DD_DOGSTATSD_SOCKET=/var/run/datadog/dsd.socket
+    volumes:
+      # Directorio de sockets (en el host el script de instalación crea /var/run/datadog; aquí volumen nombrado)
+      - datadog_run:/var/run/datadog
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    ports:
+      # Sigue disponible por si ddtrace usa DD_AGENT_HOST + 8126 en lugar del socket Unix
+      - "8126:8126"
+    restart: unless-stopped
+
+  # Opcional: API Django con trazas por socket (mismo volumen que el agente)
+  # api:
+  #   build: .
+  #   ports:
+  #     - "8000:8000"
+  #   env_file: .env
+  #   volumes:
+  #     - datadog_run:/var/run/datadog:ro
+  #   environment:
+  #     DD_TRACE_AGENT_URL: unix:///var/run/datadog/apm.socket
+  #     DD_TRACE_ENABLED: "true"
+  #     DD_APPSEC_ENABLED: "true"
+  #   depends_on:
+  #     - dd-agent
+
+volumes:
+  datadog_run:

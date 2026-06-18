@@ -1,0 +1,159 @@
+---
+description: Guía técnica para implementar pagos con Clip en Django, Angular y Flutter
+globs: ["backend/apps/payments/**/*.py", "backend/apps/integrations/**/*.py", "frontend/src/app/features/**/payments/**/*", "mobile/lib/features/payments/**/*"]
+alwaysApply: false
+---
+
+# Pagos Clip — Implementación
+
+## Decisión
+Usar Checkout Redireccionado / Link de Pago.
+
+## Responsabilidad
+Stylo Barber Connect decide reglas, montos, stock, citas y reportes.
+Clip solo cobra, genera link, procesa pago, manda webhook y confirma estado.
+
+## Requisitos
+- Cuenta Clip activa.
+- API Key de Clip en backend.
+- Backend HTTPS público.
+- Endpoint webhook público.
+- Tabla `negocio.pago_externo`.
+- Método de pago `clip`.
+
+## Variables backend
+```env
+CLIP_API_KEY=
+CLIP_API_BASE_URL=https://api.payclip.com
+CLIP_ENVIRONMENT=production
+CLIP_WEBHOOK_SECRET=
+CLIP_WEBHOOK_URL=https://api.dominio.com/api/v1/webhooks/clip/
+FRONTEND_PAYMENT_SUCCESS_URL=
+FRONTEND_PAYMENT_ERROR_URL=
+FRONTEND_PAYMENT_DEFAULT_URL=
+```
+
+## Endpoints
+```txt
+POST /api/v1/client/payments/clip/create/
+GET  /api/v1/client/payments/{id}/status/
+POST /api/v1/webhooks/clip/
+```
+
+## Request crear pago
+```json
+{
+  "referencia_tipo": "pedido",
+  "referencia_id": 25
+}
+```
+
+Nunca aceptar monto desde frontend.
+
+## Tabla pago_externo
+Campos:
+```txt
+pago_externo_id
+proveedor
+referencia_tipo
+referencia_id
+payment_request_id
+receipt_no
+checkout_url
+monto
+moneda
+estado
+request_payload
+response_payload
+webhook_payload
+fecha_creacion
+fecha_confirmacion
+```
+
+## Estados internos
+```txt
+pendiente
+en_proceso
+pagado
+rechazado
+cancelado
+expirado
+error
+```
+
+## Mapeo Clip
+```txt
+CREATED   -> pendiente
+PENDING   -> en_proceso
+COMPLETED -> pagado
+CANCELED  -> cancelado
+EXPIRED   -> expirado
+```
+
+## Django
+Crear:
+```txt
+payments/clients/clip_client.py
+payments/services.py
+payments/webhooks.py
+payments/selectors.py
+payments/serializers.py
+```
+
+Service principal:
+```txt
+create_clip_payment(user, referencia_tipo, referencia_id)
+process_clip_webhook(payload, headers)
+verify_clip_payment_status(payment_request_id)
+```
+
+## Citas
+- Si requiere anticipo: cita queda `esperando_pago`.
+- Generar link por monto de anticipo.
+- Si COMPLETED: cita `confirmada`.
+- Si EXPIRED/CANCELED: cita `pago_expirado` y liberar silla/horario.
+
+## Pedidos
+- Pedido queda `pendiente_pago`.
+- Reservar stock.
+- Si COMPLETED: pedido `pagado` y descontar stock.
+- Si EXPIRED/CANCELED: liberar stock.
+
+## Angular
+- Solicita crear pago.
+- Redirige a `checkout_url`.
+- Al volver, consulta `/status/`.
+- No confirma pago.
+
+## Flutter
+- Solicita crear pago.
+- Abre `checkout_url` con `url_launcher`.
+- Consulta estado a Django.
+- No confirma pago.
+
+## Webhook
+Debe ser:
+- idempotente.
+- transaccional.
+- auditado.
+- sin dependencia de sesión.
+- con validación de estructura/firma si aplica.
+
+## Conciliación
+Guardar:
+```txt
+payment_request_id
+receipt_no
+monto
+referencia_tipo
+referencia_id
+estado
+fecha_confirmacion
+```
+
+## No permitido
+- Productos oficiales en Clip.
+- Inventario dependiente de Clip.
+- CLIP_API_KEY en Angular/Flutter.
+- Confirmación por URL de regreso.
+- Doble descuento de stock por webhook repetido.

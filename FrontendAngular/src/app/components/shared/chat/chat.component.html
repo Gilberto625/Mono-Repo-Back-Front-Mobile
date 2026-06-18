@@ -1,0 +1,64 @@
+<!-- Botón flotante del chat -->
+<button 
+  class="chat-button"
+  (click)="toggleChat()"
+  [class.active]="chatAbierto"
+  aria-label="Abrir chat"
+>
+  <svg *ngIf="!chatAbierto" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+  <svg *ngIf="chatAbierto" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+</button>
+
+<!-- Ventana del chat -->
+<div class="chat-window" [class.open]="chatAbierto">
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <div class="chat-avatar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div>
+        <h4>Stylo Barber</h4>
+        <p class="text-caption">En línea</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-messages">
+    @for (mensaje of mensajes; track mensaje.id) {
+      <div class="chat-message" [class.user]="mensaje.esUsuario">
+        <div class="message-bubble">
+          <p>{{ mensaje.texto }}</p>
+          <span class="message-time">{{ formatearHora(mensaje.timestamp) }}</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="chat-input-container">
+    <input
+      type="text"
+      [(ngModel)]="nuevoMensaje"
+      (keyup.enter)="enviarMensaje()"
+      placeholder="Escribe tu mensaje..."
+      class="chat-input"
+    />
+    <button 
+      class="chat-send-btn"
+      (click)="enviarMensaje()"
+      [disabled]="!nuevoMensaje.trim()"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="22" y1="2" x2="11" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</div>

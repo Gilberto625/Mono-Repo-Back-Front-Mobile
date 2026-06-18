@@ -1,0 +1,346 @@
+@if (modal) {
+  <div class="empleado-form-modal-content">
+    <h2 class="mb-sm">Registrar Nuevo Empleado</h2>
+    <p class="text-muted mb-lg">Completa la informacion del nuevo miembro del equipo</p>
+    <form (ngSubmit)="guardar()">
+      <div class="form-grid-crear mb-lg">
+        <div class="card">
+          <h3 class="mb-md">Informacion Personal</h3>
+          <div class="form-group">
+            <label class="form-label">Foto de perfil</label>
+            <div class="flex align-center gap-md">
+            <div class="avatar-placeholder">
+              @if (fotoPreview) {
+                <img [src]="fotoPreview" alt="Preview" class="avatar-preview" />
+              } @else {
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              }
+            </div>
+            <input type="file" class="input-hidden" accept="image/*" (change)="onFotoChange($event)" #fileFotoModal />
+            <button type="button" class="btn btn-secondary btn-sm" (click)="fileFotoModal.click()">Subir foto</button>
+            </div>
+          </div>
+          <div class="grid form-grid-inner">
+            <div class="form-group">
+              <label class="form-label">Nombre *</label>
+              <input type="text" class="form-input" [(ngModel)]="form.nombre" name="nombre_m" placeholder="Nombre" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Apellido *</label>
+              <input type="text" class="form-input" [(ngModel)]="form.apellido" name="apellido_m" placeholder="Apellido" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Correo electronico *</label>
+            <input type="email" class="form-input" [(ngModel)]="form.email" name="email_m" placeholder="correo&#64;ejemplo.com" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contraseña *</label>
+            <input type="password" class="form-input" [(ngModel)]="form.password" name="password_m" placeholder="Minimo 8 caracteres" required minlength="8" />
+            <p class="form-hint">El empleado iniciara sesion con este correo y contraseña.</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Telefono *</label>
+            <input type="tel" class="form-input" [(ngModel)]="form.telefono" name="telefono_m" placeholder="+52 (000) 000-0000" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fecha de nacimiento</label>
+            <input type="date" class="form-input" [(ngModel)]="form.fecha_nacimiento" name="fecha_nacimiento_m" />
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="mb-md">Rol y Especialidad</h3>
+          <div class="form-group">
+            <label class="form-label">Rol *</label>
+            <select class="form-select" [(ngModel)]="form.rol" name="rol_m" required>
+              <option value="barbero">Barbero</option>
+            </select>
+          </div>
+          @if (esBarbero) {
+            <div class="form-group">
+              <label class="form-label">Especialidades (solo barberos)</label>
+              <div class="flex flex-wrap gap-sm">
+                @for (esp of especialidadesOpciones; track esp.id) {
+                  <label class="flex align-center gap-xs cursor-pointer">
+                    <input type="checkbox" [checked]="tieneEspecialidad(esp.id)" (change)="toggleEspecialidad(esp.id)" />
+                    <span>{{ esp.label }}</span>
+                  </label>
+                }
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Silla asignada (solo barberos)</label>
+              <select class="form-select" [(ngModel)]="form.silla_asignada" name="silla_asignada_m">
+                <option value="">Sin asignar</option>
+                @for (s of sillasOpciones; track s.value) {
+                  <option [value]="s.value" [disabled]="esSillaDeshabilitada(s.value)">{{ s.label }}</option>
+                }
+              </select>
+            </div>
+          }
+          <div class="form-group">
+            <label class="form-label">Descripcion / Bio</label>
+            <textarea class="form-input" [(ngModel)]="form.bio" name="bio_m" rows="3" placeholder="Breve descripcion del empleado..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="card mt-lg">
+        <h3 class="mb-md">Horario de Trabajo</h3>
+        @if (horariosNegocioCargados) {
+          <p class="text-small text-muted mb-md">Los horarios deben estar dentro del horario del establecimiento.</p>
+        }
+        <div class="table-container">
+          <table class="form-table">
+            <thead>
+              <tr>
+                <th scope="col">Dia</th>
+                <th scope="col">Negocio</th>
+                <th scope="col">Trabaja</th>
+                <th scope="col">Hora Inicio</th>
+                <th scope="col">Hora Fin</th>
+                <th scope="col">Descanso</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (dia of diasSemana; track dia.key) {
+                <tr [class.fila-error]="getErrorHorarioDia(dia.key)" [class.fila-cerrado]="negocioCerrado(dia.key)">
+                  <td>{{ dia.label }}</td>
+                  <td>
+                    @if (negocioCerrado(dia.key)) {
+                      <span class="badge-cerrado">Cerrado</span>
+                    } @else if (horariosNegocioCargados) {
+                      <span class="badge-negocio">{{ getRangoNegocio(dia.key) }}</span>
+                    } @else {
+                      <span class="text-small text-muted">—</span>
+                    }
+                  </td>
+                  <td>
+                    <input type="checkbox" [(ngModel)]="form.horario[dia.key].trabaja" [name]="'trabaja_m_' + dia.key" [disabled]="negocioCerrado(dia.key)" />
+                  </td>
+                  <td>
+                    <input type="time" class="form-input" [class.input-error]="getErrorHorarioDia(dia.key) && form.horario[dia.key].trabaja" [(ngModel)]="form.horario[dia.key].inicio" [name]="'inicio_m_' + dia.key" [disabled]="!form.horario[dia.key].trabaja || negocioCerrado(dia.key)" [attr.min]="getNegocioDia(dia.key)?.apertura || ''" [attr.max]="getNegocioDia(dia.key)?.cierre || ''" />
+                  </td>
+                  <td>
+                    <input type="time" class="form-input" [class.input-error]="getErrorHorarioDia(dia.key) && form.horario[dia.key].trabaja" [(ngModel)]="form.horario[dia.key].fin" [name]="'fin_m_' + dia.key" [disabled]="!form.horario[dia.key].trabaja || negocioCerrado(dia.key)" [attr.min]="getNegocioDia(dia.key)?.apertura || ''" [attr.max]="getNegocioDia(dia.key)?.cierre || ''" />
+                  </td>
+                  <td>
+                    <input type="text" class="form-input" [(ngModel)]="form.horario[dia.key].descanso" [name]="'descanso_m_' + dia.key" placeholder="13:00-14:00" [disabled]="!form.horario[dia.key].trabaja || negocioCerrado(dia.key)" />
+                  </td>
+                </tr>
+                @if (getErrorHorarioDia(dia.key)) {
+                  <tr class="fila-error-msg">
+                    <td colspan="6"><span class="text-error text-small">⚠ {{ getErrorHorarioDia(dia.key) }}</span></td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="flex-between mt-lg">
+        <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="guardando">
+          {{ guardando ? 'Guardando...' : 'Guardar Empleado' }}
+        </button>
+      </div>
+    </form>
+  </div>
+} @else {
+<div class="layout-sidebar">
+  <app-sidebar rol="secretaria"></app-sidebar>
+
+  <main class="main-content">
+    <app-breadcrumb></app-breadcrumb>
+
+    <div class="mb-lg">
+      <a routerLink="/secretaria/empleados" class="btn btn-text" style="padding-left: 0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Volver a empleados
+      </a>
+      <h1>Registrar Nuevo Empleado</h1>
+      <p class="text-muted">Completa la informacion del nuevo miembro del equipo</p>
+    </div>
+
+    <form (ngSubmit)="guardar()">
+      <div class="grid form-grid-crear">
+        <!-- Informacion Personal (como 03-crear-empleado.html) -->
+        <div class="card">
+          <h3 class="mb-md">Informacion Personal</h3>
+
+          <div class="form-group">
+            <label class="form-label">Foto de perfil</label>
+            <div class="flex align-center gap-md">
+              <div class="avatar-placeholder">
+                @if (fotoPreview) {
+                  <img [src]="fotoPreview" alt="Preview" class="avatar-preview" />
+                } @else {
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                }
+              </div>
+              <input type="file" class="input-hidden" accept="image/*" (change)="onFotoChange($event)" #fileFoto />
+              <button type="button" class="btn btn-secondary btn-sm" (click)="fileFoto.click()">Subir foto</button>
+            </div>
+          </div>
+
+          <div class="grid form-grid-inner">
+            <div class="form-group">
+              <label class="form-label">Nombre *</label>
+              <input type="text" class="form-input" [(ngModel)]="form.nombre" name="nombre" placeholder="Nombre" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Apellido *</label>
+              <input type="text" class="form-input" [(ngModel)]="form.apellido" name="apellido" placeholder="Apellido" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Correo electronico *</label>
+            <input type="email" class="form-input" [(ngModel)]="form.email" name="email" placeholder="correo&#64;ejemplo.com" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Contraseña *</label>
+            <input type="password" class="form-input" [(ngModel)]="form.password" name="password" placeholder="Minimo 8 caracteres" required minlength="8" />
+            <p class="form-hint">El empleado iniciara sesion con este correo y contraseña.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Telefono *</label>
+            <input type="tel" class="form-input" [(ngModel)]="form.telefono" name="telefono" placeholder="+52 (000) 000-0000" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Fecha de nacimiento</label>
+            <input type="date" class="form-input" [(ngModel)]="form.fecha_nacimiento" name="fecha_nacimiento" />
+          </div>
+        </div>
+
+        <!-- Rol y Especialidad -->
+        <div class="card">
+          <h3 class="mb-md">Rol y Especialidad</h3>
+
+          <div class="form-group">
+            <label class="form-label">Rol *</label>
+            <select class="form-select" [(ngModel)]="form.rol" name="rol" required>
+              <option value="barbero">Barbero</option>
+            </select>
+          </div>
+
+          @if (esBarbero) {
+            <div class="form-group">
+              <label class="form-label">Especialidades (solo barberos)</label>
+              <div class="flex flex-wrap gap-sm">
+                @for (esp of especialidadesOpciones; track esp.id) {
+                  <label class="flex align-center gap-xs cursor-pointer">
+                    <input type="checkbox" [checked]="tieneEspecialidad(esp.id)" (change)="toggleEspecialidad(esp.id)" />
+                    <span>{{ esp.label }}</span>
+                  </label>
+                }
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Silla asignada (solo barberos)</label>
+              <select class="form-select" [(ngModel)]="form.silla_asignada" name="silla_asignada">
+                <option value="">Sin asignar</option>
+                @for (s of sillasOpciones; track s.value) {
+                  <option [value]="s.value" [disabled]="esSillaDeshabilitada(s.value)">{{ s.label }}</option>
+                }
+              </select>
+            </div>
+          }
+
+          <div class="form-group">
+            <label class="form-label">Descripcion / Bio</label>
+            <textarea class="form-input" [(ngModel)]="form.bio" name="bio" rows="3" placeholder="Breve descripcion del empleado..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Horario de Trabajo -->
+      <div class="card mt-lg">
+        <h3 class="mb-md">Horario de Trabajo</h3>
+        @if (horariosNegocioCargados) {
+          <p class="text-small text-muted mb-md">Los horarios deben estar dentro del horario del establecimiento.</p>
+        }
+        <div class="table-container">
+          <table class="form-table">
+            <thead>
+              <tr>
+                <th scope="col">Dia</th>
+                <th scope="col">Negocio</th>
+                <th scope="col">Trabaja</th>
+                <th scope="col">Hora Inicio</th>
+                <th scope="col">Hora Fin</th>
+                <th scope="col">Descanso</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (dia of diasSemana; track dia.key) {
+                <tr [class.fila-error]="getErrorHorarioDia(dia.key)" [class.fila-cerrado]="negocioCerrado(dia.key)">
+                  <td>{{ dia.label }}</td>
+                  <td>
+                    @if (negocioCerrado(dia.key)) {
+                      <span class="badge-cerrado">Cerrado</span>
+                    } @else if (horariosNegocioCargados) {
+                      <span class="badge-negocio">{{ getRangoNegocio(dia.key) }}</span>
+                    } @else {
+                      <span class="text-small text-muted">—</span>
+                    }
+                  </td>
+                  <td>
+                    <input type="checkbox" [(ngModel)]="form.horario[dia.key].trabaja" [name]="'trabaja_' + dia.key" [disabled]="negocioCerrado(dia.key)" />
+                  </td>
+                  <td>
+                    <input type="time" class="form-input form-input-time" [class.input-error]="getErrorHorarioDia(dia.key) && form.horario[dia.key].trabaja" [(ngModel)]="form.horario[dia.key].inicio" [name]="'inicio_' + dia.key" [disabled]="!form.horario[dia.key].trabaja || negocioCerrado(dia.key)" [attr.min]="getNegocioDia(dia.key)?.apertura || ''" [attr.max]="getNegocioDia(dia.key)?.cierre || ''" />
+                  </td>
+                  <td>
+                    <input type="time" class="form-input form-input-time" [class.input-error]="getErrorHorarioDia(dia.key) && form.horario[dia.key].trabaja" [(ngModel)]="form.horario[dia.key].fin" [name]="'fin_' + dia.key" [disabled]="!form.horario[dia.key].trabaja || negocioCerrado(dia.key)" [attr.min]="getNegocioDia(dia.key)?.apertura || ''" [attr.max]="getNegocioDia(dia.key)?.cierre || ''" />
+                  </td>
+                  <td>
+                    <input type="text" class="form-input form-input-descanso" [(ngModel)]="form.horario[dia.key].descanso" [name]="'descanso_' + dia.key" placeholder="13:00-14:00" [disabled]="!form.horario[dia.key].trabaja || negocioCerrado(dia.key)" />
+                  </td>
+                </tr>
+                @if (getErrorHorarioDia(dia.key)) {
+                  <tr class="fila-error-msg">
+                    <td colspan="6"><span class="text-error text-small">⚠ {{ getErrorHorarioDia(dia.key) }}</span></td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="flex-between mt-lg">
+        <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="guardando">
+          {{ guardando ? 'Guardando...' : 'Guardar Empleado' }}
+        </button>
+      </div>
+    </form>
+  </main>
+</div>
+
+<nav class="navbar-mobile">
+  <a routerLink="/secretaria" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a routerLink="/secretaria/empleados" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Empleados
+  </a>
+  <a routerLink="/secretaria/sillas" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>
+    Sillas
+  </a>
+  <a routerLink="/secretaria/servicios" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8"/></svg>
+    Servicios
+  </a>
+  <a routerLink="/secretaria/catalogo" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>
+    Productos
+  </a>
+</nav>
+}

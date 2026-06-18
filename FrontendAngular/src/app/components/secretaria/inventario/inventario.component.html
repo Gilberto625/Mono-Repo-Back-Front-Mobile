@@ -1,0 +1,172 @@
+<div class="layout-sidebar">
+  <app-sidebar rol="secretaria"></app-sidebar>
+
+  <main class="main-content">
+    <app-breadcrumb></app-breadcrumb>
+    <div class="page-header mb-lg">
+      <div>
+        <h1>Inventario</h1>
+        <p class="text-muted">Control de stock y movimientos (Secretaría)</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn btn-secondary" (click)="exportarCSV()">Exportar</button>
+        <a routerLink="/secretaria/inventario/entrada" class="btn btn-primary">Registrar Movimiento</a>
+      </div>
+    </div>
+
+    <div class="stats-grid mb-lg">
+      <div class="stat-card futuristic-card">
+        <p class="stat-card-value">{{ totalUnidades }}</p>
+        <p class="stat-card-label">Unidades totales</p>
+      </div>
+      <div class="stat-card futuristic-card">
+        <p class="stat-card-value text-success">{{ productosOk }}</p>
+        <p class="stat-card-label">Stock normal</p>
+      </div>
+      <div class="stat-card futuristic-card">
+        <p class="stat-card-value text-error">{{ productosAgotados }}</p>
+        <p class="stat-card-label">Agotados</p>
+      </div>
+      <div class="stat-card futuristic-card">
+        <p class="stat-card-value text-warning">{{ alertasActivas }}</p>
+        <p class="stat-card-label">Alertas activas</p>
+      </div>
+    </div>
+
+    <div class="tabs futuristic-tabs">
+      <button type="button" class="tab" [class.active]="tabActivo === 'stock'" (click)="setTab('stock')">Stock Actual</button>
+      <button type="button" class="tab" [class.active]="tabActivo === 'movimientos'" (click)="setTab('movimientos')">Movimientos</button>
+      <button type="button" class="tab" [class.active]="tabActivo === 'alertas'" (click)="setTab('alertas')">Alertas</button>
+    </div>
+
+    @if (tabActivo === 'stock' || tabActivo === 'alertas') {
+      <div class="card mb-lg filtros-inventario futuristic-panel">
+        <div class="flex-between filtros-fila">
+          <div class="form-group mb-0 filtro-buscar">
+            <input type="text" class="form-input" placeholder="Buscar por nombre..." [(ngModel)]="filtro" (input)="filtrarProductos()">
+          </div>
+          @if (categorias.length) {
+            <div class="form-group mb-0 filtro-categoria">
+              <label class="filtro-label">Categoría</label>
+              <select class="form-select" [(ngModel)]="filtroCategoria" (change)="filtrarProductos()">
+                <option value="">Todas</option>
+                @for (cat of categorias; track cat) { <option [value]="cat">{{ cat }}</option> }
+              </select>
+            </div>
+          }
+          <div class="form-group mb-0 filtro-estado">
+            <label class="filtro-label">Estado</label>
+            <select class="form-select" [(ngModel)]="filtroEstado" (change)="filtrarProductos()">
+              <option value="">Todos</option>
+              <option value="normal">Normal</option>
+              <option value="bajo">Bajo</option>
+              <option value="critico">Crítico</option>
+              <option value="agotado">Agotado</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (tabActivo === 'stock' || tabActivo === 'alertas') {
+      <div class="table-container">
+        <table class="inventario-table">
+          <thead>
+            <tr>
+              <th class="col-producto">Producto</th>
+              <th class="col-stock">Stock actual</th>
+              <th class="col-min">Stock mínimo</th>
+              <th class="col-estado">Estado</th>
+              <th class="col-acciones">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (producto of (tabActivo === 'alertas' ? productosAlertasFiltrados : productosFiltrados); track producto.id) {
+              <tr>
+                <td class="col-producto">
+                  <div class="producto-cell">
+                    @if (tieneImagenValida(producto)) {
+                      <img [src]="producto.imagen_url" [alt]="producto.nombre" class="producto-thumb" (error)="onImagenError(producto.id)">
+                    } @else {
+                      <div class="producto-thumb-placeholder"></div>
+                    }
+                    <span class="producto-nombre">{{ producto.nombre }}</span>
+                  </div>
+                </td>
+                <td class="col-stock" [style.color]="getColorStock(producto)">{{ producto.stock }}</td>
+                <td class="col-min">{{ producto.stock_minimo }}</td>
+                <td class="col-estado"><span class="badge" [class]="getBadgeClass(producto)">{{ getEstadoStock(producto) }}</span></td>
+                <td class="col-acciones">
+                  <div class="acciones-cell">
+                    <a [routerLink]="['/secretaria/inventario/entrada', producto.id]" class="btn btn-text btn-sm btn-accion">+ Entrada</a>
+                    <button type="button" class="btn btn-text btn-sm btn-accion" (click)="ajustarStockExacto(producto, $event)">Ajustar</button>
+                    @if (producto.stock === 0) {
+                      <span class="btn btn-text btn-sm text-muted btn-accion disabled">- Salida</span>
+                    } @else {
+                      <a [routerLink]="['/secretaria/inventario/salida', producto.id]" class="btn btn-text btn-sm btn-accion">- Salida</a>
+                    }
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr class="empty-row">
+                <td colspan="5">
+                  <p class="mb-0">{{ loading ? 'Cargando...' : 'No hay productos en inventario' }}</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @if (tabActivo === 'movimientos') {
+      <div class="card futuristic-panel">
+        <div class="flex-between mb-md movimientos-header">
+          <h3 class="mb-0">{{ soloHoy ? 'Movimientos del día' : 'Historial de movimientos' }}</h3>
+          <div class="movimientos-header-actions">
+            <select class="form-select" [(ngModel)]="filtroTipoMovimiento" name="filtroTipoMovimientoMov">
+              <option value="">Todos</option>
+              <option value="entrada">Entradas</option>
+              <option value="salida">Salidas</option>
+              <option value="ajuste">Ajustes</option>
+            </select>
+            <button type="button" class="btn btn-text btn-sm" [class.active]="soloHoy" (click)="setSoloHoy(true)">Hoy</button>
+            <button type="button" class="btn btn-text btn-sm" [class.active]="!soloHoy" (click)="setSoloHoy(false)">Todos</button>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="exportarMovimientosCSV()">Exportar CSV</button>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="exportarMovimientosXLSX()">Exportar Excel</button>
+            @if (errorMovimientos) {
+              <button type="button" class="btn btn-secondary btn-sm" (click)="cargarMovimientos()">Reintentar</button>
+            }
+          </div>
+        </div>
+        @if (loadingMovimientos) {
+          <p class="text-muted mb-0 movimientos-state">Cargando movimientos...</p>
+        } @else if (errorMovimientos) {
+          <p class="text-muted mb-0 movimientos-state">No se pudieron cargar los movimientos. Haz clic en Reintentar.</p>
+        } @else {
+          <ul class="list">
+            @for (mov of movimientosFiltrados; track $index) {
+              <li class="list-item">
+                <div [class]="getMovimientoIconClass(mov.tipo)"></div>
+                <div class="movimiento-main">
+                  <p class="mb-0 movimiento-title">{{ getMovimientoLabel(mov.tipo) }} de inventario</p>
+                  <p class="text-small mb-0">{{ mov.producto }} ({{ mov.tipo === 'salida' ? '-' : '+' }}{{ mov.cantidad }} unidades)</p>
+                  @if (mov.notas) { <p class="text-small mb-0 text-muted">{{ mov.notas }}</p> }
+                </div>
+                <div class="text-right">
+                  <p class="text-small mb-0">{{ mov.fecha | date:'short' }}</p>
+                  <p class="text-small mb-0 text-muted">{{ mov.usuario }}</p>
+                </div>
+              </li>
+            } @empty {
+              <li class="list-item">
+                <p class="text-muted mb-0">{{ soloHoy ? 'No hay movimientos hoy.' : 'No hay movimientos registrados.' }}</p>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+  </main>
+</div>

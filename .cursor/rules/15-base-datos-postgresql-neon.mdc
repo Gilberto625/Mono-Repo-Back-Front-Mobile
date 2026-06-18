@@ -1,0 +1,70 @@
+---
+description: Reglas reales de PostgreSQL Neon, esquemas, roles y modelos Django
+globs: ["database/**/*.sql", "backend/**/*.py", "backend/**/*.sql"]
+alwaysApply: false
+---
+
+# PostgreSQL Neon — Base de Datos
+
+## Proveedor
+- PostgreSQL en Neon.
+- Conexión mediante `DATABASE_URL`.
+
+## Esquemas
+```txt
+private  -> tablas internas Django/auth/session si se migran
+negocio  -> operación principal del negocio
+stg      -> staging / carga intermedia
+rpt      -> reportes y vistas materializadas
+```
+
+## Roles PostgreSQL
+```txt
+rol_backend
+rol_lectura
+rol_dba
+```
+
+## Reglas
+- Revocar privilegios a `PUBLIC`.
+- Django usa usuario backend, no DBA.
+- Angular y Flutter nunca se conectan a PostgreSQL.
+- No usar `FLOAT` para dinero; usar `NUMERIC(10,2)`.
+- No borrar históricos; usar activo, estado o cancelado.
+- Toda operación crítica con transacción.
+- Reportes pesados usan `rpt`, no consultas crudas a `negocio`.
+
+## Tablas clave
+- usuario, rol, usuario_rol, perfil_persona.
+- empleado, silla, horario_negocio.
+- servicio, categoria_servicio, barbero_servicio.
+- cita, cita_estado_historial, anticipo_cita.
+- producto, marca, categoria_producto, producto_imagen.
+- inventario_existencia, inventario_movimiento.
+- pedido, pedido_item, pedido_estado_historial.
+- venta_mostrador, venta_mostrador_item.
+- notificacion, notificacion_usuario.
+- contenido_legal.
+- pago_externo recomendado.
+- auditoria_evento recomendado.
+- webhook_evento recomendado.
+
+## Django managed=False
+Si la tabla existe por SQL:
+```python
+class Meta:
+    managed = False
+    db_table = 'negocio"."producto'
+```
+
+## Reportes
+Usar:
+```txt
+rpt.mv_ventas_diarias
+rpt.mv_productos_mas_vendidos
+rpt.mv_servicios_mas_solicitados
+rpt.mv_resumen_diario
+```
+
+## Inventario
+No actualizar `inventario_existencia` sin `inventario_movimiento`.

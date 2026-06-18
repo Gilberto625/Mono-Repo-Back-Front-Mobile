@@ -1,0 +1,192 @@
+<div class="layout-sidebar">
+  <app-sidebar [rol]="esSecretaria ? 'secretaria' : 'admin'"></app-sidebar>
+
+  <main class="main-content servicio-edit-page">
+    <app-breadcrumb></app-breadcrumb>
+
+    <header class="page-head">
+      <div class="page-head-left">
+        <a [routerLink]="serviciosBase" class="btn btn-text volver-link">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Volver a servicios
+        </a>
+        <div class="page-title">
+          <h1>Editar servicio</h1>
+          <p class="page-sub">{{ loading ? 'Cargando…' : form.nombre }}</p>
+        </div>
+      </div>
+    </header>
+
+    @if (loading) {
+      <p class="text-muted">Cargando datos del servicio...</p>
+    } @else {
+      <form (ngSubmit)="guardar()">
+        <div class="grid">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="overline">Detalle</div>
+                <h3 class="card-title">Información del servicio</h3>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="svcNombre">Nombre del servicio *</label>
+              <input type="text" class="form-input" [(ngModel)]="form.nombre" name="nombre"
+                     id="svcNombre" placeholder="Ej: Corte Clásico" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="svcDesc">Descripción</label>
+              <textarea class="form-input" rows="3" [(ngModel)]="form.descripcion" name="descripcion"
+                        id="svcDesc" placeholder="Descripción breve del servicio..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="svcCat">Categoría *</label>
+              <select id="svcCat" class="form-select" [(ngModel)]="form.categoria" name="categoria" required>
+                <option value="">Seleccionar categoría</option>
+                @for (c of categorias; track c.value) {
+                  <option [value]="c.value">{{ c.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-row-duo">
+              <div class="form-group">
+                <label class="form-label" for="svcDur">Duración (minutos) *</label>
+                <input type="number" class="form-input" [(ngModel)]="form.duracion_minutos" name="duracion"
+                       id="svcDur" placeholder="30" min="5" step="5" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="svcPrecio">Precio *</label>
+                <input type="number" class="form-input" [(ngModel)]="form.precio" name="precio"
+                       id="svcPrecio" placeholder="200" min="0" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="svcEstado">Estado</label>
+              <select id="svcEstado" class="form-select" [(ngModel)]="form.activo" name="activo">
+                <option [ngValue]="true">Activo</option>
+                <option [ngValue]="false">Inactivo</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-check-label">
+                <input type="checkbox" [(ngModel)]="form.popular" name="popular" /> Marcar como popular
+              </label>
+            </div>
+          </div>
+
+          <div class="card card-galeria">
+            <div class="card-head">
+              <div>
+                <div class="overline">Media</div>
+                <h3 class="card-title">Galería del servicio</h3>
+              </div>
+            </div>
+            <p class="text-small text-muted mb-md">Hasta 5 imágenes para el catálogo. La primera se usa como miniatura en la lista.</p>
+
+            <div class="galeria-grid">
+              @for (i of galeriaIndices; track i) {
+                <div class="galeria-slot">
+                  <span class="galeria-slot-label">Foto {{ i + 1 }}</span>
+                  @if (galeriaPreviews[i] || form.imagenes_galeria[i]) {
+                    <div class="image-preview">
+                      <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" [src]="galeriaPreviews[i] || form.imagenes_galeria[i]" alt="Foto {{ i + 1 }}" />
+                      <button type="button" class="btn-remove-image" (click)="eliminarImagenGaleria(i)" aria-label="Quitar imagen">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                      </button>
+                    </div>
+                  } @else {
+                    <label class="image-upload-box galeria-upload" [attr.for]="'galeria-editar-' + i">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                        <path d="M21 15l-5-5L5 21"/>
+                      </svg>
+                      <span class="text-small">Cambiar</span>
+                    </label>
+                  }
+                  <input type="file" [id]="'galeria-editar-' + i" accept="image/*,.heic,.heif,.avif" style="display: none;"
+                         (change)="onImagenGaleriaSeleccionada(i, $event)" />
+                </div>
+              }
+            </div>
+            @if (subiendoImagen) {
+              <p class="text-small text-info mt-sm">Subiendo imagen(es)...</p>
+            }
+
+            <div class="section-split">
+              <div class="overline">Asignación</div>
+              <h3 class="card-title">Barberos asignados</h3>
+            </div>
+            <p class="text-small mb-md">Selecciona qué barberos pueden realizar este servicio</p>
+
+            <div class="barberos-list">
+              @for (b of barberos; track b.id) {
+                <label class="barbero-item" [class.selected]="estaBarberoSeleccionado(b.id)">
+                  <input type="checkbox" [checked]="estaBarberoSeleccionado(b.id)"
+                         (change)="toggleBarbero(b.id)" />
+                  <span class="avatar-inline">{{ iniciales(b.nombre, b.apellido) }}</span>
+                  <span>{{ b.nombre }} {{ b.apellido }}</span>
+                </label>
+              }
+              @empty {
+                <p class="text-muted text-small">No hay barberos registrados.</p>
+              }
+            </div>
+
+            <div class="section-split">
+              <div class="overline">IA</div>
+              <h3 class="card-title">Etiquetas para recomendador</h3>
+            </div>
+            <p class="text-small text-muted mb-md">Selecciona para qué tipos de rostro y estilo se recomienda este servicio. Esto se usa en la sección "¿Qué corte me queda?" del cliente.</p>
+
+            <h4 class="text-small mb-sm section-accent">Tipo de rostro recomendado</h4>
+            <div class="etiquetas-grid mb-md">
+              @for (et of ETIQUETAS_ROSTRO; track et.value) {
+                <label class="etiqueta-check" [class.checked]="tieneEtiqueta(et.value)">
+                  <input type="checkbox" [checked]="tieneEtiqueta(et.value)" (change)="toggleEtiqueta(et.value)" />
+                  {{ et.label }}
+                </label>
+              }
+            </div>
+
+            <h4 class="text-small mb-sm section-accent">Tipo de estilo recomendado</h4>
+            <div class="etiquetas-grid">
+              @for (et of ETIQUETAS_ESTILO; track et.value) {
+                <label class="etiqueta-check" [class.checked]="tieneEtiqueta(et.value)">
+                  <input type="checkbox" [checked]="tieneEtiqueta(et.value)" (change)="toggleEtiqueta(et.value)" />
+                  {{ et.label }}
+                </label>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-between mt-lg footer-editar">
+          <button type="button" class="btn btn-danger" (click)="eliminarServicio()">Eliminar Servicio</button>
+          <div class="footer-actions-right">
+            <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="guardando || subiendoImagen">
+              {{ guardando ? 'Guardando...' : (subiendoImagen ? 'Subiendo imagen...' : 'Guardar Cambios') }}
+            </button>
+          </div>
+        </div>
+      </form>
+    }
+  </main>
+</div>
+
+<nav class="navbar-mobile">
+  <a [routerLink]="esSecretaria ? '/secretaria' : '/admin'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="navbar-mobile-item">Dashboard</a>
+  <a [routerLink]="esSecretaria ? '/secretaria/agenda' : '/admin/empleados'" routerLinkActive="active" class="navbar-mobile-item">{{ esSecretaria ? 'Agenda' : 'Empleados' }}</a>
+  <a [routerLink]="serviciosBase" routerLinkActive="active" class="navbar-mobile-item">Servicios</a>
+  <a [routerLink]="esSecretaria ? '/secretaria/catalogo' : '/admin/productos'" routerLinkActive="active" class="navbar-mobile-item">Productos</a>
+  <a [routerLink]="esSecretaria ? '/secretaria/inventario' : '/admin/configuracion'" routerLinkActive="active" class="navbar-mobile-item">{{ esSecretaria ? 'Inventario' : 'Config' }}</a>
+</nav>

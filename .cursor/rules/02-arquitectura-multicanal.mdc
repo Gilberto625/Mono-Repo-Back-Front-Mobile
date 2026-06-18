@@ -1,0 +1,61 @@
+---
+description: Arquitectura multicanal Angular + Flutter + Django + PostgreSQL
+globs: ["frontend/**/*", "backend/**/*", "mobile/**/*", "database/**/*"]
+alwaysApply: false
+---
+
+# Arquitectura Multicanal
+
+## Capas
+```txt
+Angular Web         Flutter Mobile
+     |                    |
+     +---------+----------+
+               |
+               v
+Django REST Framework API
+               |
+               v
+PostgreSQL Neon
+```
+
+## Reglas
+- Una sola API para Angular y Flutter.
+- No crear endpoints exclusivos de Flutter si Angular puede reutilizar el mismo contrato.
+- No duplicar reglas de negocio en clientes.
+- No conectar Angular ni Flutter directo a PostgreSQL.
+- No conectar Angular ni Flutter directo a Clip con API key.
+- Toda acción crítica pasa por Django services con transacciones.
+
+## Estructura recomendada
+```txt
+stylo-barber-connect/
+├── backend/
+├── frontend/
+├── mobile/
+├── database/
+├── docs/
+└── .cursor/rules/
+```
+
+## Versionado API
+- Usar `/api/v1/`.
+- Mantener contratos estables.
+- Si cambia contrato, actualizar modelos Angular y Flutter.
+- Respuesta estándar:
+```json
+{
+  "success": true,
+  "message": "Operación realizada correctamente",
+  "data": {}
+}
+```
+
+## Reglas de evolución
+Cuando Cursor genere una funcionalidad nueva, debe revisar:
+1. Modelo/tabla PostgreSQL.
+2. Service/serializer/view/permission en Django.
+3. Servicio Angular.
+4. Modelo TypeScript.
+5. Repository/model Dart en Flutter.
+6. Pruebas y auditoría.

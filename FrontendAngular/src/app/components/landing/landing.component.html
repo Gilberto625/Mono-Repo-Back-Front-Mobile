@@ -1,0 +1,48 @@
+<div class="landing-container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Stylo Barber Connect</h1>
+      <p class="hero-subtitle">
+        Plataforma moderna para servicio al cliente
+      </p>
+      <div class="hero-actions">
+        <a class="hero-button hero-button-primary" routerLink="/login">
+          Iniciar Sesión
+        </a>
+        <a class="hero-button hero-button-accent" routerLink="/register">
+          Registrarse
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products Section -->
+  <section class="products-section">
+    <div class="container">
+      <h2 class="section-title">Nuestros Productos y Servicios</h2>
+      <div class="products-grid">
+        <div class="product-card" *ngFor="let product of products">
+          <div class="product-icon">{{ product.icon }}</div>
+          <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-description">{{ product.description }}</p>
+          <div class="product-footer">
+            <span class="product-price">${{ product.price }}</span>
+            <button class="add-to-cart-btn" (click)="addToCart(product)">
+              🛒 Agregar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2025 Sistema de Autenticación. Todos los derechos reservados.</p>
+      <p>Backend: <a href="https://backendbina-1.onrender.com" target="_blank">backendbina-1.onrender.com</a></p>
+    </div>
+  </footer>
+</div>
+
+

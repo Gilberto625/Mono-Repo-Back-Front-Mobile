@@ -1,0 +1,50 @@
+<aside class="sidebar">
+  <a [routerLink]="logoRoute" class="sidebar-logo">
+    @if (logoService.config().logo_tipo === 'imagen' && logoService.config().logo_url) {
+      <img [src]="logoService.config().logo_url" [alt]="logoService.config().nombre_negocio" class="sidebar-logo-img">
+    } @else {
+      {{ logoService.config().logo_texto }} <span>{{ logoService.config().logo_texto_acento }}</span>
+    }
+  </a>
+  
+  <a class="sb-user" [routerLink]="logoRoute" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+    <div class="sb-avatar">{{ userIniciales }}</div>
+    <div class="sb-user-text">
+      <div class="sb-user-name">{{ userNombre }}</div>
+      <div class="sb-user-role">Panel {{ rolLabel || 'Cliente' }}</div>
+    </div>
+    <div class="sb-chevron">▾</div>
+  </a>
+  
+  <ul class="sidebar-menu">
+    @for (section of menuSections; track section.sectionLabel || $index) {
+      @if (section.sectionLabel) {
+        <li class="sidebar-section-label">{{ section.sectionLabel }}</li>
+      }
+      @for (item of section.items; track item.route) {
+        <li class="sidebar-item">
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="item.route === logoRoute ? { exact: true } : { exact: false }"
+            class="sidebar-link"
+          >
+            <span class="sidebar-link-icon" [innerHTML]="item.icon"></span>
+            {{ item.label }}
+          </a>
+        </li>
+      }
+    }
+  </ul>
+  
+  <div class="sidebar-bottom">
+    <a routerLink="/login" class="sidebar-link" (click)="onLogout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16,17 21,12 16,7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Cerrar sesión
+    </a>
+  </div>
+</aside>

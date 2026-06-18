@@ -1,0 +1,410 @@
+/* Página alineada con panel cliente / perfil (STYLO) */
+.recomendador-page.cliente-page {
+  width: 100%;
+  max-width: min(1120px, 100%);
+  margin-inline: auto;
+  padding-bottom: clamp(0.75rem, 3vw, 1.5rem);
+  box-sizing: border-box;
+}
+
+.recomendador-hero {
+  margin-bottom: clamp(1rem, 3vw, 1.5rem);
+  padding-bottom: clamp(0.85rem, 2vw, 1.15rem);
+  border-bottom: 1px solid var(--divider-color, rgba(255, 255, 255, 0.08));
+}
+
+.recomendador-eyebrow {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-on-dark-tertiary, rgba(238, 243, 240, 0.52));
+  margin: 0 0 0.35rem;
+  font-family: var(--font-family);
+}
+
+.recomendador-title {
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: clamp(1.35rem, 4vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  margin: 0 0 0.35rem;
+  color: var(--text-on-dark, #fff);
+}
+
+.recomendador-sub {
+  margin: 0;
+  font-size: clamp(0.85rem, 2.2vw, 0.92rem);
+  line-height: 1.45;
+  max-width: 42rem;
+}
+
+.recomendador-page .card.recomendador-panel {
+  position: relative;
+  background: rgba(30, 43, 34, 0.88);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+}
+
+.recomendador-page .card.recomendador-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.55) 50%, transparent);
+  opacity: 1;
+  pointer-events: none;
+}
+
+.recomendador-page .recomendador-panel h3 {
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-on-dark, #fff);
+}
+
+/* ============================================
+   ROSTRO GRID - Cards con iconos SVG
+   ============================================ */
+.rostro-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+}
+
+.rostro-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg) var(--spacing-md);
+  border: 2px solid var(--divider-color, rgba(255,255,255,0.1));
+  border-radius: var(--radius-lg, 12px);
+  background: transparent;
+  color: var(--text-on-dark, #fff);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rostro-card:hover {
+  border-color: var(--color-accent, #D4AF37);
+  background: rgba(212, 175, 55, 0.05);
+}
+
+.rostro-card.active {
+  border-color: var(--color-accent, #D4AF37);
+  background: rgba(212, 175, 55, 0.12);
+}
+
+.rostro-icon {
+  width: 64px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rostro-icon svg {
+  width: 100%;
+  height: 100%;
+  color: var(--text-on-dark-tertiary, rgba(255,255,255,0.6));
+  transition: color 0.2s;
+}
+
+.rostro-card:hover .rostro-icon svg,
+.rostro-card.active .rostro-icon svg {
+  color: var(--color-accent, #D4AF37);
+}
+
+.rostro-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.rostro-card.active .rostro-label {
+  color: var(--color-accent, #D4AF37);
+}
+
+/* ============================================
+   ESTILO GRID
+   ============================================ */
+.estilo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.estilo-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--divider-color, rgba(255,255,255,0.1));
+  border-radius: var(--radius-md, 8px);
+  background: transparent;
+  color: var(--text-on-dark, #fff);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.estilo-btn:hover {
+  border-color: var(--color-accent, #D4AF37);
+  background: rgba(212, 175, 55, 0.06);
+}
+
+.estilo-btn.active {
+  border-color: var(--color-accent, #D4AF37);
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--color-accent, #D4AF37);
+}
+
+.estilo-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.estilo-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================
+   QUE BUSCA GRID
+   ============================================ */
+.busca-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.busca-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg) var(--spacing-md);
+  border: 2px solid var(--divider-color, rgba(255,255,255,0.1));
+  border-radius: var(--radius-lg, 12px);
+  background: transparent;
+  color: var(--text-on-dark, #fff);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.busca-btn svg {
+  width: 32px;
+  height: 32px;
+  color: var(--text-on-dark-tertiary, rgba(255,255,255,0.6));
+  transition: color 0.2s;
+}
+
+.busca-btn:hover {
+  border-color: var(--color-accent, #D4AF37);
+  background: rgba(212, 175, 55, 0.05);
+}
+
+.busca-btn:hover svg {
+  color: var(--color-accent, #D4AF37);
+}
+
+.busca-btn.active {
+  border-color: var(--color-accent, #D4AF37);
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--color-accent, #D4AF37);
+}
+
+.busca-btn.active svg {
+  color: var(--color-accent, #D4AF37);
+}
+
+/* ============================================
+   RESULTADOS
+   ============================================ */
+.resultados-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.resultado-card {
+  border: 1px solid var(--divider-color, rgba(255,255,255,0.1));
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  background: var(--color-primary, #32413D);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.resultado-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg, 0 8px 16px rgba(0,0,0,0.4));
+}
+
+.resultado-card.destacado {
+  border-color: var(--color-accent, #D4AF37);
+  box-shadow: 0 0 0 1px var(--color-accent, #D4AF37), var(--shadow-md);
+}
+
+.resultado-imagen {
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+  background: var(--color-primary-dark, #2A3634);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resultado-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.resultado-imagen-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-on-dark-tertiary, rgba(255,255,255,0.4));
+}
+
+.resultado-body {
+  padding: var(--spacing-md);
+}
+
+.resultado-body h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-on-dark, #fff);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.resultado-precio {
+  font-weight: 700;
+  color: var(--color-accent, #D4AF37);
+  font-size: 0.9rem;
+}
+
+.badge-match {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--radius-sm, 4px);
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--color-accent, #D4AF37);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: var(--spacing-xs);
+}
+
+.badge-parcial {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-on-dark-secondary, rgba(255,255,255,0.9));
+}
+
+.resultado-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+}
+
+/* ============================================
+   RESULTADO NOMBRE (clickable)
+   ============================================ */
+.resultado-nombre {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.resultado-nombre:hover {
+  color: var(--color-accent, #D4AF37);
+}
+
+/* ============================================
+   SIN RESULTADOS
+   ============================================ */
+.sin-resultados {
+  text-align: center;
+  padding: var(--spacing-2xl, 48px) var(--spacing-lg);
+  color: var(--text-on-dark-tertiary, rgba(255,255,255,0.6));
+}
+.sin-resultados svg {
+  margin-bottom: var(--spacing-md);
+  opacity: 0.5;
+}
+.sin-resultados h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-on-dark, #fff);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+.sin-resultados p {
+  max-width: 480px;
+  margin: 0 auto var(--spacing-lg);
+  line-height: 1.6;
+}
+.sin-resultados-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .rostro-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .estilo-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .busca-grid {
+    grid-template-columns: 1fr;
+  }
+  .resultados-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .rostro-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+  }
+  .rostro-card {
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+  .rostro-icon {
+    width: 48px;
+    height: 60px;
+  }
+}
+
+/* Tema claro */
+html[data-theme='light'] .recomendador-page .card.recomendador-panel {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(36, 56, 48, 0.12);
+  box-shadow: var(--shadow-md);
+}
+
+html[data-theme='light'] .recomendador-title,
+html[data-theme='light'] .recomendador-page .recomendador-panel h3 {
+  color: var(--text-on-light);
+}
+
+html[data-theme='light'] .recomendador-eyebrow {
+  color: var(--text-on-light-tertiary, rgba(36, 56, 48, 0.55));
+}

@@ -1,0 +1,103 @@
+<app-navbar [isLoggedIn]="false"></app-navbar>
+
+<div class="ayuda-page">
+  <div class="container ayuda-inner">
+    <header class="ayuda-hero" appScrollReveal>
+      <div class="ayuda-eyebrow">
+        <span class="ayuda-eyebrow__dot"></span>
+        Soporte Stylo
+      </div>
+      <h1 class="ayuda-title">Centro de ayuda</h1>
+      <p class="ayuda-sub">Respuestas claras sobre citas, servicios, productos y tu cuenta.</p>
+    </header>
+
+    <div class="ayuda-search-wrap" appScrollReveal="reveal-scale">
+      <label class="ayuda-search-label" for="ayuda-buscar">Buscar en preguntas frecuentes</label>
+      <div class="ayuda-search">
+        <input
+          id="ayuda-buscar"
+          type="search"
+          class="ayuda-search__input"
+          placeholder="Ej. agendar cita, envío, contraseña…"
+          [value]="search()"
+          (input)="onSearchInput($event)"
+          autocomplete="off"
+        />
+        <span class="ayuda-search__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <div class="ayuda-faq" appScrollReveal="stagger">
+      @for (categoria of faqsFiltradas(); track categoria.categoria) {
+        <section class="ayuda-acc">
+          <button
+            type="button"
+            class="ayuda-acc__head"
+            [class.ayuda-acc__head--open]="esCategoriaAbierta(categoria.categoria)"
+            (click)="toggleCategoria(categoria.categoria)"
+            [attr.aria-expanded]="esCategoriaAbierta(categoria.categoria)"
+          >
+            <span class="ayuda-acc__head-text">{{ categoria.categoria }}</span>
+            <span class="ayuda-acc__chev" [class.ayuda-acc__chev--up]="esCategoriaAbierta(categoria.categoria)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </span>
+          </button>
+
+          @if (esCategoriaAbierta(categoria.categoria)) {
+            <div class="ayuda-acc__body">
+              @for (faq of categoria.preguntas; track faq.pregunta) {
+                <div class="ayuda-q">
+                  <button
+                    type="button"
+                    class="ayuda-q__btn"
+                    [class.ayuda-q__btn--open]="esPreguntaAbierta(faq.pregunta)"
+                    (click)="togglePregunta(faq.pregunta)"
+                    [attr.aria-expanded]="esPreguntaAbierta(faq.pregunta)"
+                  >
+                    <span>{{ faq.pregunta }}</span>
+                    <span class="ayuda-q__chev" [class.ayuda-q__chev--up]="esPreguntaAbierta(faq.pregunta)">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </span>
+                  </button>
+                  @if (esPreguntaAbierta(faq.pregunta)) {
+                    <div class="ayuda-q__answer">
+                      <p>{{ faq.respuesta }}</p>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </section>
+      } @empty {
+        <div class="ayuda-empty">
+          <p>No hay resultados para «{{ search() }}». Prueba otras palabras o revisa la ortografía.</p>
+          <button type="button" class="ayuda-empty__clear" (click)="search.set('')">Limpiar búsqueda</button>
+        </div>
+      }
+    </div>
+
+    <aside class="ayuda-cta" appScrollReveal="reveal-scale">
+      <div class="ayuda-cta__glow" aria-hidden="true"></div>
+      <div class="ayuda-cta__content">
+        <h2 class="ayuda-cta__title">¿No encontraste lo que buscabas?</h2>
+        <p class="ayuda-cta__text">Escríbenos o revisa el mapa del sitio: resolvemos dudas en poco tiempo.</p>
+        <div class="ayuda-cta__actions">
+          <a routerLink="/contacto" class="btn btn-primary btn--premium-primary ayuda-cta__btn">Contáctanos</a>
+          <a routerLink="/mapa-sitio" class="btn btn-secondary btn--premium-outline ayuda-cta__btn ayuda-cta__btn--outline">Mapa del sitio</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<app-footer></app-footer>

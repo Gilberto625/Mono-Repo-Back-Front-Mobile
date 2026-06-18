@@ -1,0 +1,4 @@
+ollama pull qwen2.5-coder:7b
+
+ .\.venv-rasp\Scripts\Activate.ps1
+python manage.py runserver

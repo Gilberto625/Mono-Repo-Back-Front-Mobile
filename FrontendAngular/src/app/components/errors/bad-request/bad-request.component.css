@@ -1,0 +1,112 @@
+.error-container {
+  min-height: calc(100vh - 160px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #0a0a0a 100%);
+}
+
+.error-content {
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+}
+
+.error-illustration {
+  margin-bottom: var(--spacing-xl);
+  display: flex;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.error-illustration svg {
+  max-width: 300px;
+  height: auto;
+}
+
+.error-code {
+  font-size: 120px;
+  font-weight: var(--font-weight-bold);
+  color: #ff9800;
+  line-height: 1;
+  margin-bottom: var(--spacing-md);
+  text-shadow: 0 0 20px rgba(255, 152, 0, 0.5);
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+.error-title {
+  font-size: 32px;
+  font-weight: var(--font-weight-bold);
+  color: var(--text-on-dark);
+  margin-bottom: var(--spacing-md);
+}
+
+.error-message {
+  font-size: 18px;
+  color: var(--text-on-dark-secondary);
+  margin-bottom: var(--spacing-xl);
+  line-height: 1.6;
+}
+
+.error-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-xl);
+}
+
+.error-actions .btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 12px 24px;
+  font-size: 16px;
+  min-width: 160px;
+  justify-content: center;
+}
+
+.error-help {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+}
+
+.error-help a {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-weight: var(--font-weight-semibold);
+}
+
+.error-help a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .error-code {
+    font-size: 80px;
+  }
+  
+  .error-title {
+    font-size: 24px;
+  }
+  
+  .error-message {
+    font-size: 16px;
+  }
+  
+  .error-actions {
+    flex-direction: column;
+  }
+  
+  .error-actions .btn {
+    width: 100%;
+  }
+}

@@ -1,0 +1,300 @@
+<app-navbar [isLoggedIn]="false"></app-navbar>
+
+<div class="contact-page">
+  <div class="container contact-inner">
+    <header class="contact-hero" appScrollReveal>
+      <div class="contact-eyebrow">
+        <span class="contact-eyebrow__dot"></span>
+        Stylo Barber Connect
+      </div>
+      <h1 class="contact-title">Contáctanos</h1>
+      <p class="contact-sub">Estamos para ayudarte. Escríbenos y te respondemos lo antes posible.</p>
+    </header>
+
+    <div class="contact-grid">
+      <div class="contact-col contact-col--form" appScrollReveal="reveal-left">
+        <div class="contact-panel contact-panel--form">
+          <div class="contact-panel__head">
+            <span class="contact-panel__label">Mensaje</span>
+            <h2 class="contact-panel__title">Envíanos un mensaje</h2>
+            <p class="contact-panel__intro">Completa el formulario; nuestro equipo revisará tu solicitud.</p>
+          </div>
+
+          <form [formGroup]="contactoForm" (ngSubmit)="onSubmit()">
+            <div class="form-group mb-md">
+              <label for="nombre" class="contact-label">Nombre completo *</label>
+              <input
+                id="nombre"
+                type="text"
+                formControlName="nombre"
+                class="contact-input"
+                [class.contact-input--error]="contactoForm.get('nombre')?.invalid && contactoForm.get('nombre')?.touched"
+                placeholder="Juan Pérez"
+              />
+              <div class="contact-error" *ngIf="contactoForm.get('nombre')?.hasError('required') && contactoForm.get('nombre')?.touched">
+                El nombre es obligatorio
+              </div>
+            </div>
+
+            <div class="form-group mb-md">
+              <label for="correo" class="contact-label">Correo electrónico *</label>
+              <input
+                id="correo"
+                type="email"
+                formControlName="correo"
+                class="contact-input"
+                [class.contact-input--error]="contactoForm.get('correo')?.invalid && contactoForm.get('correo')?.touched"
+                placeholder="juan@example.com"
+              />
+              <div class="contact-error" *ngIf="contactoForm.get('correo')?.hasError('required') && contactoForm.get('correo')?.touched">
+                El correo es obligatorio
+              </div>
+              <div class="contact-error" *ngIf="contactoForm.get('correo')?.hasError('email') && contactoForm.get('correo')?.touched">
+                Ingresa un correo válido
+              </div>
+            </div>
+
+            <div class="form-group mb-md">
+              <label for="telefono" class="contact-label">Teléfono *</label>
+              <input
+                id="telefono"
+                type="tel"
+                formControlName="telefono"
+                class="contact-input"
+                [class.contact-input--error]="contactoForm.get('telefono')?.invalid && contactoForm.get('telefono')?.touched"
+                placeholder="7711234567"
+              />
+              <div class="contact-error" *ngIf="contactoForm.get('telefono')?.hasError('required') && contactoForm.get('telefono')?.touched">
+                El teléfono es obligatorio
+              </div>
+              <div class="contact-error" *ngIf="contactoForm.get('telefono')?.hasError('pattern') && contactoForm.get('telefono')?.touched">
+                Debe contener 10 dígitos
+              </div>
+            </div>
+
+            <div class="form-group mb-md">
+              <label for="asunto" class="contact-label">Asunto *</label>
+              <select
+                id="asunto"
+                formControlName="asunto"
+                class="contact-input contact-select"
+                [class.contact-input--error]="contactoForm.get('asunto')?.invalid && contactoForm.get('asunto')?.touched"
+              >
+                <option value="" disabled selected>Selecciona un asunto</option>
+                <option value="consulta">Consulta general</option>
+                <option value="cita">Solicitud de cita</option>
+                <option value="producto">Consulta sobre productos</option>
+                <option value="reclamo">Reclamo o sugerencia</option>
+                <option value="otro">Otro</option>
+              </select>
+              <div class="contact-error" *ngIf="contactoForm.get('asunto')?.hasError('required') && contactoForm.get('asunto')?.touched">
+                Selecciona un asunto
+              </div>
+            </div>
+
+            <div class="form-group mb-lg">
+              <label for="mensaje" class="contact-label">Mensaje *</label>
+              <textarea
+                id="mensaje"
+                formControlName="mensaje"
+                class="contact-input contact-textarea"
+                rows="5"
+                [class.contact-input--error]="contactoForm.get('mensaje')?.invalid && contactoForm.get('mensaje')?.touched"
+                placeholder="Escribe tu mensaje aquí…"
+              ></textarea>
+              <div class="contact-error" *ngIf="contactoForm.get('mensaje')?.hasError('required') && contactoForm.get('mensaje')?.touched">
+                El mensaje es obligatorio
+              </div>
+              <div class="contact-error" *ngIf="contactoForm.get('mensaje')?.hasError('minlength') && contactoForm.get('mensaje')?.touched">
+                El mensaje debe tener al menos 10 caracteres
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              class="btn btn-primary btn--premium-primary contact-submit"
+              [disabled]="loading || contactoForm.invalid"
+              [attr.aria-busy]="loading"
+            >
+              <span *ngIf="!loading">Enviar mensaje</span>
+              <span *ngIf="loading" class="contact-submit__spinner" aria-hidden="true"></span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="contact-col contact-col--aside" appScrollReveal="reveal-right">
+        <div class="contact-stack" appScrollReveal="stagger">
+          <div class="contact-panel">
+            <div class="contact-panel__head contact-panel__head--compact">
+              <span class="contact-panel__label">Datos</span>
+              <h2 class="contact-panel__title contact-panel__title--sm">Información de contacto</h2>
+            </div>
+            @if (cargandoInfo) {
+              <p class="contact-muted">Cargando información…</p>
+            } @else {
+              <div class="contact-info">
+                <div class="contact-info__row">
+                  <div class="contact-info__icon" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path
+                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="contact-info__k">Teléfono</p>
+                    <p class="contact-info__v">{{ contactoInfo.telefono }}</p>
+                  </div>
+                </div>
+
+                <div class="contact-info__row">
+                  <div class="contact-info__icon" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                      <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="contact-info__k">Correo</p>
+                    <p class="contact-info__v">{{ contactoInfo.correo }}</p>
+                  </div>
+                </div>
+
+                <div class="contact-info__row">
+                  <div class="contact-info__icon" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="contact-info__k">Dirección</p>
+                    <p class="contact-info__v">{{ contactoInfo.direccion }}</p>
+                  </div>
+                </div>
+
+                <div class="contact-info__row">
+                  <div class="contact-info__icon" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="contact-info__k">Horario</p>
+                    <p class="contact-info__v contact-info__v--pre">{{ contactoInfo.horario }}</p>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          @if (contactoInfo.facebook_url || contactoInfo.instagram_url || contactoInfo.x_url || contactoInfo.tiktok_url || contactoInfo.whatsapp_url) {
+            <div class="contact-panel">
+              <div class="contact-panel__head contact-panel__head--compact">
+                <span class="contact-panel__label">Social</span>
+                <h3 class="contact-panel__title contact-panel__title--sm">Redes sociales</h3>
+              </div>
+              <div class="contact-social">
+                @if (contactoInfo.facebook_url) {
+                  <a [href]="contactoInfo.facebook_url" class="contact-social__link" target="_blank" rel="noopener">
+                    <span class="contact-social__ic" aria-hidden="true">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                      </svg>
+                    </span>
+                    Facebook
+                  </a>
+                }
+                @if (contactoInfo.instagram_url) {
+                  <a [href]="contactoInfo.instagram_url" class="contact-social__link" target="_blank" rel="noopener">
+                    <span class="contact-social__ic" aria-hidden="true">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                      </svg>
+                    </span>
+                    Instagram
+                  </a>
+                }
+                @if (contactoInfo.x_url) {
+                  <a [href]="contactoInfo.x_url" class="contact-social__link" target="_blank" rel="noopener">
+                    <span class="contact-social__ic" aria-hidden="true">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                          d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                        />
+                      </svg>
+                    </span>
+                    X
+                  </a>
+                }
+                @if (contactoInfo.tiktok_url) {
+                  <a [href]="contactoInfo.tiktok_url" class="contact-social__link" target="_blank" rel="noopener">
+                    <span class="contact-social__ic" aria-hidden="true">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                          d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.88-2.89 2.89 2.89 0 0 1 2.88-2.89c.28 0 .54.04.79.1v-3.4a6.27 6.27 0 0 0-.79-.05A6.34 6.34 0 0 0 3.16 15.28a6.34 6.34 0 0 0 6.33 6.34 6.34 6.34 0 0 0 6.34-6.34V8.83a8.19 8.19 0 0 0 4.76 1.52v-3.4a4.85 4.85 0 0 1-1-.26z"
+                        />
+                      </svg>
+                    </span>
+                    TikTok
+                  </a>
+                }
+                @if (contactoInfo.whatsapp_url) {
+                  <a [href]="contactoInfo.whatsapp_url" class="contact-social__link" target="_blank" rel="noopener">
+                    <span class="contact-social__ic" aria-hidden="true">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                          d="M16.75 13.96c.25.13 1.47.72 1.68.81.21.1.36.15.51-.08.15-.23.58-.81.71-.97.13-.17.26-.19.49-.06.23.13.96.35 1.82.9.67.42 1.12.75 1.28 1.17.16.42.01 2.39-.58 3.44-.59 1.05-1.39 1.38-2.02 1.59-.63.2-1.42.18-2.01.08-.59-.1-1.35-.31-2.33-.73-.98-.42-2.11-.97-3.64-2.28-1.53-1.31-2.56-2.93-2.86-3.42-.3-.49-1.21-1.61-1.21-3.07s.76-2.18 1.04-2.48c.28-.3.61-.37.81-.37.2 0 .4 0 .58.01.18.01.42-.07.66.5.25.58.83 2 .9 2.14.07.14.11.31.02.48-.09.17-.14.28-.28.43-.14.15-.3.34-.43.46-.14.13-.29.27-.12.53.17.26.76 1.25 1.63 2.02 1.12 1 2.06 1.31 2.35 1.46.29.14.46.12.63-.07.17-.2.73-.85.92-1.14.19-.29.39-.24.66-.14zM12.02 2C6.49 2 2 6.47 2 11.99c0 2.17.7 4.18 1.88 5.81L2.65 22l4.33-1.2a9.96 9.96 0 0 0 5.04 1.37h.01c5.53 0 10.01-4.47 10.01-9.99C22.04 6.47 17.56 2 12.02 2z"
+                        />
+                      </svg>
+                    </span>
+                    WhatsApp
+                  </a>
+                }
+              </div>
+            </div>
+          }
+
+          @if (contactoInfo.google_maps_url || contactoInfo.apple_maps_url) {
+            <div class="contact-panel">
+              <div class="contact-panel__head contact-panel__head--compact">
+                <span class="contact-panel__label">Ubicación</span>
+                <h3 class="contact-panel__title contact-panel__title--sm">Cómo llegar</h3>
+              </div>
+              <div class="contact-social">
+                @if (contactoInfo.google_maps_url) {
+                  <a [href]="contactoInfo.google_maps_url" class="contact-social__link" target="_blank" rel="noopener">
+                    <span class="contact-social__ic" aria-hidden="true">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
+                    </span>
+                    Google Maps
+                  </a>
+                }
+                @if (contactoInfo.apple_maps_url) {
+                  <a [href]="contactoInfo.apple_maps_url" class="contact-social__link" target="_blank" rel="noopener">
+                    <span class="contact-social__ic" aria-hidden="true">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
+                    </span>
+                    Apple Maps
+                  </a>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

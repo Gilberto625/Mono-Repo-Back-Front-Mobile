@@ -1,0 +1,412 @@
+/* Page shell (premium) */
+.inventario-page {
+  min-width: 0;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 6px 0 18px;
+}
+
+.page-head-left {
+  min-width: 0;
+}
+
+.page-title h1 {
+  margin: 0;
+  font-family: var(--font-display, inherit);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.page-sub {
+  margin: 6px 0 0;
+  color: var(--t3, rgba(255, 255, 255, 0.75));
+  font-size: 13px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.stat-icon-total {
+  color: var(--gold, var(--color-accent));
+  background: rgba(212, 175, 55, 0.16);
+}
+
+.stat-icon-ok {
+  color: #4caf50;
+  background: rgba(76, 175, 80, 0.16);
+}
+
+.stat-icon-out {
+  color: #ef5350;
+  background: rgba(239, 83, 80, 0.16);
+}
+
+.stat-icon-alert {
+  color: #ffb74d;
+  background: rgba(255, 183, 77, 0.16);
+}
+
+.results-count .badge {
+  font-weight: 600;
+  color: var(--t2, rgba(255, 255, 255, 0.82));
+}
+
+/* Tabs group (premium) */
+.tabs-group {
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
+  margin: 0 0 16px;
+}
+
+.tab {
+  padding: 10px 14px;
+  font-weight: 650;
+  font-size: 13px;
+  color: var(--t3, rgba(255, 255, 255, 0.72));
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--t2, rgba(255, 255, 255, 0.85));
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tab.active {
+  color: var(--t1, rgba(255, 255, 255, 0.95));
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.22), rgba(212, 175, 55, 0.10));
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.26);
+}
+
+.tab.active:hover {
+  transform: translateY(-1px);
+}
+
+/* Filtro Hoy/Todos en movimientos */
+.btn.btn-text.active {
+  color: var(--color-accent);
+}
+
+/* Filtros: solo activos, categoría y estado */
+.filtros-inventario {
+  padding: 16px;
+}
+
+.filtros-leyenda {
+  font-size: 12px;
+  color: var(--t3, rgba(255, 255, 255, 0.70));
+  margin: 0 0 12px 0;
+}
+
+.filtros-fila {
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.filtro-buscar {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filtro-categoria,
+.filtro-estado {
+  min-width: 140px;
+}
+
+.filtro-label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--t3, rgba(255, 255, 255, 0.68));
+  margin-bottom: 6px;
+}
+
+/* Search bar (premium, scoped) */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.search-bar svg {
+  width: 18px;
+  height: 18px;
+  opacity: 0.75;
+  color: var(--t3, rgba(255, 255, 255, 0.75));
+  flex: 0 0 auto;
+}
+
+.search-bar input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--t1, rgba(255, 255, 255, 0.95));
+  font: inherit;
+}
+
+.search-bar input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Tabla de inventario */
+.inventario-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.inventario-table thead th {
+  font-weight: 750;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--t3, rgba(255, 255, 255, 0.68));
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  white-space: nowrap;
+}
+
+.inventario-table tbody td {
+  padding: 12px 14px;
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Columna Producto: ocupa el espacio restante, min-width para no comprimir */
+.inventario-table th.col-producto,
+.inventario-table td.col-producto {
+  width: 40%;
+  min-width: 200px;
+}
+
+.inventario-table .producto-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.inventario-table .producto-thumb {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  object-fit: contain;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.inventario-table .producto-thumb-placeholder {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inventario-table .producto-thumb-placeholder svg {
+  color: var(--t3, rgba(255, 255, 255, 0.70));
+}
+
+.inventario-table .producto-nombre {
+  font-weight: 650;
+  color: var(--t1, rgba(255, 255, 255, 0.95));
+  word-break: break-word;
+}
+
+/* Columnas numéricas: ancho fijo, alineación derecha */
+.inventario-table th.col-stock,
+.inventario-table td.col-stock,
+.inventario-table th.col-min,
+.inventario-table td.col-min {
+  width: 110px;
+  min-width: 110px;
+  text-align: right;
+}
+
+.inventario-table td.col-stock {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Estado: ancho suficiente para el badge */
+.inventario-table th.col-estado,
+.inventario-table td.col-estado {
+  width: 120px;
+  min-width: 120px;
+}
+
+/* Acciones: espacio suficiente para Entrada + Salida/Eliminar */
+.inventario-table th.col-acciones,
+.inventario-table td.col-acciones {
+  width: 240px;
+  min-width: 220px;
+  text-align: right;
+  padding-right: 14px;
+  vertical-align: middle;
+}
+
+.inventario-table .acciones-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.inventario-table .acciones-cell .btn-accion,
+.inventario-table .acciones-cell .btn-eliminar-inv {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.inventario-table .acciones-cell .btn-accion.disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.inventario-table .acciones-cell .btn-eliminar-inv {
+  color: var(--red, var(--color-error));
+  font-weight: 650;
+}
+
+.inventario-table .acciones-cell .btn-eliminar-inv:hover:not(:disabled) {
+  color: var(--red, var(--color-error));
+  text-decoration: underline;
+}
+
+.inventario-table .acciones-cell .btn-eliminar-inv:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.inventario-table .acciones-cell .eliminando {
+  color: var(--t3, rgba(255, 255, 255, 0.65));
+  font-size: 12px;
+}
+
+/* Fila vacía */
+.inventario-table .empty-row td {
+  text-align: center;
+  padding: 20px;
+  color: var(--t3, rgba(255, 255, 255, 0.65));
+}
+
+.movimientos-header {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.movimientos-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.movimientos-state {
+  padding: 16px;
+  text-align: center;
+}
+
+.movimientos-state.compact {
+  padding: 12px;
+  text-align: left;
+}
+
+.mov-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.mov-icon-entrada {
+  color: #4caf50;
+  background: rgba(76, 175, 80, 0.16);
+}
+
+.mov-icon-salida {
+  color: #ef5350;
+  background: rgba(239, 83, 80, 0.16);
+}
+
+.mov-icon-ajuste {
+  color: #64b5f6;
+  background: rgba(100, 181, 246, 0.16);
+}
+
+.movimiento-main {
+  flex: 1;
+}
+
+.movimiento-title {
+  font-weight: 750;
+}
+
+/* Responsive: en pantallas pequeñas permitir scroll horizontal */
+.table-container {
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .page-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .inventario-table {
+    table-layout: auto;
+    min-width: 600px;
+  }
+
+  .inventario-table th.col-producto,
+  .inventario-table td.col-producto {
+    min-width: 160px;
+  }
+
+  .inventario-table th.col-acciones,
+  .inventario-table td.col-acciones {
+    min-width: 200px;
+  }
+
+  .inventario-table .producto-thumb,
+  .inventario-table .producto-thumb-placeholder {
+    width: 36px;
+    height: 36px;
+  }
+}

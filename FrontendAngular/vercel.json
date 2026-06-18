@@ -1,0 +1,50 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/frontend-angular/browser",
+  "devCommand": "ng serve",
+  "installCommand": "npm install",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "env": {
+    "NODE_VERSION": "18.x"
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains; preload"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://www.googleapis.com https://apis.google.com https://cdnjs.cloudflare.com https://*.firebaseapp.com https://*.googleapis.com https://*.gstatic.com https://sdk.clip.mx https://*.clip.mx; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' data: https: blob: https://res.cloudinary.com https://*.googleusercontent.com https://*.gstatic.com; connect-src 'self' https://backendstylobarberconect-1.onrender.com https://backendbina-1.onrender.com https://*.onrender.com https://frontbina.vercel.app https://*.vercel.app https://www.googleapis.com https://*.googleapis.com https://*.firebaseapp.com https://*.firebaseio.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.cloudinary.com https://oauth2.googleapis.com https://accounts.google.com https://www.google.com wss://*.firebaseio.com https://*.gstatic.com https://*.clip.mx https://api.clip.mx; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://www.google.com https://*.googleapis.com https://*.clip.mx; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none';"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), speaker=(), autoplay=(), fullscreen=(self)"
+        }
+      ]
+    }
+  ]
+}

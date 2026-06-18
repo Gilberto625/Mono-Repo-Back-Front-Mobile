@@ -1,0 +1,159 @@
+/* Premium-scoped styles for Predicción de Ventas. */
+
+.prediccion-page { min-width: 0; --muted: var(--text-on-dark-tertiary, #7a9487); --border: rgba(255,255,255,.10); --text: var(--text-on-dark, #e8ede9); --accent: var(--color-accent, #D4AF37); --card2: rgba(0,0,0,.18); --mono: var(--font-mono,'JetBrains Mono',monospace); }
+
+/* ── Header ── */
+.prediccion-page .stylo-wrap { position: relative; z-index: 1; }
+.prediccion-page .stylo-header { display: flex; align-items: center; gap: 18px; padding: 18px 0 22px; border-bottom: 1px solid rgba(255,255,255,.10); margin-bottom: 18px; }
+.prediccion-page .stylo-logo { width: 46px; height: 46px; border-radius: 10px; background: linear-gradient(135deg,rgba(50,65,61,1),rgba(77,107,94,1)); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.prediccion-page .stylo-header-text h1 { margin: 0; font-size: 1.55rem; font-weight: 900; letter-spacing: -0.02em; }
+.prediccion-page .stylo-header-text h1 span { color: var(--color-accent); }
+.prediccion-page .stylo-header-text p { margin: 4px 0 0; font-size: 12px; color: var(--text-on-dark-tertiary); }
+.prediccion-page .stylo-header-right { margin-left: auto; }
+
+/* ── Section label ── */
+.prediccion-page .section-label { display: flex; align-items: center; gap: 10px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-accent); margin: 16px 0 12px; font-weight: 900; }
+.prediccion-page .section-label::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,.10); }
+
+/* ── Filters / stats ── */
+.prediccion-page .filters-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 12px; }
+.prediccion-page .stats-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.prediccion-page .stat-chip { background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.10); border-radius: 10px; padding: 12px 16px; min-width: 160px; }
+.prediccion-page .sc-label { font-size: 10px; letter-spacing: .10em; text-transform: uppercase; color: var(--text-on-dark-tertiary); font-weight: 900; margin-bottom: 4px; }
+.prediccion-page .sc-val { font-size: 1.2rem; font-weight: 950; }
+.prediccion-page .sc-val.gold { color: var(--color-accent); }
+.prediccion-page .sc-val.pos { color: var(--color-success,#22c55e); }
+.prediccion-page .sc-val.sc-val-small { font-size: 1rem; }
+
+/* ── Misc ── */
+.prediccion-page .divider { height: 1px; background: rgba(255,255,255,.10); margin: 18px 0; }
+.prediccion-page .mt16 { margin-top: 14px; }
+.prediccion-page .pred-muted { margin-bottom: 14px; }
+.prediccion-page .table-wrap { overflow-x: auto; }
+
+/* ── Prediction grid ── */
+.prediccion-page .pred-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.prediccion-page .pred-input-group { display: flex; flex-direction: column; gap: 12px; }
+.prediccion-page .pred-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.prediccion-page .pred-row .field { flex: 1; min-width: 160px; }
+
+/* ── Formula box ── */
+.prediccion-page .formula-box { background: rgba(0,0,0,.18); border: 1px solid rgba(212,175,55,.35); border-radius: 10px; padding: 14px 16px; font-size: 12px; line-height: 1.8; }
+.prediccion-page .formula-box .eq { color: var(--color-accent); font-weight: 900; font-size: 13px; }
+.prediccion-page .formula-box .var { color: var(--color-success,#22c55e); font-weight: 900; }
+.prediccion-page .formula-box .comment { color: var(--text-on-dark-tertiary); font-size: 11px; }
+
+/* ── Empty state ── */
+.prediccion-page .pred-empty { display: flex; align-items: center; justify-content: center; height: 100%; min-height: 220px; color: var(--text-on-dark-tertiary); text-align: center; padding: 18px; border: 1px dashed rgba(255,255,255,.14); border-radius: 12px; background: rgba(0,0,0,.10); }
+.prediccion-page .pred-empty strong { color: var(--color-accent); }
+
+/* ── Steps ── */
+.prediccion-page .steps { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.prediccion-page .step { display: flex; gap: 12px; align-items: flex-start; }
+.prediccion-page .step-num { width: 26px; height: 26px; border-radius: 50%; background: rgba(50,65,61,.55); border: 1px solid rgba(212,175,55,.55); color: var(--color-accent); font-size: 11px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.prediccion-page .step-txt { font-size: 12px; line-height: 1.55; color: var(--text-on-dark-secondary); padding-top: 3px; }
+
+/* ── Result panel ── */
+.prediccion-page .result-panel { background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.10); border-radius: 12px; padding: 14px 16px; font-size: 12px; line-height: 2; min-height: 160px; }
+.prediccion-page .res-line { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,.10); padding: 4px 0; gap: 12px; }
+.prediccion-page .res-line:last-child { border-bottom: none; }
+.prediccion-page .res-key { color: var(--text-on-dark-tertiary); }
+.prediccion-page .res-val { font-weight: 900; }
+.prediccion-page .res-val.gold { color: var(--color-accent); }
+.prediccion-page .res-val-big { font-size: 18px; letter-spacing: .02em; text-shadow: 0 8px 28px rgba(212,175,55,.16); }
+
+/* ── Tabla detalle ── */
+.tabla-detalle { width: 100%; border-collapse: collapse; font-family: var(--mono,'JetBrains Mono',monospace); font-size: .82rem; }
+.tabla-detalle th { text-align: left; padding: 10px 14px; color: var(--muted); border-bottom: 1px solid var(--border); font-weight: 500; text-transform: uppercase; letter-spacing: .08em; font-size: .7rem; }
+.tabla-detalle td { padding: 9px 14px; border-bottom: 1px solid rgba(42,61,53,.5); color: var(--text); }
+.tabla-detalle tbody tr:nth-child(even) { background: var(--card2,#1f2b26); }
+.tabla-detalle tbody tr:hover { background: rgba(212,175,55,.06); }
+.tabla-detalle .text-right { text-align: right; }
+.tabla-detalle .accent-val { color: var(--accent,#D4AF37); font-weight: 700; }
+.tabla-detalle tbody tr.zero td:last-child { color: var(--text-on-dark-tertiary); font-weight: 700; }
+
+/* ── Detalle semanal ── */
+.prediccion-page .detail-week-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 20px 0 0; padding: 11px 16px; border: 1px solid rgba(212,175,55,.18); border-radius: 10px 10px 0 0; background: rgba(212,175,55,.06); font-size: .82rem; flex-wrap: wrap; }
+.prediccion-page .detail-week-head:first-of-type { margin-top: 8px; }
+.prediccion-page .detail-week-title { display: flex; align-items: center; gap: 10px; font-family: var(--mono,'JetBrains Mono',monospace); font-weight: 700; font-size: .83rem; color: var(--text-on-dark,#e8ede9); }
+.prediccion-page .detail-week-badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 20px; background: rgba(212,175,55,.15); border: 1px solid rgba(212,175,55,.30); color: var(--color-accent,#D4AF37); font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.prediccion-page .detail-week-meta { display: inline-flex; gap: 16px; flex-wrap: wrap; font-family: var(--mono,'JetBrains Mono',monospace); font-size: .78rem; color: var(--text-on-dark-tertiary); }
+.prediccion-page .detail-week-meta .accent { color: var(--color-accent,#D4AF37); }
+.prediccion-page .detail-sin-ventas { opacity: .75; }
+.prediccion-page .detail-week-head + .tabla-detalle,
+.prediccion-page .detail-week-head + .detail-semana-vacia { margin-top: 0; border-top: none; border-radius: 0 0 10px 10px; overflow: hidden; }
+.prediccion-page .detail-semana-vacia { padding: 14px 16px; font-family: var(--mono,'JetBrains Mono',monospace); font-size: .78rem; color: var(--text-on-dark-tertiary); border: 1px solid rgba(255,255,255,.08); border-top: none; border-radius: 0 0 10px 10px; background: rgba(0,0,0,.10); margin-bottom: 4px; }
+.prediccion-page .detail-note { padding: 8px 14px 4px; font-family: var(--mono,'JetBrains Mono',monospace); font-size: .78rem; color: var(--text-on-dark-tertiary); margin: 0 0 4px; }
+.prediccion-page .detail-empty { padding: 24px 16px; font-family: var(--mono,'JetBrains Mono',monospace); font-size: .82rem; color: var(--text-on-dark-tertiary); text-align: center; border: 1px dashed rgba(255,255,255,.10); border-radius: 10px; background: rgba(0,0,0,.08); margin: 8px 0; }
+.prediccion-page .detail-pager { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 20px 0 4px; flex-wrap: wrap; }
+.prediccion-page .detail-page { font-family: var(--mono,'JetBrains Mono',monospace); font-size: .82rem; color: var(--text-on-dark-tertiary); padding: 0 4px; }
+.prediccion-page .btn-pager { min-width: 110px; }
+
+/* ── Gráfica barras ── */
+.prediccion-page .chart-with-y { display: grid; grid-template-columns: 58px 1fr; gap: 10px; align-items: stretch; }
+.prediccion-page .y-axis { position: relative; min-height: 320px; border-right: 1px solid rgba(255,255,255,.10); }
+.y-axis-line { padding-top: 8px; padding-bottom: 34px; }
+.y-axis-bars { padding-top: 8px; padding-bottom: 32px; min-height: 270px; height: 270px; }
+.y-axis-inner { position: relative; width: 100%; height: 270px; }
+.y-axis-inner-bars { height: 230px; }
+.prediccion-page .y-tick { position: absolute; right: 8px; transform: translateY(-50%); color: var(--text-on-dark-tertiary); font-size: 11px; white-space: nowrap; }
+.prediccion-page .bars { min-height: 270px; height: 270px; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(44px,1fr); gap: 10px; overflow-x: auto; padding: 10px 6px; background-image: linear-gradient(to top,rgba(255,255,255,.14) 1px,transparent 1px); border-radius: 12px; }
+.bar-item { display: grid; grid-template-rows: 230px 24px; min-width: 38px; height: 254px; position: relative; }
+.bars[data-anim] .bar-item { animation: fadeSlideIn .38s ease both; }
+.prediccion-page .bar-item.bar-start-pred { border-left: 1px dashed rgba(212,175,55,.7); padding-left: 6px; }
+.prediccion-page .bar-item.bar-start-pred::before { content: 'Pred.'; position: absolute; top: -14px; left: 10px; color: var(--color-accent); font-size: 11px; font-weight: 800; }
+.bar-track { grid-row: 1; height: 230px; display: flex; align-items: flex-end; border-bottom: 1px solid rgba(255,255,255,.2); position: relative; }
+.prediccion-page .bar { width: 100%; background: linear-gradient(180deg,rgba(91,164,212,.70),rgba(91,164,212,.95)); border: 1px solid rgba(91,164,212,.85); border-radius: 8px 8px 0 0; position: relative; transform-origin: bottom; animation: predGrowBar .55s cubic-bezier(.18,.78,.2,1) both; }
+.prediccion-page .bar-pred { background: linear-gradient(180deg,rgba(212,175,55,.68),rgba(212,175,55,.92)); border-color: rgba(212,175,55,.88); }
+.bar.bar-zero { border: none; }
+.prediccion-page .bar-zero-marker { position: absolute; left: 50%; bottom: -1px; width: 30px; height: 2px; transform: translateX(-50%); background: rgba(255,255,255,.70); }
+.prediccion-page .bar-zero-value { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); color: var(--text-on-dark-secondary); font-size: 11px; font-weight: 800; }
+.prediccion-page .bar-inner-value { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); color: var(--text-on-dark); font-size: 11px; font-weight: 800; }
+.prediccion-page .label { grid-row: 2; font-size: 10px; color: var(--text-on-dark-tertiary); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── Gráfica línea ── */
+.prediccion-page .line-chart-wrap { position: relative; min-height: 320px; border-radius: 12px; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.10); padding: 10px 12px 36px; }
+.line-plot-area { position: relative; height: 270px; }
+.line-chart { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.prediccion-page .line-grid { fill: none; stroke: rgba(255,255,255,.14); stroke-width: .6; }
+.prediccion-page .line-grid-zero { fill: none; stroke: rgba(255,255,255,.28); stroke-width: .8; }
+.prediccion-page .line-hist { fill: none; stroke: #5BA4D4; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.prediccion-page .line-pred { fill: none; stroke: var(--color-accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 3 2; }
+.prediccion-page .line-point { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: #5BA4D4; border: 1px solid rgba(255,255,255,.70); transform: translate(-50%,-50%); }
+.prediccion-page .line-point.point-pred { background: var(--color-accent); }
+.prediccion-page .line-point-value { position: absolute; transform: translate(-50%,-140%); color: var(--text-on-dark-secondary); font-size: 11px; font-weight: 800; white-space: nowrap; }
+.prediccion-page .line-point-value.point-value-pred { color: var(--color-accent); }
+.line-labels { position: absolute; left: 10px; right: 10px; bottom: 8px; height: 20px; }
+.prediccion-page .line-label { position: absolute; transform: translateX(-50%); color: var(--text-on-dark-tertiary); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prediccion-page .line-label.line-label-pred { color: var(--color-accent); }
+.prediccion-page .graph-legend { display: flex; gap: 14px; margin-bottom: 12px; font-size: 13px; color: var(--text-on-dark-secondary); flex-wrap: wrap; }
+.legend-item { display: inline-flex; align-items: center; gap: 5px; }
+.prediccion-page .dot { width: 10px; height: 10px; border-radius: 50%; }
+.prediccion-page .dot-hist { background: #5BA4D4; }
+.prediccion-page .dot-pred { background: var(--color-accent); }
+
+/* ── Curva matemática ── */
+.prediccion-page .curve-container { margin-top: 20px; background: rgba(0,0,0,.22); border: 1px solid rgba(212,175,55,.20); border-radius: 14px; overflow: hidden; }
+.prediccion-page .curve-header { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-bottom: 1px solid rgba(255,255,255,.08); background: rgba(212,175,55,.05); }
+.prediccion-page .curve-title { font-size: 11px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: var(--color-accent); font-family: 'JetBrains Mono',monospace; }
+.prediccion-page .curve-chart { padding: 16px 16px 12px; }
+.prediccion-page .curve-svg { width: 100%; height: auto; display: block; }
+.curve-line { stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Result panel compact (predicción destacada) ── */
+.prediccion-page .result-panel-compact { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 28px 20px; min-height: 160px; border: 1px solid rgba(212,175,55,.30); background: rgba(212,175,55,.04); }
+.prediccion-page .res-pred-hero { text-align: center; }
+.prediccion-page .res-pred-label { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-on-dark-tertiary); font-weight: 800; margin-bottom: 8px; }
+.prediccion-page .res-pred-value { font-size: 3rem; font-weight: 950; color: var(--color-accent); letter-spacing: -.02em; line-height: 1; text-shadow: 0 4px 24px rgba(212,175,55,.30); }
+.prediccion-page .res-badge-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.prediccion-page .res-badge { display: inline-flex; align-items: center; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.20); color: var(--text-on-dark-secondary); }
+.prediccion-page .res-badge-date { border-color: rgba(212,175,55,.30); color: var(--color-accent); background: rgba(212,175,55,.08); }
+.prediccion-page .res-badge-up { border-color: rgba(34,197,94,.35); color: #4ade80; background: rgba(34,197,94,.08); }
+.prediccion-page .res-badge-down { border-color: rgba(239,68,68,.35); color: #f87171; background: rgba(239,68,68,.08); }
+.prediccion-page .res-badge-flat { border-color: rgba(255,255,255,.18); color: var(--text-on-dark-secondary); }
+
+/* ── Animations ── */
+@keyframes predGrowBar { from { transform: scaleY(.08); opacity: .25; } to { transform: scaleY(1); opacity: 1; } }
+
+/* ── Responsive ── */
+@media (max-width: 900px) { .prediccion-page .pred-grid { grid-template-columns: 1fr; } }

@@ -1,0 +1,301 @@
+<div class="layout-sidebar">
+  <app-sidebar rol="admin"></app-sidebar>
+
+  <main class="main-content respaldo-page">
+    <app-breadcrumb></app-breadcrumb>
+
+    <div class="page-hero">
+      <div class="hero-bg"></div>
+      <div class="page-head">
+      <div class="page-head-left">
+        <div class="hero-kicker">
+          <span class="badge badge-gold">PostgreSQL</span>
+          <span class="badge badge-outline">Operación crítica</span>
+        </div>
+        <div class="page-title">
+          <h1>Respaldos de base de datos</h1>
+          <p class="page-sub">Estado del motor, generación/descarga de respaldos y exportación CSV por tabla.</p>
+        </div>
+      </div>
+      <div class="page-head-right">
+        <div class="hero-actions">
+          <button type="button" class="btn btn-secondary" [disabled]="loading" (click)="cargarEstado(true)">
+            Actualizar estado
+          </button>
+          <button type="button" class="btn btn-primary" [disabled]="creandoRespaldo || loading" (click)="crearRespaldo()">
+            {{ creandoRespaldo ? 'Generando respaldo completo…' : 'Generar respaldo completo' }}
+          </button>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    @if (error) {
+      <div class="alert alert-error mb-md">{{ error }}</div>
+    }
+    @if (mensaje) {
+      <div class="alert alert-success mb-md">{{ mensaje }}</div>
+    }
+
+    @if (loading) {
+      <div class="card">
+        <p class="text-muted mb-0">Cargando estado de respaldo...</p>
+      </div>
+    } @else {
+      <div class="stats-grid mb-lg">
+        <div class="stat-card">
+          <p class="status-label">Motor de BD</p>
+          <p class="status-value">{{ status?.db_vendor || '-' }}</p>
+          <p class="text-small text-muted mb-0">Vendor detectado por backend</p>
+        </div>
+        <div class="stat-card">
+          <p class="status-label">Base de datos</p>
+          <p class="status-value">{{ status?.db_name || '-' }}</p>
+          <p class="text-small text-muted mb-0">Entorno actual</p>
+        </div>
+        <div class="stat-card">
+          <p class="status-label">Tamaño actual</p>
+          <p class="status-value">{{ status?.db_size_humano || '0 B' }}</p>
+          <p class="text-small text-muted mb-0">Tamaño total de la BD</p>
+        </div>
+        <div class="stat-card">
+          <p class="status-label">Último respaldo</p>
+          <p class="status-value">{{ formatFecha(status?.ultima_ejecucion) }}</p>
+          <p class="text-small text-muted mb-0">Última ejecución registrada</p>
+        </div>
+      </div>
+
+      <div class="card mb-lg action-grid">
+        <div class="action-tile">
+          <div class="action-tile-head">
+            <p class="overline">Recomendado</p>
+            <h3 class="card-title mb-0">Respaldo completo</h3>
+          </div>
+          <p class="text-muted">Genera un ZIP integral (estructura + datos) para recuperación total.</p>
+          <div class="action-tile-actions">
+            <button type="button" class="btn btn-primary" [disabled]="creandoRespaldo || loading" (click)="crearRespaldo()">
+              {{ creandoRespaldo ? 'Generando…' : 'Generar ahora' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="action-tile">
+          <div class="action-tile-head">
+            <p class="overline">Rápido</p>
+            <h3 class="card-title mb-0">Respaldo lógico</h3>
+          </div>
+          <p class="text-muted">Descarga inmediata por módulo (con dependencias mínimas).</p>
+          <div class="action-tile-actions">
+            <button type="button" class="btn btn-secondary" [disabled]="creandoRespaldoLogico || loading" (click)="crearRespaldoLogico()">
+              {{ creandoRespaldoLogico ? 'Generando…' : 'Generar lógico' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="action-tile">
+          <div class="action-tile-head">
+            <p class="overline">Auditoría</p>
+            <h3 class="card-title mb-0">Exportar CSV</h3>
+          </div>
+          <p class="text-muted">Exporta tablas específicas para análisis o conciliación.</p>
+          <div class="action-tile-actions">
+            <button type="button" class="btn btn-secondary" [disabled]="!schemaFiltro" (click)="cargarTablas()">Listar tablas</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-lg">
+        <div class="card-head list-header">
+          <div>
+            <p class="overline">Módulos</p>
+            <h3 class="card-title mb-0">Respaldos lógicos</h3>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" [disabled]="creandoRespaldoLogico || loading" (click)="crearRespaldoLogico()">
+            {{ creandoRespaldoLogico ? 'Generando respaldo lógico...' : 'Generar respaldo lógico' }}
+          </button>
+        </div>
+        <div class="filters-grid mb-md">
+          <div class="form-group">
+            <label class="form-label" for="respaldoLogicoKind">Módulo prioritario</label>
+            <select id="respaldoLogicoKind" class="form-input" [(ngModel)]="respaldoLogicoKind">
+              <option value="citas">Citas + Anticipos (pagos)</option>
+              <option value="compras">Compras (Pedidos online)</option>
+              <option value="inventario">Inventario + Productos</option>
+              <option value="servicios">Servicios (catálogo)</option>
+            </select>
+            <small class="text-muted">Descarga inmediata. Se registra en historial como respaldo_logico_*.</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">¿Qué incluye?</label>
+            <p class="text-muted mb-0">
+              Tablas del núcleo del negocio relacionadas al módulo seleccionado (con dependencias mínimas para recuperación).
+            </p>
+          </div>
+          <div class="form-group form-actions-inline">
+            <button class="btn btn-secondary" type="button" (click)="cargarEstado(true)">Actualizar historial</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-lg">
+        <div class="card-head list-header">
+          <div>
+            <p class="overline">Tablas</p>
+            <h3 class="card-title mb-0">Respaldo y exportación CSV</h3>
+          </div>
+          <button type="button" class="btn btn-text btn-sm" [disabled]="cargandoTablas" (click)="cargarTablas()">Actualizar tablas</button>
+        </div>
+
+        <div class="filters-grid mb-md">
+          <div class="form-group">
+            <label class="form-label" for="schemaFiltro">Filtrar por esquema</label>
+            <select id="schemaFiltro" class="form-input" [(ngModel)]="schemaFiltro" (change)="onSchemaChange()">
+              <option value="">Selecciona un esquema…</option>
+              <option value="negocio">negocio</option>
+              <option value="stg">stg</option>
+              <option value="rpt">rpt</option>
+            </select>
+            <small class="text-muted">Solo se permite exportar de: negocio, stg, rpt.</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tablaFiltro">Tabla específica (opcional)</label>
+            <select id="tablaFiltro" class="form-input" [(ngModel)]="tablaFiltro" [disabled]="!schemaFiltro || !filtrosAplicados">
+              <option value="">Todas las tablas</option>
+              @for (t of tablas; track t.schema + '.' + t.table) {
+                <option [value]="t.table">{{ t.table }}</option>
+              }
+            </select>
+            <small class="text-muted">Primero selecciona el esquema y aplica filtros.</small>
+          </div>
+          <div class="form-group form-actions-inline">
+            <button type="button" class="btn btn-secondary" [disabled]="cargandoTablas" (click)="cargarTablas()">Aplicar filtros</button>
+          </div>
+        </div>
+
+        @if (!filtrosAplicados) {
+          <p class="text-muted mb-0">Selecciona un esquema y presiona “Aplicar filtros” para listar tablas.</p>
+        } @else {
+        <div class="selection-actions mb-md">
+          <button type="button" class="btn btn-secondary btn-sm" (click)="seleccionarTodasVisibles()">Seleccionar todo (visible)</button>
+          <button type="button" class="btn btn-secondary btn-sm" (click)="invertirSeleccionVisible()">Invertir selección</button>
+          <button type="button" class="btn btn-text btn-sm" (click)="limpiarSeleccion()">Limpiar selección</button>
+          <span class="text-muted text-small">Seleccionadas: {{ seleccionadas.size }}</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">
+                  <input
+                    type="checkbox"
+                    [checked]="todasVisiblesSeleccionadas"
+                    (change)="toggleSeleccionMaestra()"
+                    title="Seleccionar o deseleccionar todas las visibles"
+                  >
+                </th>
+                <th scope="col">Esquema</th>
+                <th scope="col">Tabla</th>
+                <th scope="col">Filas (est.)</th>
+                <th scope="col">CSV</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of tablasFiltradas; track item.schema + '.' + item.table) {
+                <tr>
+                  <td>
+                    <input
+                      type="checkbox"
+                      [checked]="seleccionadas.has(item.schema + '.' + item.table)"
+                      (change)="toggleTabla(item)"
+                    >
+                  </td>
+                  <td>{{ item.schema }}</td>
+                  <td>{{ item.table }}</td>
+                  <td>{{ item.rows_est }}</td>
+                  <td>
+                    <button type="button" class="btn btn-sm btn-secondary" (click)="exportarCSV(item)">Exportar CSV</button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="text-center">No hay tablas para mostrar</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        }
+      </div>
+
+      <div class="card">
+        <div class="list-header">
+          <h3 class="section-title">Historial de respaldos completos</h3>
+          <button type="button" class="btn btn-text btn-sm" (click)="cargarEstado(true)">Actualizar</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Archivo</th>
+                <th scope="col">Tamaño</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Hora</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of respaldosCompletos; track item.archivo) {
+                <tr>
+                  <td>{{ item.archivo }}</td>
+                  <td>{{ item.size_humano }}</td>
+                  <td>{{ formatSoloFecha(item.fecha) }}</td>
+                  <td>{{ formatSoloHora(item.fecha) }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="text-center">Aún no hay respaldos generados</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="list-header">
+          <h3 class="section-title">Historial de respaldos lógicos</h3>
+          <button type="button" class="btn btn-text btn-sm" (click)="cargarEstado(true)">Actualizar</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Archivo</th>
+                <th scope="col">Tamaño</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Hora</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of respaldosLogicos; track item.archivo) {
+                <tr>
+                  <td>{{ item.archivo }}</td>
+                  <td>{{ item.size_humano }}</td>
+                  <td>{{ formatSoloFecha(item.fecha) }}</td>
+                  <td>{{ formatSoloHora(item.fecha) }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="text-center">Aún no hay respaldos lógicos generados</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  </main>
+</div>
+

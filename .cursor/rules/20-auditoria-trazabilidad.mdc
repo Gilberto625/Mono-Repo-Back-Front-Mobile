@@ -1,0 +1,82 @@
+---
+description: Auditoría, bitácora, trazabilidad, historial y cumplimiento
+globs: ["backend/apps/audit/**/*.py", "backend/apps/**/*.py", "frontend/src/app/features/admin/audit/**/*"]
+alwaysApply: false
+---
+
+# Auditoría y Trazabilidad
+
+## Principio
+Toda acción crítica debe dejar evidencia.
+
+## Tabla recomendada
+```txt
+negocio.auditoria_evento
+```
+
+Campos:
+```txt
+usuario_id
+rol_activo
+accion
+modulo
+referencia_tipo
+referencia_id
+descripcion
+valor_anterior
+valor_nuevo
+ip_origen
+user_agent
+resultado
+nivel
+fecha_hora
+```
+
+## Eventos
+```txt
+LOGIN_EXITOSO
+LOGIN_FALLIDO
+ACCESO_DENEGADO
+USUARIO_CREADO
+ROL_ASIGNADO
+CITA_CREADA
+CITA_CANCELADA
+ASISTENCIA_CONFIRMADA
+CITA_NO_ASISTIO
+ANTICIPO_VALIDADO
+CLIP_PAGO_CREADO
+CLIP_WEBHOOK_RECIBIDO
+CLIP_PAGO_CONFIRMADO
+PRODUCTO_CREADO
+INVENTARIO_AJUSTADO
+PEDIDO_CREADO
+VENTA_REGISTRADA
+CONFIGURACION_MODIFICADA
+CONTENIDO_LEGAL_PUBLICADO
+```
+
+## Reglas
+- No registrar contraseñas.
+- No registrar JWT completos.
+- No registrar API keys.
+- No registrar datos de tarjeta.
+- Webhooks auditados.
+- Cambios de estado con historial.
+- Inventario con movimiento.
+- Exportación futura solo admin.
+
+## Angular admin
+Crear:
+```txt
+features/admin/audit/
+├── audit-table/
+├── audit-filters/
+├── audit-detail-modal/
+└── audit-level-badge/
+```
+
+## Endpoint
+```txt
+GET /api/v1/admin/audit/events/
+GET /api/v1/admin/audit/events/{id}/
+```

@@ -1,0 +1,201 @@
+<div class="layout-sidebar">
+  <app-sidebar rol="admin"></app-sidebar>
+
+  <main class="main-content reportes-page">
+    <app-breadcrumb></app-breadcrumb>
+
+    <div class="page-head">
+      <div class="page-head-left">
+        <div class="page-title">
+          <h1>Reportes</h1>
+          <p class="page-sub">Analiza el rendimiento del negocio</p>
+        </div>
+      </div>
+      <div class="page-head-right">
+        <div class="card reportes-periodo">
+          <div class="reportes-periodo-inner">
+            <p class="reportes-periodo-label">Período</p>
+            <div class="reportes-periodo-value" aria-label="Período actual">
+              {{ periodoEtiquetaActual }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alertas inteligentes -->
+    @if (!loading) {
+      <section class="reportes-seccion">
+        <div class="card-head">
+          <p class="overline">Monitoreo</p>
+          <h2 class="card-title">Alertas inteligentes</h2>
+        </div>
+        <div class="alertas-grid">
+          @for (a of alertasInteligentes; track $index) {
+            <article class="alerta-card card" [ngClass]="claseAlerta(a.nivel)">
+              <p class="alerta-kicker">{{ a.nivel | uppercase }}</p>
+              <h4>{{ a.titulo }}</h4>
+              <p class="text-small mb-0">{{ a.mensaje }}</p>
+              <a
+                class="btn btn-text alerta-cta"
+                [ngClass]="claseBotonAlerta(a.nivel)"
+                [routerLink]="['/admin/reportes/vista']"
+                [queryParams]="queryParamsPorTipo(a.tipoReporte)"
+              >
+                <svg class="alerta-cta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12,5 19,12 12,19"></polyline>
+                </svg>
+                {{ a.accionLabel || 'Ir al reporte' }}
+              </a>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Reportes de Ventas -->
+    <section class="reportes-seccion">
+      <div class="card-head">
+        <p class="overline">Ingresos</p>
+        <h2 class="card-title">Reportes de ventas</h2>
+      </div>
+      <div class="reportes-grid">
+        <a [routerLink]="['/admin/reportes/vista']" [queryParams]="queryParamsPorTipo('ventas-dia')" class="reporte-card card">
+          <div class="reporte-card-header">
+            <div class="reporte-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <span class="badge badge-gold">Diario</span>
+          </div>
+          <h4>Ventas del Día</h4>
+          <p class="text-small">Ingresos cobrados/validados (servicios + productos)</p>
+          <p class="reporte-valor">{{ formatMonto(ventasDiaTotal) }}</p>
+          <p class="text-small mb-0" [ngClass]="getVariacionClase(ventasDiaVariacion)">{{ ventasDiaVariacion >= 0 ? '+' : '' }}{{ ventasDiaVariacion }}% vs ayer</p>
+        </a>
+
+        <a [routerLink]="['/admin/reportes/vista']" [queryParams]="queryParamsPorTipo('ventas-semana')" class="reporte-card card">
+          <div class="reporte-card-header">
+            <div class="reporte-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+            </div>
+            <span class="badge badge-info">Semanal</span>
+          </div>
+          <h4>Ventas Semanales</h4>
+          <p class="text-small">Comparativa de ingresos cobrados/validados</p>
+          <p class="reporte-valor">{{ formatMonto(ventasSemanaTotal) }}</p>
+          <p class="text-small mb-0" [ngClass]="getVariacionClase(ventasSemanaVariacion)">{{ ventasSemanaVariacion >= 0 ? '+' : '' }}{{ ventasSemanaVariacion }}% vs semana pasada</p>
+        </a>
+
+        <a [routerLink]="['/admin/reportes/vista']" [queryParams]="queryParamsPorTipo('ventas-mes')" class="reporte-card card">
+          <div class="reporte-card-header">
+            <div class="reporte-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+            </div>
+            <span class="badge badge-success">Mensual</span>
+          </div>
+          <h4>Ventas del Mes</h4>
+          <p class="text-small">Reporte del período (solo pagos cobrados/validados)</p>
+          <p class="reporte-valor">{{ formatMonto(ventasMesTotal) }}</p>
+          <p class="text-small mb-0" [ngClass]="getVariacionClase(ventasMesVariacion)">{{ ventasMesVariacion >= 0 ? '+' : '' }}{{ ventasMesVariacion }}% vs mes anterior</p>
+        </a>
+      </div>
+    </section>
+
+    <!-- Reportes de Servicios -->
+    <section class="reportes-seccion">
+      <div class="card-head">
+        <p class="overline">Operación</p>
+        <h2 class="card-title">Reportes de servicios</h2>
+      </div>
+      <div class="reportes-grid">
+        <a [routerLink]="['/admin/reportes/vista']" [queryParams]="queryParamsPorTipo('servicios-populares')" class="reporte-card card">
+          <div class="reporte-card-header">
+            <div class="reporte-card-icon info">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            </div>
+          </div>
+          <h4>Servicios Más Populares</h4>
+          <p class="text-small">Ranking de servicios por demanda</p>
+          <p class="text-muted mb-0">{{ (datosReportes?.resumen?.['servicios_activos'] ?? 0) > 0 ? ((datosReportes?.resumen?.['servicios_activos'] ?? 0) + ' servicios activos · Ver por período') : 'Sin datos aún · Ver por período' }}</p>
+        </a>
+
+        <a [routerLink]="['/admin/reportes/vista']" [queryParams]="queryParamsPorTipo('citas')" class="reporte-card card">
+          <div class="reporte-card-header">
+            <div class="reporte-card-icon warning">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+          </div>
+          <h4>Reporte de Citas</h4>
+          <p class="text-small">Completadas, canceladas y no-shows</p>
+          <p class="text-muted mb-0">{{ totalCitas > 0 ? (totalCitas + ' citas · ' + tasaAsistencia + '% tasa de asistencia') : 'Sin citas aún · 0% tasa' }}</p>
+        </a>
+
+        <a [routerLink]="['/admin/reportes/vista']" [queryParams]="queryParamsPorTipo('horarios')" class="reporte-card card">
+          <div class="reporte-card-header">
+            <div class="reporte-card-icon success">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+            </div>
+          </div>
+          <h4>Ocupación por Horario</h4>
+          <p class="text-small">Análisis de horas pico (citas completadas)</p>
+          <p class="text-muted mb-0">Sin datos de demanda aún · Ver por período</p>
+        </a>
+      </div>
+    </section>
+
+    <!-- Reportes de Productos -->
+    <section class="reportes-seccion">
+      <div class="card-head">
+        <p class="overline">Catálogo</p>
+        <h2 class="card-title">Reportes de productos</h2>
+      </div>
+      <div class="reportes-grid">
+        <a [routerLink]="['/admin/reportes/vista']" [queryParams]="queryParamsPorTipo('productos-vendidos')" class="reporte-card card">
+          <div class="reporte-card-header">
+            <div class="reporte-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </div>
+          </div>
+          <h4>Productos Más Vendidos</h4>
+          <p class="text-small">Top productos por volumen de venta (ventas a clientes)</p>
+          <p class="text-muted mb-0">{{ (datosReportes?.resumen?.['productos_activos'] ?? 0) > 0 ? ((datosReportes?.resumen?.['productos_activos'] ?? 0) + ' productos activos · Ver por período') : 'Sin datos aún · Ver por período' }}</p>
+        </a>
+
+        <a [routerLink]="['/admin/reportes/vista']" [queryParams]="queryParamsPorTipo('inventario')" class="reporte-card card">
+          <div class="reporte-card-header">
+            <div class="reporte-card-icon error">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+            </div>
+          </div>
+          <h4>Movimientos de Inventario</h4>
+          <p class="text-small">Entradas, salidas, ventas y ajustes</p>
+          <p class="text-muted mb-0">Ver por período</p>
+        </a>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="navbar-mobile">
+  <a routerLink="/admin/dashboard" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a routerLink="/admin/empleados" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Empleados
+  </a>
+  <a routerLink="/admin/servicios" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+    Servicios
+  </a>
+  <a routerLink="/admin/reportes" routerLinkActive="active" class="navbar-mobile-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+    Reportes
+  </a>
+  <a routerLink="/admin/configuracion" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>
+    Config
+  </a>
+</nav>

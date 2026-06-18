@@ -1,0 +1,93 @@
+<!-- Navbar Desktop -->
+<nav class="navbar" [class.navbar--premium-scrolled]="navScrolled">
+  <a [routerLink]="logoRoute" class="navbar-logo">
+    @if (logoService.config().logo_tipo === 'imagen' && logoService.config().logo_url) {
+      <img [src]="logoService.config().logo_url" [alt]="logoService.config().nombre_negocio" class="navbar-logo-img">
+    } @else {
+      {{ logoService.config().logo_texto }} <span>{{ logoService.config().logo_texto_acento }}</span>
+    }
+  </a>
+  <ul class="navbar-links">
+    <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="navbar-link">Inicio</a></li>
+    <li><a routerLink="/servicios" routerLinkActive="active" class="navbar-link">Servicios</a></li>
+    <li><a routerLink="/productos" routerLinkActive="active" class="navbar-link">Productos</a></li>
+    <li><a routerLink="/ayuda" routerLinkActive="active" class="navbar-link">Ayuda</a></li>
+    <li><a routerLink="/contacto" routerLinkActive="active" class="navbar-link">Contáctanos</a></li>
+    <li class="navbar-theme-wrap">
+      <button
+        type="button"
+        class="theme-toggle"
+        (click)="toggleTheme()"
+        [attr.aria-label]="themeService.isDark() ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'"
+        [title]="themeService.isDark() ? 'Tema claro' : 'Tema oscuro'"
+      >
+        @if (themeService.isDark()) {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+        } @else {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        }
+      </button>
+    </li>
+    @if (!effectiveLoggedIn) {
+      <li><a routerLink="/login" class="btn btn-secondary btn-sm">Iniciar Sesión</a></li>
+      <li><a routerLink="/agendar" class="btn btn-primary btn-sm">Agendar Cita</a></li>
+    } @else {
+      <li><a [routerLink]="panelRoute" class="btn btn-primary btn-sm">Mi Panel</a></li>
+    }
+  </ul>
+</nav>
+
+<!-- Mobile Bottom Nav -->
+<nav class="navbar-mobile">
+  <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    </svg>
+    Inicio
+  </a>
+  <a routerLink="/servicios" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="6" cy="6" r="3"/><path d="M6 9v12"/><path d="M13 6l-3 9 7 4"/>
+    </svg>
+    Servicios
+  </a>
+  <a routerLink="/productos" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+    </svg>
+    Tienda
+  </a>
+  <a [routerLink]="effectiveLoggedIn ? panelRoute : '/login'" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+    </svg>
+    {{ effectiveLoggedIn ? 'Perfil' : 'Cuenta' }}
+  </a>
+</nav>
+
+<div class="navbar-theme-mobile hide-desktop">
+  <button
+    type="button"
+    class="theme-toggle"
+    (click)="toggleTheme()"
+    [attr.aria-label]="themeService.isDark() ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'"
+    [title]="themeService.isDark() ? 'Tema claro' : 'Tema oscuro'"
+  >
+    @if (themeService.isDark()) {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="12" r="5"/>
+        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+      </svg>
+    } @else {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    }
+  </button>
+</div>

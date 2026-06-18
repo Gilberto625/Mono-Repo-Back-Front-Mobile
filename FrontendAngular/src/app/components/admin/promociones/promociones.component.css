@@ -1,0 +1,161 @@
+.promos-page {
+  min-width: 0;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 14px;
+}
+
+.page-head-left {
+  min-width: 0;
+}
+
+.page-title h1 {
+  margin: 0;
+  font-family: var(--font-display, inherit);
+  font-weight: 850;
+  letter-spacing: -0.02em;
+}
+
+.page-sub {
+  margin: 6px 0 0;
+  color: var(--text-on-dark-tertiary);
+  font-size: 13px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.tabs-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.78);
+  padding: 10px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  transition: transform .15s ease, background .15s ease, border-color .15s ease, color .15s ease;
+}
+
+.tab:hover {
+  transform: translateY(-1px);
+  border-color: rgba(212, 175, 55, 0.35);
+  background: rgba(212, 175, 55, 0.07);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.tab.active {
+  border-color: rgba(212, 175, 55, 0.45);
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.16), rgba(212, 175, 55, 0.06));
+  color: #fff;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.08) inset;
+}
+
+.card-promocion {
+  border-left: 4px solid rgba(212, 175, 55, 0.8);
+}
+
+.acciones-promocion {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.promo-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.promo-head-left {
+  min-width: 0;
+}
+
+.promo-title {
+  margin: 8px 0 0;
+  font-weight: 850;
+  letter-spacing: -0.01em;
+}
+
+.promo-sub {
+  margin: 8px 0 0;
+}
+
+.promo-actions {
+  justify-content: flex-end;
+}
+
+.detalles-promocion {
+  display: flex;
+  gap: var(--spacing-xl);
+  flex-wrap: wrap;
+}
+
+.codigo {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.grid-dos-cols {
+  grid-template-columns: 1fr 1fr;
+}
+
+.checkbox-line {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+}
+
+.form-footer {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+}
+
+.promos-grid {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+@media (max-width: 900px) {
+  .page-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .promo-head {
+    flex-direction: column;
+  }
+
+  .promo-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

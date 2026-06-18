@@ -1,0 +1,682 @@
+/* Página cliente — alineación STYLO (servicios / productos) */
+.agendar-page.cliente-page {
+  width: 100%;
+  max-width: min(1120px, 100%);
+  margin-inline: auto;
+  padding-bottom: clamp(0.75rem, 3vw, 1.5rem);
+  box-sizing: border-box;
+}
+
+.agendar-hero {
+  margin-bottom: clamp(1rem, 3vw, 1.25rem);
+  padding-bottom: clamp(0.85rem, 2vw, 1.15rem);
+  border-bottom: 1px solid var(--divider-color, rgba(255, 255, 255, 0.08));
+}
+
+.agendar-eyebrow {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-on-dark-tertiary, rgba(238, 243, 240, 0.52));
+  margin: 0 0 0.35rem;
+  font-family: var(--font-family);
+}
+
+.agendar-title {
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: clamp(1.35rem, 4vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  margin: 0 0 0.35rem;
+  color: var(--text-on-dark, #fff);
+}
+
+.agendar-sub {
+  margin: 0;
+  font-size: clamp(0.85rem, 2.2vw, 0.92rem);
+  line-height: 1.45;
+  max-width: 42rem;
+}
+
+.agendar-progress-steps {
+  margin-bottom: clamp(1.25rem, 4vw, 2rem);
+}
+
+.agendar-page .card.agendar-panel {
+  position: relative;
+  background: rgba(30, 43, 34, 0.88);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+}
+
+.agendar-page .card.agendar-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.55) 50%, transparent);
+  opacity: 1;
+  pointer-events: none;
+}
+
+.agendar-page .card.agendar-panel h2 {
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: 1.12rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-on-dark, #fff);
+}
+
+.agendar-page .card.agendar-panel h3 {
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-on-dark, #fff);
+}
+
+.agendar-fecha-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .agendar-fecha-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.agendar-confirmar-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+  align-items: start;
+}
+
+@media (min-width: 960px) {
+  .agendar-confirmar-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.agendar-sticky {
+  position: sticky;
+  top: var(--spacing-lg);
+}
+
+/* ============================================
+   FILTRO POR CATEGORÍA
+   ============================================ */
+.filtro-categorias {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.filtro-cat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color-light, rgba(255,255,255,0.15));
+  border-radius: var(--radius-full, 9999px);
+  color: var(--text-on-dark-secondary, rgba(255,255,255,0.9));
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.filtro-cat-btn:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.3);
+  color: var(--color-accent, #D4AF37);
+}
+
+.filtro-cat-btn.active {
+  background: linear-gradient(135deg, #D4AF37, #C29D2F);
+  border-color: #D4AF37;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.filtro-cat-btn.active svg {
+  stroke: #1a1a1a;
+}
+
+/* ============================================
+   GRID DE SERVICIOS
+   ============================================ */
+.servicios-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+}
+
+/* ============================================
+   TARJETA DE SERVICIO
+   ============================================ */
+.servicio-card {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid var(--border-color-light, rgba(255,255,255,0.1));
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.servicio-card:hover {
+  border-color: rgba(212, 175, 55, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.servicio-card.selected {
+  border-color: var(--color-accent, #D4AF37);
+  box-shadow: 0 0 0 1px var(--color-accent, #D4AF37), 0 4px 16px rgba(212, 175, 55, 0.2);
+}
+
+/* Imagen del servicio */
+.servicio-card-img {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--color-primary-dark, #2A3634);
+  overflow: hidden;
+}
+
+.servicio-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.servicio-card:hover .servicio-card-img img {
+  transform: scale(1.04);
+}
+
+.servicio-card-img-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-on-dark-disabled, rgba(255,255,255,0.3));
+}
+
+/* Check de seleccionado */
+.servicio-card-check {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #D4AF37, #C29D2F);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a1a;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+  animation: popIn 0.25s ease;
+}
+
+@keyframes popIn {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+/* Cuerpo de la tarjeta */
+.servicio-card-body {
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.servicio-card-nombre {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-on-dark, #fff);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.servicio-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+}
+
+.servicio-card-duracion {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--text-on-dark-tertiary, rgba(255,255,255,0.6));
+}
+
+.servicio-card-precio {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-accent, #D4AF37);
+}
+
+/* ============================================
+   SIN SERVICIOS (filtro vacío)
+   ============================================ */
+.sin-servicios-filtro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-2xl, 48px) var(--spacing-lg);
+  color: var(--text-on-dark-tertiary, rgba(255,255,255,0.5));
+  text-align: center;
+}
+
+.sin-servicios-filtro svg {
+  opacity: 0.4;
+}
+
+.sin-servicios-filtro p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* ============================================
+   AVATAR BARBERO (corrige desborde de imagen)
+   ============================================ */
+.avatar {
+  overflow: hidden;
+}
+
+.avatar .avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  border-radius: 50%;
+}
+
+/* ============================================
+   PAGO - INFO CARD (sin anticipo)
+   ============================================ */
+.pago-info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: rgba(76, 175, 80, 0.08);
+  border: 1px solid rgba(76, 175, 80, 0.25);
+  border-radius: var(--radius-lg, 12px);
+}
+
+.pago-info-icon {
+  flex-shrink: 0;
+  color: #4CAF50;
+}
+
+/* ============================================
+   PAGO - VOLUNTARIO TOGGLE
+   ============================================ */
+.pago-voluntario {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color-light, rgba(255,255,255,0.15));
+  border-radius: var(--radius-lg, 12px);
+}
+
+.pago-voluntario-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  cursor: pointer;
+}
+
+.pago-voluntario-toggle input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: var(--color-accent, #D4AF37);
+}
+
+.pago-voluntario-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ============================================
+   PAGO - DATOS BANCARIOS
+   ============================================ */
+.banco-info-card {
+  padding: var(--spacing-lg);
+  background: rgba(212, 175, 55, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: var(--radius-lg, 12px);
+}
+
+.banco-info-card h4 {
+  color: var(--color-accent, #D4AF37);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.banco-dato {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.banco-dato:last-of-type {
+  border-bottom: none;
+}
+
+.banco-dato-label {
+  font-size: 0.85rem;
+  color: var(--text-on-dark-tertiary, rgba(255,255,255,0.6));
+}
+
+.banco-dato-valor {
+  font-weight: 600;
+  color: var(--text-on-dark, #fff);
+  text-align: right;
+}
+
+.banco-cuenta {
+  font-family: monospace;
+  letter-spacing: 1px;
+  font-size: 0.95rem;
+}
+
+.banco-dato-monto {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+/* ============================================
+   ANTICIPO VOLUNTARIO - INPUT
+   ============================================ */
+.anticipo-voluntario-card {
+  padding: var(--spacing-lg);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color-light, rgba(255,255,255,0.15));
+  border-radius: var(--radius-lg, 12px);
+}
+
+.anticipo-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 2px solid var(--border-color, #5A6B67);
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.anticipo-input-wrap:focus-within {
+  border-color: var(--color-accent, #D4AF37);
+}
+
+.anticipo-input-prefix,
+.anticipo-input-suffix {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-on-dark-tertiary, rgba(255,255,255,0.6));
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.anticipo-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--color-accent, #D4AF37);
+  font-size: 1.3rem;
+  font-weight: 700;
+  padding: var(--spacing-sm) var(--spacing-md);
+  outline: none;
+  min-width: 0;
+}
+
+.anticipo-input::placeholder {
+  color: var(--text-on-dark-disabled, rgba(255,255,255,0.3));
+}
+
+/* Chrome, Safari, Edge: hide spinners */
+.anticipo-input::-webkit-outer-spin-button,
+.anticipo-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox: hide spinners */
+.anticipo-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* ============================================
+   COMPROBANTE DE PAGO - UPLOAD
+   ============================================ */
+.comprobante-upload-card {
+  padding: var(--spacing-lg);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color-light, rgba(255,255,255,0.15));
+  border-radius: var(--radius-lg, 12px);
+}
+
+.comprobante-upload-card h4 {
+  color: var(--text-on-dark, #fff);
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.comprobante-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xl) var(--spacing-lg);
+  border: 2px dashed rgba(212, 175, 55, 0.3);
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(212, 175, 55, 0.04);
+  color: var(--text-on-dark-secondary, rgba(255,255,255,0.7));
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: center;
+}
+
+.comprobante-dropzone:hover {
+  border-color: rgba(212, 175, 55, 0.6);
+  background: rgba(212, 175, 55, 0.08);
+  color: var(--color-accent, #D4AF37);
+}
+
+.comprobante-dropzone svg {
+  color: var(--color-accent, #D4AF37);
+  opacity: 0.6;
+}
+
+.comprobante-dropzone:hover svg {
+  opacity: 1;
+}
+
+.comprobante-preview-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-md);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(76, 175, 80, 0.06);
+}
+
+.comprobante-preview-img {
+  max-width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.comprobante-remove-btn {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(244, 67, 54, 0.9);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.comprobante-remove-btn:hover {
+  background: rgba(244, 67, 54, 1);
+}
+
+/* ============================================
+   PAGO PRÓXIMAMENTE
+   ============================================ */
+.pago-proximamente {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255,255,255,0.1);
+  border-radius: var(--radius-md, 8px);
+  color: var(--text-on-dark-disabled, rgba(255,255,255,0.4));
+  font-size: 0.85rem;
+  margin-top: var(--spacing-sm);
+}
+
+.pago-proximamente em {
+  color: var(--text-on-dark-tertiary, rgba(255,255,255,0.5));
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+  .servicios-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .servicios-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filtro-categorias {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: var(--spacing-xs);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filtro-cat-btn {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+  }
+}
+
+/* 5 pasos: etiquetas más compactas */
+.agendar-progress-steps--5 .progress-step-label {
+  font-size: 10px;
+  text-align: center;
+  max-width: 4.75rem;
+  line-height: 1.25;
+}
+
+@media (max-width: 720px) {
+  .agendar-progress-steps--5 {
+    flex-wrap: wrap;
+    row-gap: 10px;
+    justify-content: center;
+  }
+
+  .agendar-progress-steps--5::before {
+    display: none;
+  }
+}
+
+button.servicio-card.servicio-card--toggle {
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  appearance: none;
+}
+
+.agendar-complemento-cat {
+  align-self: flex-start;
+  margin-bottom: 6px;
+}
+
+.agendar-resumen-complementos {
+  margin: 4px 0 0;
+  padding-left: 1.1rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.agendar-complementos-resumen {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+/* Tema claro */
+html[data-theme='light'] .agendar-page .card.agendar-panel {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(36, 56, 48, 0.12);
+  box-shadow: var(--shadow-md);
+}
+
+html[data-theme='light'] .agendar-title,
+html[data-theme='light'] .agendar-page .card.agendar-panel h2,
+html[data-theme='light'] .agendar-page .card.agendar-panel h3 {
+  color: var(--text-on-light);
+}
+
+html[data-theme='light'] .agendar-eyebrow {
+  color: var(--text-on-light-tertiary, rgba(36, 56, 48, 0.55));
+}

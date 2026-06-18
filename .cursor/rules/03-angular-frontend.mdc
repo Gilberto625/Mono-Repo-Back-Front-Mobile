@@ -1,0 +1,93 @@
+---
+description: Reglas senior para frontend Angular de Stylo Barber Connect
+globs: ["frontend/**/*.ts", "frontend/**/*.html", "frontend/**/*.scss", "frontend/**/*.css"]
+alwaysApply: false
+---
+
+# Angular Frontend — Reglas Senior
+
+## Stack
+- Angular 17+ o superior.
+- Standalone components.
+- TypeScript strict.
+- SCSS modular con design tokens.
+- HttpClient para API.
+- Guards + interceptors.
+- Lazy loading por rutas.
+- Diseño responsive obligatorio.
+
+## Estructura obligatoria
+```txt
+frontend/src/app/
+├── core/
+│   ├── auth/
+│   ├── guards/
+│   ├── interceptors/
+│   ├── services/
+│   └── models/
+├── shared/
+│   ├── components/
+│   ├── directives/
+│   ├── pipes/
+│   └── ui/
+├── layouts/
+│   ├── public-layout/
+│   ├── client-layout/
+│   ├── admin-layout/
+│   ├── secretary-layout/
+│   └── barber-layout/
+├── features/
+│   ├── public/
+│   ├── auth/
+│   ├── client/
+│   ├── secretary/
+│   ├── barber/
+│   └── admin/
+└── app.routes.ts
+```
+
+## Convenciones
+- Componentes: `kebab-case`.
+- Clases: `PascalCase`.
+- Variables y métodos: `camelCase`.
+- Interfaces: `PascalCase`.
+- No usar `any`; usar interfaces.
+- No hacer lógica HTTP dentro de componentes.
+- No hardcodear URLs; usar `environment`.
+- No calcular reglas críticas en Angular.
+
+## Servicios
+Cada módulo debe tener service propio:
+```txt
+appointments.service.ts
+products.service.ts
+orders.service.ts
+payments.service.ts
+notifications.service.ts
+reports.service.ts
+```
+
+## Estado visual obligatorio
+Cada pantalla debe cubrir:
+- loading
+- empty
+- error
+- success
+- skeleton si hay carga de datos
+- responsive mobile/tablet/desktop
+
+## Rutas protegidas
+- Admin: `AdminGuard`
+- Secretaria: `SecretaryGuard`
+- Barbero: `BarberGuard`
+- Cliente: `ClientGuard`
+- Usar interceptor JWT.
+- Si API devuelve 401: cerrar sesión.
+- Si API devuelve 403: mostrar pantalla acceso denegado.
+
+## No permitido
+- Confirmar pagos en Angular.
+- Descontar inventario en Angular.
+- Confirmar citas en Angular sin backend.
+- Guardar `CLIP_API_KEY`, `BREVO_API_KEY` o secretos.
+- Usar `innerHTML` sin sanitización.

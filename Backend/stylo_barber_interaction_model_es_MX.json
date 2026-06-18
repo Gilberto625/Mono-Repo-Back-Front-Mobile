@@ -1,0 +1,794 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "tony estilo",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.YesIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NoIntent",
+          "samples": []
+        },
+        {
+          "name": "VincularCuentaIntent",
+          "slots": [
+            {
+              "name": "codigoVinculacion",
+              "type": "AMAZON.NUMBER"
+            }
+          ],
+          "samples": [
+            "vincular cuenta",
+            "quiero vincular mi cuenta",
+            "vincula mi cuenta",
+            "conectar mi cuenta",
+            "iniciar sesión en tony estilo",
+            "iniciar sesion en tony estilo",
+            "vincular cuenta {codigoVinculacion}",
+            "vincular con código {codigoVinculacion}",
+            "vincular con codigo {codigoVinculacion}",
+            "mi código es {codigoVinculacion}",
+            "mi codigo es {codigoVinculacion}",
+            "el código es {codigoVinculacion}",
+            "tengo el código {codigoVinculacion}",
+            "código {codigoVinculacion}",
+            "codigo {codigoVinculacion}"
+          ]
+        },
+        {
+          "name": "ProporcionarCodigoVinculacionIntent",
+          "slots": [
+            {
+              "name": "codigoVinculacion",
+              "type": "AMAZON.NUMBER"
+            }
+          ],
+          "samples": [
+            "{codigoVinculacion}",
+            "es {codigoVinculacion}",
+            "el número {codigoVinculacion}",
+            "el numero {codigoVinculacion}",
+            "el código es {codigoVinculacion}",
+            "el codigo es {codigoVinculacion}",
+            "mi código es {codigoVinculacion}",
+            "mi codigo es {codigoVinculacion}",
+            "código {codigoVinculacion}",
+            "codigo {codigoVinculacion}",
+            "dígitos {codigoVinculacion}",
+            "digitos {codigoVinculacion}",
+            "son {codigoVinculacion}",
+            "es el {codigoVinculacion}"
+          ]
+        },
+        {
+          "name": "AgendarCitaIntent",
+          "slots": [
+            {
+              "name": "servicio",
+              "type": "STYLO_SERVICIO"
+            },
+            {
+              "name": "barbero",
+              "type": "STYLO_BARBERO"
+            },
+            {
+              "name": "fecha",
+              "type": "AMAZON.DATE"
+            },
+            {
+              "name": "hora",
+              "type": "STYLO_HORA_LIBRE"
+            }
+          ],
+          "samples": [
+            "quiero agendar una cita",
+            "quiero reservar una cita",
+            "agenda una cita",
+            "reservar una cita",
+            "hacer una cita",
+            "necesito una cita",
+            "empezar agendado",
+            "comenzar agendado",
+            "quiero una cita para {servicio}",
+            "agenda un {servicio}",
+            "agenda una {servicio}",
+            "reservar un {servicio}",
+            "reservar una {servicio}",
+            "quiero agendar un {servicio}",
+            "quiero reservar un {servicio}",
+            "agenda {servicio} con {barbero}",
+            "agenda un {servicio} con {barbero}",
+            "reservar {servicio} con {barbero}",
+            "agenda {servicio} para el {fecha}",
+            "agenda {servicio} el {fecha}",
+            "reservar {servicio} para el {fecha}",
+            "agenda {servicio} a las {hora}",
+            "agenda {servicio} para las {hora}",
+            "agenda {servicio} el {fecha} a las {hora}",
+            "agenda {servicio} para el {fecha} a las {hora}",
+            "agenda {servicio} con {barbero} el {fecha}",
+            "agenda {servicio} con {barbero} para el {fecha}",
+            "agenda {servicio} con {barbero} a las {hora}",
+            "agenda {servicio} con {barbero} el {fecha} a las {hora}",
+            "reservar {servicio} con {barbero} para el {fecha} a las {hora}"
+          ]
+        },
+        {
+          "name": "AgregarExtraIntent",
+          "slots": [
+            {
+              "name": "extra",
+              "type": "STYLO_EXTRA"
+            }
+          ],
+          "samples": [
+            "agrega {extra}",
+            "agregar {extra}",
+            "añade {extra}",
+            "añadir {extra}",
+            "pon {extra}",
+            "poner {extra}",
+            "incluye {extra}",
+            "incluir {extra}",
+            "también agrega {extra}",
+            "también añade {extra}",
+            "me gustaría agregar {extra}",
+            "me gustaría añadir {extra}"
+          ]
+        },
+        {
+          "name": "OmitirExtrasIntent",
+          "slots": [],
+          "samples": [
+            "sin extras",
+            "sin extra",
+            "no quiero extras",
+            "no quiero agregar extras",
+            "no quiero agregar nada más",
+            "no quiero agregar nada mas",
+            "no agregues nada más",
+            "no agregues nada mas",
+            "así está bien sin extras",
+            "asi esta bien sin extras",
+            "continuar sin extras",
+            "seguir sin extras",
+            "pasar sin extras",
+            "ningún extra más",
+            "ningun extra mas"
+          ]
+        },
+        {
+          "name": "QuitarExtraIntent",
+          "slots": [
+            {
+              "name": "extra",
+              "type": "STYLO_EXTRA"
+            }
+          ],
+          "samples": [
+            "quita {extra}",
+            "quitar {extra}",
+            "elimina {extra}",
+            "eliminar {extra}",
+            "borra {extra}",
+            "borrar {extra}",
+            "ya no quiero {extra}",
+            "mejor sin {extra}",
+            "remueve {extra}",
+            "remover {extra}"
+          ]
+        },
+        {
+          "name": "CambiarDatoCitaIntent",
+          "slots": [
+            {
+              "name": "campoCita",
+              "type": "STYLO_CAMPO_CITA"
+            },
+            {
+              "name": "servicio",
+              "type": "STYLO_SERVICIO"
+            },
+            {
+              "name": "barbero",
+              "type": "STYLO_BARBERO"
+            },
+            {
+              "name": "fecha",
+              "type": "AMAZON.DATE"
+            },
+            {
+              "name": "hora",
+              "type": "STYLO_HORA_LIBRE"
+            }
+          ],
+          "samples": [
+            "cambiar el {campoCita}",
+            "quiero cambiar el {campoCita}",
+            "modificar el {campoCita}",
+            "editar el {campoCita}",
+            "cambiar el servicio a {servicio}",
+            "cambiar mi servicio a {servicio}",
+            "cambiar el barbero a {barbero}",
+            "cambiar de barbero a {barbero}",
+            "cambiar la fecha al {fecha}",
+            "cambiar la fecha para el {fecha}",
+            "cambiar la hora a las {hora}",
+            "cambiar el horario a las {hora}"
+          ]
+        },
+        {
+          "name": "ConsultarCitasIntent",
+          "slots": [],
+          "samples": [
+            "consultar mis citas",
+            "consulta mis citas",
+            "ver mis citas",
+            "mis próximas citas",
+            "mis proximas citas",
+            "mi próxima cita",
+            "mi proxima cita",
+            "cuándo es mi próxima cita",
+            "cuando es mi proxima cita",
+            "cuándo tengo cita",
+            "qué citas tengo",
+            "que citas tengo",
+            "tengo citas pendientes",
+            "dime mis citas",
+            "revisa mis citas"
+          ]
+        },
+        {
+          "name": "ConsultarDisponibilidadIntent",
+          "slots": [
+            {
+              "name": "barbero",
+              "type": "STYLO_BARBERO"
+            },
+            {
+              "name": "fecha",
+              "type": "AMAZON.DATE"
+            }
+          ],
+          "samples": [
+            "consultar disponibilidad",
+            "ver disponibilidad",
+            "qué horarios hay disponibles",
+            "que horarios hay disponibles",
+            "qué horarios hay el {fecha}",
+            "qué horarios tiene {barbero}",
+            "qué horarios tiene {barbero} el {fecha}",
+            "disponibilidad de {barbero}",
+            "disponibilidad de {barbero} el {fecha}",
+            "horarios disponibles con {barbero}",
+            "horarios disponibles con {barbero} el {fecha}"
+          ]
+        },
+        {
+          "name": "SeleccionarBarberoIntent",
+          "slots": [
+            {
+              "name": "barbero",
+              "type": "STYLO_BARBERO"
+            }
+          ],
+          "samples": [
+            "{barbero}",
+            "con {barbero}",
+            "el {barbero}",
+            "quiero con {barbero}",
+            "prefiero a {barbero}",
+            "barbero {barbero}",
+            "con el {barbero}"
+          ]
+        },
+        {
+          "name": "SeleccionarFechaIntent",
+          "slots": [
+            {
+              "name": "fecha",
+              "type": "AMAZON.DATE"
+            }
+          ],
+          "samples": [
+            "{fecha}",
+            "para {fecha}",
+            "para el {fecha}",
+            "el {fecha}",
+            "la {fecha}"
+          ]
+        },
+        {
+          "name": "SeleccionarHoraIntent",
+          "slots": [
+            {
+              "name": "hora",
+              "type": "STYLO_HORA_LIBRE"
+            },
+            {
+              "name": "opcion",
+              "type": "AMAZON.Ordinal"
+            }
+          ],
+          "samples": [
+            "{hora}",
+            "a las {hora}",
+            "a las {hora} de la tarde",
+            "a las {hora} de la mañana",
+            "a las {hora} de la noche",
+            "el de las {hora}",
+            "las {hora}",
+            "a la {hora}",
+            "a las {hora} y veinte",
+            "a las {hora} y cuarenta",
+            "las {hora} y veinte",
+            "las {hora} y cuarenta",
+            "la {opcion} opción",
+            "la opción {opcion}",
+            "elige la {opcion}",
+            "prefiero la {opcion} opción",
+            "el horario {opcion}",
+            "la {opcion}",
+            "{opcion} opción",
+            "la primera opción",
+            "la segunda opción",
+            "la tercera opción",
+            "la cuarta opción",
+            "la quinta opción",
+            "primera opción",
+            "segunda opción",
+            "tercera opción",
+            "cuarta opción",
+            "quinta opción",
+            "otra hora",
+            "prefiero otra hora"
+          ]
+        },
+        {
+          "name": "ConfirmarCitaIntent",
+          "slots": [],
+          "samples": [
+            "confirmar cita",
+            "confirma la cita",
+            "confirmar mi cita",
+            "crear la cita",
+            "finalizar la cita",
+            "terminar la cita",
+            "agendar definitivamente",
+            "programar la cita"
+          ]
+        },
+        {
+          "name": "ElegirHorarioSugeridoIntent",
+          "slots": [
+            {
+              "name": "posicion",
+              "type": "AMAZON.Ordinal"
+            },
+            {
+              "name": "hora",
+              "type": "STYLO_HORA_LIBRE"
+            }
+          ],
+          "samples": [
+            "la {posicion} opción",
+            "la opción {posicion}",
+            "elige la {posicion}",
+            "prefiero la {posicion} opción",
+            "el horario {posicion}",
+            "la {posicion}",
+            "{posicion} opción",
+            "la primera opción",
+            "la segunda opción",
+            "la tercera opción",
+            "primera opción",
+            "segunda opción",
+            "tercera opción",
+            "el de las {hora}",
+            "me quedo con las {hora}",
+            "a las nueve",
+            "a las nueve y veinte",
+            "a las nueve y cuarenta",
+            "a las diez y veinte",
+            "a las diez y cuarenta",
+            "a las once y veinte",
+            "a las ocho y veinte",
+            "a las siete y veinte",
+            "nueve cero cero",
+            "nueve veinte",
+            "nueve cuarenta",
+            "diez veinte",
+            "diez cuarenta",
+            "diez y veinte",
+            "diez y cuarenta",
+            "{hora}"
+          ]
+        },
+        {
+          "name": "PagarCitaIntent",
+          "slots": [
+            {
+              "name": "tipoPago",
+              "type": "STYLO_TIPO_PAGO"
+            }
+          ],
+          "samples": [
+            "pagar {tipoPago}",
+            "quiero pagar el {tipoPago}",
+            "pagar el {tipoPago}",
+            "voy a pagar el {tipoPago}",
+            "prefiero pagar el {tipoPago}",
+            "generar pago de {tipoPago}",
+            "hacer pago de {tipoPago}"
+          ]
+        },
+        {
+          "name": "EstadoAgendadoIntent",
+          "slots": [],
+          "samples": [
+            "qué llevo seleccionado",
+            "que llevo seleccionado",
+            "repite mi cita",
+            "resume mi cita",
+            "dime el resumen de la cita",
+            "cómo va mi cita",
+            "como va mi cita",
+            "qué datos tiene la cita"
+          ]
+        }
+      ],
+      "types": [
+        {
+          "name": "STYLO_HORA_LIBRE",
+          "values": [
+            {
+              "id": "H0900",
+              "name": {
+                "value": "09:00",
+                "synonyms": [
+                  "nueve",
+                  "a las nueve",
+                  "nueve de la mañana",
+                  "las nueve"
+                ]
+              }
+            },
+            {
+              "id": "H1000",
+              "name": {
+                "value": "10:00",
+                "synonyms": [
+                  "diez",
+                  "a las diez",
+                  "diez de la mañana",
+                  "las diez",
+                  "diez dos ceros",
+                  "diez cero cero"
+                ]
+              }
+            },
+            {
+              "id": "H1700",
+              "name": {
+                "value": "17:00",
+                "synonyms": [
+                  "cinco",
+                  "a las cinco",
+                  "cinco de la tarde",
+                  "las cinco"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "STYLO_SERVICIO",
+          "values": [
+            {
+              "id": "SERVICIO_CORTE",
+              "name": {
+                "value": "corte",
+                "synonyms": [
+                  "corte de cabello",
+                  "cabello",
+                  "cortarme el cabello",
+                  "corte normal",
+                  "corte clásico",
+                  "fade",
+                  "degradado"
+                ]
+              }
+            },
+            {
+              "id": "SERVICIO_BARBA",
+              "name": {
+                "value": "barba",
+                "synonyms": [
+                  "arreglo de barba",
+                  "recorte de barba",
+                  "perfilado de barba"
+                ]
+              }
+            },
+            {
+              "id": "SERVICIO_CORTE_BARBA",
+              "name": {
+                "value": "corte y barba",
+                "synonyms": [
+                  "corte con barba",
+                  "cabello y barba",
+                  "corte más barba",
+                  "corte mas barba"
+                ]
+              }
+            },
+            {
+              "id": "SERVICIO_PAQUETE",
+              "name": {
+                "value": "paquete",
+                "synonyms": [
+                  "combo",
+                  "paquete completo",
+                  "combo completo"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "STYLO_EXTRA",
+          "values": [
+            {
+              "id": "EXTRA_LIMPIEZA_FACIAL",
+              "name": {
+                "value": "limpieza facial",
+                "synonyms": [
+                  "facial",
+                  "limpieza de cara",
+                  "limpieza del rostro"
+                ]
+              }
+            },
+            {
+              "id": "EXTRA_CEJA",
+              "name": {
+                "value": "ceja",
+                "synonyms": [
+                  "cejas",
+                  "arreglo de ceja",
+                  "diseño de ceja",
+                  "perfilado de ceja"
+                ]
+              }
+            },
+            {
+              "id": "EXTRA_TINTE_BARBA",
+              "name": {
+                "value": "tinte para barba",
+                "synonyms": [
+                  "tinte de barba",
+                  "pintar barba",
+                  "teñir barba"
+                ]
+              }
+            },
+            {
+              "id": "EXTRA_HAIR_TATTOO",
+              "name": {
+                "value": "hair tattoo",
+                "synonyms": [
+                  "grecas",
+                  "greca",
+                  "diseño en cabello",
+                  "rayas en cabello"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "STYLO_BARBERO",
+          "values": [
+            {
+              "id": "BARBERO_ALDO_RAMIREZ",
+              "name": {
+                "value": "Aldo Ramírez",
+                "synonyms": [
+                  "Aldo",
+                  "Ramírez",
+                  "Ramirez"
+                ]
+              }
+            },
+            {
+              "id": "BARBERO_EDWIN_MOYAO",
+              "name": {
+                "value": "Edwin Moyao",
+                "synonyms": [
+                  "Edwin",
+                  "Moyao"
+                ]
+              }
+            },
+            {
+              "id": "BARBERO_ANTONIO_SEBASTIAN",
+              "name": {
+                "value": "Antonio Sebastián",
+                "synonyms": [
+                  "Antonio",
+                  "Sebastián",
+                  "Sebastian"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "STYLO_TIPO_PAGO",
+          "values": [
+            {
+              "id": "PAGO_ANTICIPO",
+              "name": {
+                "value": "anticipo",
+                "synonyms": [
+                  "adelanto",
+                  "apartado",
+                  "pago parcial"
+                ]
+              }
+            },
+            {
+              "id": "PAGO_TOTAL",
+              "name": {
+                "value": "total",
+                "synonyms": [
+                  "pago completo",
+                  "liquidar",
+                  "pagar completo"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "STYLO_CAMPO_CITA",
+          "values": [
+            {
+              "id": "CAMPO_SERVICIO",
+              "name": {
+                "value": "servicio",
+                "synonyms": [
+                  "tipo de servicio",
+                  "servicio principal"
+                ]
+              }
+            },
+            {
+              "id": "CAMPO_EXTRA",
+              "name": {
+                "value": "extra",
+                "synonyms": [
+                  "extras",
+                  "adicional",
+                  "complemento"
+                ]
+              }
+            },
+            {
+              "id": "CAMPO_BARBERO",
+              "name": {
+                "value": "barbero",
+                "synonyms": [
+                  "estilista",
+                  "barbero asignado"
+                ]
+              }
+            },
+            {
+              "id": "CAMPO_FECHA",
+              "name": {
+                "value": "fecha",
+                "synonyms": [
+                  "día",
+                  "dia"
+                ]
+              }
+            },
+            {
+              "id": "CAMPO_HORA",
+              "name": {
+                "value": "hora",
+                "synonyms": [
+                  "horario"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "modelConfiguration": {
+        "fallbackIntentSensitivity": {
+          "level": "LOW"
+        }
+      }
+    },
+    "dialog": {
+      "intents": [
+        {
+          "name": "VincularCuentaIntent",
+          "confirmationRequired": false,
+          "prompts": {},
+          "slots": [
+            {
+              "name": "codigoVinculacion",
+              "type": "AMAZON.NUMBER",
+              "confirmationRequired": false,
+              "elicitationRequired": true,
+              "prompts": {
+                "elicitation": "Elicit.Slot.CodigoVinculacion"
+              }
+            }
+          ]
+        },
+        {
+          "name": "SeleccionarHoraIntent",
+          "confirmationRequired": false,
+          "prompts": {},
+          "slots": [
+            {
+              "name": "hora",
+              "type": "STYLO_HORA_LIBRE",
+              "confirmationRequired": false,
+              "elicitationRequired": true,
+              "prompts": {
+                "elicitation": "Elicit.Slot.HoraCita"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "prompts": [
+      {
+        "id": "Elicit.Slot.HoraCita",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "¿A qué hora quieres tu cita? Di por ejemplo la cuarta opción o a las diez de la mañana."
+          }
+        ]
+      },
+      {
+        "id": "Elicit.Slot.CodigoVinculacion",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Abre Tony Estilo en tu celular, genera el código e indícame los cuatro dígitos. Puedes decirlos juntos, por ejemplo seis mil cuatrocientos noventa, o uno por uno: seis, cuatro, nueve, cero."
+          }
+        ]
+      }
+    ]
+  }
+}

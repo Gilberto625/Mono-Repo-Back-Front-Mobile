@@ -1,0 +1,80 @@
+---
+description: Reglas para panel administrador Angular y módulos administrativos completos
+globs: ["frontend/src/app/features/admin/**/*", "frontend/src/app/layouts/admin-layout/**/*", "backend/apps/**/*.py"]
+alwaysApply: false
+---
+
+# Panel Administrador
+
+## Módulos admin obligatorios
+1. Dashboard general.
+2. Usuarios y roles.
+3. Empleados.
+4. Servicios.
+5. Sillas y horarios.
+6. Citas.
+7. Anticipos y pagos.
+8. Productos.
+9. Inventario.
+10. Pedidos.
+11. Ventas.
+12. Promociones.
+13. Notificaciones.
+14. Reportes.
+15. Configuración del negocio.
+16. Apariencia de la página.
+17. Contenido legal.
+18. Seguridad y auditoría.
+19. Integraciones externas.
+
+## Estructura Angular
+```txt
+features/admin/
+├── dashboard/
+├── users/
+├── employees/
+├── services/
+├── chairs-schedules/
+├── appointments/
+├── payments/
+├── products/
+├── inventory/
+├── orders/
+├── sales/
+├── notifications/
+├── reports/
+├── business-settings/
+├── appearance/
+├── legal/
+├── audit/
+└── integrations/
+```
+
+## UX admin
+- Layout con sidebar desktop.
+- Drawer en tablet/mobile.
+- Topbar con usuario, rol y notificaciones.
+- Cards KPI.
+- Tablas filtrables.
+- Acciones críticas con confirm dialog.
+- Badges por estado.
+- Formularios por pasos cuando sean largos.
+
+## Dashboard KPIs
+Mostrar:
+- Ventas del día.
+- Ingresos del mes.
+- Citas del día.
+- Citas canceladas.
+- Pedidos pendientes.
+- Stock bajo.
+- Producto más vendido.
+- Servicio más solicitado.
+- Ticket promedio.
+- Alertas críticas.
+
+## Reglas backend
+- Solo rol administrador puede acceder a configuración global.
+- Toda acción crítica debe generar auditoría.
+- No eliminar registros históricos; usar activo/inactivo.
+- Cambios de configuración guardan valor anterior/nuevo.

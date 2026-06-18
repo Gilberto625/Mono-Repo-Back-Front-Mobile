@@ -1,0 +1,232 @@
+/* Premium-scoped styles for Respaldo BD */
+.respaldo-page {
+  min-width: 0;
+}
+
+.page-hero {
+  position: relative;
+  border-radius: 18px;
+  padding: 14px 14px 0;
+  margin: 0 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0));
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: -80px -120px auto auto;
+  width: 520px;
+  height: 520px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0.06) 32%, transparent 70%);
+  filter: blur(26px);
+  pointer-events: none;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 6px 0 18px;
+}
+
+.page-head-left {
+  min-width: 0;
+}
+
+.page-title h1 {
+  margin: 0;
+  font-family: var(--font-display, inherit);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.page-sub {
+  margin: 6px 0 0;
+  color: var(--text-on-dark-tertiary);
+  font-size: 13px;
+}
+
+.hero-kicker {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* Override minor typography inside global stat-card */
+
+.status-label {
+  margin: 0 0 var(--spacing-xs) 0;
+  color: var(--text-on-dark-tertiary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+
+.status-value {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-on-dark);
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px;
+}
+
+.action-tile {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.14);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+}
+
+.action-tile-head {
+  margin-bottom: 8px;
+}
+
+.action-tile .text-muted {
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
+.action-tile-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.section-title {
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-md);
+}
+
+.form-actions-inline {
+  display: flex;
+  align-items: end;
+}
+
+.quick-schemas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.selection-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Inputs/Selects en tema oscuro (alineado a paleta del proyecto) */
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-on-dark-tertiary);
+  font-weight: 600;
+}
+
+.form-input {
+  width: 100%;
+  height: 44px;
+  padding: 10px 44px 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(90, 107, 103, 0.65); /* --border-color */
+  background: rgba(42, 54, 52, 0.85); /* --color-primary-dark */
+  color: var(--text-on-dark);
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.form-input::placeholder {
+  color: var(--text-on-dark-disabled);
+}
+
+.form-input:focus {
+  border-color: rgba(212, 175, 55, 0.95); /* --color-accent */
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.18);
+  background: rgba(61, 79, 73, 0.85); /* --color-primary-light */
+}
+
+.form-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Estilos específicos para <select> */
+select.form-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(212, 175, 55, 0.95) 50%),
+    linear-gradient(135deg, rgba(212, 175, 55, 0.95) 50%, transparent 50%),
+    linear-gradient(to right, rgba(255,255,255,0.08), rgba(255,255,255,0.08));
+  background-position:
+    calc(100% - 18px) 19px,
+    calc(100% - 12px) 19px,
+    calc(100% - 38px) 50%;
+  background-size:
+    6px 6px,
+    6px 6px,
+    1px 60%;
+  background-repeat: no-repeat;
+}
+
+select.form-input option {
+  background: var(--color-primary-dark);
+  color: var(--text-on-dark);
+}
+
+@media (max-width: 1100px) {
+  .page-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .action-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid,
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

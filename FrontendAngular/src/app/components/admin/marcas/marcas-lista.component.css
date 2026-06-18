@@ -1,0 +1,196 @@
+.marcas-page {
+  min-width: 0;
+}
+
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.page-head-left {
+  min-width: 0;
+}
+
+.page-title h1 {
+  margin: 0;
+  font-family: var(--font-display, var(--font-family));
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.page-sub {
+  margin: 3px 0 0;
+  color: var(--text-on-dark-tertiary);
+  font-size: 0.78rem;
+}
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.card-head svg {
+  color: var(--color-accent);
+}
+
+.overline {
+  font-size: 0.72rem;
+  color: var(--text-on-dark-tertiary);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.card-title {
+  margin-top: 2px;
+  font-family: var(--font-display, var(--font-family));
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+.mb-lg { margin-bottom: var(--spacing-lg); }
+.mb-md { margin-bottom: var(--spacing-md); }
+.mb-sm { margin-bottom: var(--spacing-sm); }
+.p-xl { padding: var(--spacing-xl); }
+.text-center { text-align: center; }
+
+.form-inline-marcas .form-row-marcas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--spacing-lg);
+}
+
+.form-inline-marcas .form-actions-marca {
+  flex: 0 0 auto;
+}
+
+.field-nombre {
+  flex: 1;
+  min-width: 200px;
+}
+
+.stat-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015));
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(212, 175, 55, 0.25);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+}
+
+.stat-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--dashboard-radius-2, 10px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.stat-icon-total {
+  color: var(--color-accent);
+  background: rgba(212, 175, 55, 0.09);
+  border: 1px solid rgba(212, 175, 55, 0.16);
+}
+
+.stat-icon-active {
+  color: var(--color-success);
+  background: rgba(62, 207, 130, 0.10);
+  border: 1px solid rgba(62, 207, 130, 0.20);
+}
+
+.marca-id {
+  font-weight: 600;
+  color: var(--color-primary-gold, #c9a227);
+}
+
+/* Tabla: wrapper glass + borde (mismo patrón que Empleados/Servicios/Sillas) */
+.table-wrap {
+  overflow: hidden;
+  border-radius: var(--dashboard-radius-3, 14px);
+  border: 1px solid var(--card-border);
+  background: rgba(18, 28, 22, 0.70);
+}
+
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.80rem;
+}
+
+.table-wrap thead tr {
+  border-bottom: 1px solid var(--divider-color);
+}
+
+.table-wrap thead th {
+  padding: 9px 13px;
+  font-size: 0.60rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-on-dark-tertiary);
+  text-align: left;
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.20);
+}
+
+.table-wrap tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.12s;
+}
+
+.table-wrap tbody tr:last-child {
+  border-bottom: none;
+}
+
+.table-wrap tbody tr:hover {
+  background: rgba(61, 79, 73, 0.14);
+}
+
+.table-wrap td {
+  padding: 8px 13px;
+  color: var(--text-on-dark-secondary);
+  vertical-align: middle;
+}
+
+.table-wrap td:first-child {
+  color: var(--text-on-dark);
+}
+
+.empty-marcas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.empty-marcas svg {
+  color: rgba(212, 175, 55, 0.55);
+}
+
+@media (max-width: 640px) {
+  .page-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-inline-marcas .form-row-marcas {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-inline-marcas .form-group {
+    min-width: 100% !important;
+  }
+}

@@ -1,0 +1,66 @@
+---
+description: Configuración del negocio, apariencia visual y contenido legal
+globs: ["backend/apps/business_settings/**/*.py", "backend/apps/appearance/**/*.py", "backend/apps/legal/**/*.py", "frontend/src/app/features/admin/business-settings/**/*", "frontend/src/app/features/admin/appearance/**/*", "frontend/src/app/features/admin/legal/**/*"]
+alwaysApply: false
+---
+
+# Configuración, Apariencia y Legal
+
+## Configuración negocio
+Admin puede gestionar:
+- Empresa.
+- Horarios.
+- Redes sociales.
+- Sillas.
+- Métodos de pago.
+- Cuentas bancarias.
+- Métodos de entrega.
+- Políticas de anticipo.
+- Reglas de cancelación.
+- Tolerancia.
+- Clasificación de demanda.
+
+## Apariencia
+Admin puede gestionar:
+- Logo.
+- Hero.
+- Imágenes landing.
+- Colores.
+- Tema default.
+- Textos públicos.
+- CTA principal.
+- Animaciones activas/inactivas.
+
+## Legal
+Tipos:
+```txt
+aviso_privacidad
+terminos_condiciones
+politica_cancelacion
+politica_compra
+politica_entrega
+deslinde_responsabilidad
+```
+
+## Reglas
+- Solo admin modifica configuración crítica.
+- Guardar valor anterior y nuevo.
+- Auditar cambios.
+- Validar HEX, URLs, textos.
+- Sanitizar contenido HTML legal.
+- Mantener versión del contenido legal.
+- No publicar texto legal sin estado/versionado.
+
+## Endpoint público
+```txt
+GET /api/v1/public/config/
+```
+
+Debe entregar solo datos públicos:
+- empresa.
+- horarios.
+- redes.
+- apariencia.
+- legal activo.
+- métodos de entrega públicos.
+- métodos de pago públicos.

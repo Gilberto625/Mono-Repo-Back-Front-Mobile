@@ -1,0 +1,171 @@
+<div class="security-container">
+  <!-- Toolbar -->
+  <header class="security-toolbar">
+    <button class="toolbar-button" (click)="goHome()">
+      ←
+    </button>
+    <span class="toolbar-title">Centro de Seguridad</span>
+    <span class="spacer"></span>
+    <button class="toolbar-button" (click)="logout()">
+      🚪
+    </button>
+  </header>
+
+  <div class="security-content">
+    <div class="loading-container" *ngIf="loading">
+      <div class="spinner-large"></div>
+      <p>Cargando estado de seguridad...</p>
+    </div>
+
+    <div class="security-grid" *ngIf="!loading">
+      <!-- Card: Email 2FA -->
+      <div class="security-card card">
+        <div class="card-header">
+          <span class="card-icon active">📧</span>
+          <h2 class="card-title">Verificación por Email</h2>
+        </div>
+        <div class="card-content">
+          <div class="status-row">
+            <span class="status-label">Estado:</span>
+            <span class="status-badge active">
+              <span>✓</span>
+              Siempre activo
+            </span>
+          </div>
+          <p class="card-description">
+            Recibes un código de verificación por email cada vez que inicias sesión.
+          </p>
+        </div>
+      </div>
+
+      <!-- Card: TOTP -->
+      <div class="security-card card">
+        <div class="card-header">
+          <span class="card-icon" [class.active]="estadoSeguridad.totp_habilitado">📱</span>
+          <h2 class="card-title">Autenticador TOTP</h2>
+        </div>
+        <div class="card-content">
+          <div class="status-row">
+            <span class="status-label">Estado:</span>
+            <span class="status-badge" [class.active]="estadoSeguridad.totp_habilitado" [class.inactive]="!estadoSeguridad.totp_habilitado">
+              <span>{{ estadoSeguridad.totp_habilitado ? '✓' : '✗' }}</span>
+              {{ estadoSeguridad.totp_habilitado ? 'Habilitado' : 'Deshabilitado' }}
+            </span>
+          </div>
+          <p class="card-description">
+            Usa Google Authenticator u otra app para generar códigos de verificación.
+          </p>
+        </div>
+        <div class="card-actions">
+          <button
+            class="card-button card-button-primary"
+            (click)="setupTOTP()"
+            *ngIf="!estadoSeguridad.totp_habilitado">
+            <span>➕</span>
+            Configurar TOTP
+          </button>
+          <button
+            class="card-button card-button-secondary"
+            (click)="setupTOTP()"
+            *ngIf="estadoSeguridad.totp_habilitado">
+            <span>⚙️</span>
+            Reconfigurar
+          </button>
+        </div>
+      </div>
+
+      <!-- Card: Códigos de respaldo -->
+      <div class="security-card card">
+        <div class="card-header">
+          <span class="card-icon" [class.active]="estadoSeguridad.codigos_respaldo_disponibles > 0">🔑</span>
+          <h2 class="card-title">Códigos de Respaldo</h2>
+        </div>
+        <div class="card-content">
+          <div class="status-row">
+            <span class="status-label">Disponibles:</span>
+            <span class="status-badge" [class.active]="estadoSeguridad.codigos_respaldo_disponibles > 0" [class.warning]="estadoSeguridad.codigos_respaldo_disponibles <= 3 && estadoSeguridad.codigos_respaldo_disponibles > 0" [class.inactive]="estadoSeguridad.codigos_respaldo_disponibles === 0">
+              <span>{{ estadoSeguridad.codigos_respaldo_disponibles > 0 ? '✓' : '⚠️' }}</span>
+              {{ estadoSeguridad.codigos_respaldo_disponibles }} códigos
+            </span>
+          </div>
+          <p class="card-description">
+            Usa estos códigos cuando no tengas acceso a tu autenticador.
+          </p>
+        </div>
+        <div class="card-actions">
+          <button
+            class="card-button card-button-primary"
+            (click)="generateBackupCodes()">
+            <span>{{ estadoSeguridad.codigos_respaldo_disponibles > 0 ? '🔄' : '➕' }}</span>
+            {{ estadoSeguridad.codigos_respaldo_disponibles > 0 ? 'Regenerar códigos' : 'Generar códigos' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Card: Contraseña -->
+      <div class="security-card card">
+        <div class="card-header">
+          <span class="card-icon active">🔒</span>
+          <h2 class="card-title">Contraseña</h2>
+        </div>
+        <div class="card-content">
+          <div class="status-row">
+            <span class="status-label">Seguridad:</span>
+            <span class="status-badge active">
+              <span>✓</span>
+              Fuerte
+            </span>
+          </div>
+          <p class="card-description">
+            Cambia tu contraseña regularmente para mantener tu cuenta segura.
+          </p>
+        </div>
+        <div class="card-actions">
+          <button
+            class="card-button card-button-primary"
+            (click)="changePassword()">
+            <span>🔑</span>
+            Cambiar contraseña
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Consejos de seguridad -->
+    <div class="tips-card card" *ngIf="!loading">
+      <div class="card-header">
+        <span class="tips-icon">💡</span>
+        <h2 class="card-title">Consejos de Seguridad</h2>
+      </div>
+      <div class="card-content">
+        <ul class="tips-list">
+          <li class="tip-item">
+            <span class="tip-icon">✓</span>
+            <span>Habilita TOTP para mayor seguridad</span>
+          </li>
+
+          <div class="divider"></div>
+
+          <li class="tip-item">
+            <span class="tip-icon">✓</span>
+            <span>Genera códigos de respaldo y guárdalos en un lugar seguro</span>
+          </li>
+
+          <div class="divider"></div>
+
+          <li class="tip-item">
+            <span class="tip-icon">✓</span>
+            <span>Usa una contraseña única que no uses en otros sitios</span>
+          </li>
+
+          <div class="divider"></div>
+
+          <li class="tip-item">
+            <span class="tip-icon">✓</span>
+            <span>Cambia tu contraseña cada 3-6 meses</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,960 @@
+---
+description: Reglas premium de estilo visual, animaciones, scroll reveal y experiencia Awwwards para Stylo Barber Connect inspiradas en la barbería real.
+globs:
+  - "frontend/src/**/*.html"
+  - "frontend/src/**/*.scss"
+  - "frontend/src/**/*.css"
+  - "frontend/src/**/*.ts"
+  - "mobile/lib/**/*.dart"
+alwaysApply: false
+---
+
+# Stylo Barber Connect - Estilo Premium Barbería Real + Animaciones
+
+## 1. Objetivo de esta regla
+
+Esta regla define el estilo visual premium que debe seguir Cursor al generar o modificar interfaces de Stylo Barber Connect.
+
+Debe aplicarse especialmente en:
+
+- Landing pública.
+- Navbar.
+- Hero.
+- Sección de servicios.
+- Galería.
+- Agendado de cita.
+- Cards de servicios.
+- Cards de barberos.
+- Productos.
+- Panel cliente.
+- Panel secretaria.
+- Panel barbero.
+- Panel administrador.
+- Formularios.
+- Modales.
+- Tablas responsive.
+- Flutter mobile.
+- Animaciones de entrada.
+- Animaciones de scroll.
+- Transiciones entre secciones.
+
+La estética debe inspirarse en la barbería real: paredes verde salvia grisáceo, sillas negras, madera oscura, espejo con detalles dorados y ambiente premium.
+
+---
+
+## 2. Paleta oficial inspirada en la barbería real
+
+El color institucional visual debe tomarse de la pared física de la barbería:
+
+```txt
+Verde salvia grisáceo claro: #739177
+Verde salvia medio:          #637F6E
+Verde salvia principal:      #5F7B6B
+Verde sombra:                #485846
+Verde profundo:              #2F3A31
+Negro carbón:                #070908
+Negro suave:                 #0D1110
+Dorado oro:                  #D4AF37
+Dorado suave:                #F0CC55
+Texto claro:                 #F5F5F0
+Texto secundario:            #BAC2B7
+```
+
+## 2.1 Regla de uso de color
+
+No usar el verde claro `#739177` como fondo plano dominante de toda la página.
+
+Uso correcto:
+
+- Como glow suave.
+- Como fondo secundario.
+- Como borde sutil.
+- Como hover.
+- Como badge.
+- Como gradiente.
+- Como atmósfera de marca.
+- Como bloque visual en secciones específicas.
+- Como color secundario en cards o paneles.
+
+Uso incorrecto:
+
+- Fondo completo del body.
+- Botón principal sin contraste.
+- Texto sobre verde sin revisar contraste.
+- Saturar toda la interfaz con verde.
+- Reemplazar el dorado por verde en elementos premium.
+
+El fondo principal debe ser negro carbón o verde profundo:
+
+```scss
+--color-bg: #070908;
+--color-bg-soft: #0D1110;
+--color-wall-deep: #2F3A31;
+```
+
+El dorado debe usarse como lujo, no como relleno excesivo:
+
+```scss
+--color-gold: #D4AF37;
+--color-gold-soft: #F0CC55;
+```
+
+---
+
+## 3. Tokens CSS/SCSS obligatorios en Angular
+
+Cuando se creen estilos globales, usar estos tokens:
+
+```scss
+:root {
+  // Fondo premium
+  --stylo-bg: #070908;
+  --stylo-bg-soft: #0D1110;
+  --stylo-surface: #121713;
+
+  // Verde real de barbería
+  --stylo-wall-light: #739177;
+  --stylo-wall: #637F6E;
+  --stylo-wall-main: #5F7B6B;
+  --stylo-wall-dark: #485846;
+  --stylo-wall-deep: #2F3A31;
+
+  // Oro premium
+  --stylo-gold: #D4AF37;
+  --stylo-gold-soft: #F0CC55;
+  --stylo-gold-dark: #8B7420;
+
+  // Texto
+  --stylo-text: #F5F5F0;
+  --stylo-text-muted: #BAC2B7;
+  --stylo-text-soft: #8D978D;
+
+  // Bordes
+  --stylo-border-soft: rgba(255, 255, 255, 0.08);
+  --stylo-border-green: rgba(115, 145, 119, 0.28);
+  --stylo-border-gold: rgba(212, 175, 55, 0.28);
+
+  // Superficies
+  --stylo-panel: rgba(18, 23, 19, 0.88);
+  --stylo-panel-strong: rgba(24, 29, 22, 0.94);
+  --stylo-card: rgba(99, 127, 110, 0.13);
+
+  // Estados
+  --stylo-success: #7BE495;
+  --stylo-warning: #F0CC55;
+  --stylo-danger: #FF6B6B;
+
+  // Sombras
+  --stylo-shadow-premium: 0 30px 80px rgba(0, 0, 0, 0.48);
+}
+```
+
+---
+
+## 4. Tokens Flutter obligatorios
+
+Cuando se generen temas en Flutter, usar:
+
+```dart
+import 'package:flutter/material.dart';
+
+class StyloColors {
+  static const Color bg = Color(0xFF070908);
+  static const Color bgSoft = Color(0xFF0D1110);
+  static const Color surface = Color(0xFF121713);
+
+  static const Color wallLight = Color(0xFF739177);
+  static const Color wall = Color(0xFF637F6E);
+  static const Color wallMain = Color(0xFF5F7B6B);
+  static const Color wallDark = Color(0xFF485846);
+  static const Color wallDeep = Color(0xFF2F3A31);
+
+  static const Color gold = Color(0xFFD4AF37);
+  static const Color goldSoft = Color(0xFFF0CC55);
+  static const Color goldDark = Color(0xFF8B7420);
+
+  static const Color text = Color(0xFFF5F5F0);
+  static const Color textMuted = Color(0xFFBAC2B7);
+  static const Color textSoft = Color(0xFF8D978D);
+
+  static const Color success = Color(0xFF7BE495);
+  static const Color warning = Color(0xFFF0CC55);
+  static const Color danger = Color(0xFFFF6B6B);
+}
+```
+
+---
+
+## 5. Estética visual obligatoria
+
+La interfaz debe verse:
+
+- Premium.
+- Oscura.
+- Barbería boutique.
+- Masculina, elegante y moderna.
+- Inspirada en espacio físico real.
+- Con verdes salvia/grisáceos como atmósfera.
+- Con dorado como detalle de lujo.
+- Con negro carbón como profundidad.
+- Con glassmorphism controlado.
+- Con sombras suaves.
+- Con bordes finos.
+- Con tipografía elegante.
+
+No debe verse:
+
+- Genérica.
+- Infantil.
+- Fosforescente.
+- Saturada.
+- Como plantilla Bootstrap básica.
+- Con colores planos sin profundidad.
+- Con cards sin jerarquía visual.
+- Con botones sin interacción.
+
+---
+
+## 6. Fondos recomendados
+
+Para landing o páginas públicas usar fondos con gradientes:
+
+```scss
+body {
+  background:
+    radial-gradient(circle at 20% 10%, rgba(212, 175, 55, 0.12), transparent 26%),
+    radial-gradient(circle at 80% 15%, rgba(99, 127, 110, 0.30), transparent 32%),
+    linear-gradient(135deg, #070908 0%, #0D1110 42%, #2F3A31 100%);
+}
+```
+
+Para paneles internos:
+
+```scss
+.panel {
+  background:
+    radial-gradient(circle at 65% 0%, rgba(212, 175, 55, 0.10), transparent 28%),
+    linear-gradient(180deg, rgba(18, 23, 19, 0.92), rgba(7, 9, 8, 0.92));
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.48);
+}
+```
+
+Para cards:
+
+```scss
+.card {
+  background: linear-gradient(
+    180deg,
+    rgba(99, 127, 110, 0.18),
+    rgba(255, 255, 255, 0.03)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+```
+
+---
+
+## 7. Tipografías
+
+Usar:
+
+- `Cormorant Garamond` para títulos premium.
+- `Inter` para interfaz, formularios, botones y lectura.
+- Evitar mezclar más de 2 familias.
+
+Reglas:
+
+```scss
+h1, h2.hero-title, .brand-title {
+  font-family: "Cormorant Garamond", serif;
+  letter-spacing: -0.04em;
+}
+
+body, button, input, select, textarea {
+  font-family: "Inter", system-ui, sans-serif;
+}
+```
+
+---
+
+## 8. Navbar premium
+
+El navbar debe:
+
+- Ser sticky.
+- Tener bordes dorados suaves.
+- Fondo oscuro con blur.
+- Logo/monograma.
+- Links con hover verde salvia.
+- CTA dorado.
+- Responsive: en móvil debe convertirse en menú compacto o drawer.
+
+Ejemplo de estilo:
+
+```scss
+.navbar {
+  position: sticky;
+  top: 14px;
+  z-index: 20;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  background: linear-gradient(180deg, rgba(13, 17, 16, .92), rgba(7, 9, 8, .75));
+  backdrop-filter: blur(16px);
+  box-shadow: 0 18px 48px rgba(0,0,0,.35);
+}
+```
+
+---
+
+## 9. Landing premium
+
+La landing debe incluir como mínimo:
+
+- Hero impactante.
+- Imagen o video visual de barbería.
+- CTA principal: Agendar cita.
+- CTA secundario: Ver servicios.
+- Sección de servicios destacados.
+- Sección de barberos.
+- Galería con imágenes del local.
+- Sección de productos.
+- Testimonios o métricas.
+- Mapa/contacto.
+- Footer elegante.
+- Botón flotante WhatsApp.
+- Animación de scroll reveal.
+
+El hero debe usar:
+
+- Título grande.
+- Texto corto.
+- CTA dorado.
+- Fondo con gradiente verde/negro.
+- Imagen enmascarada o card visual.
+- Detalles dorados.
+- Elementos que entren con animación suave.
+
+---
+
+## 10. Agendado premium
+
+El flujo de agendado debe usar stepper:
+
+1. Servicio.
+2. Barbero.
+3. Fecha.
+4. Hora.
+5. Confirmación.
+
+Debe tener:
+
+- Resumen lateral en desktop.
+- Resumen colapsable en móvil.
+- Cards seleccionables.
+- Estado visual seleccionado.
+- Microinteracciones.
+- Validaciones visuales.
+- Temporizador de reserva temporal.
+- Indicador de anticipo si aplica.
+- Botón de pago con Clip si aplica.
+
+Reglas:
+
+- Angular y Flutter no calculan montos finales.
+- Django calcula anticipo.
+- Django valida disponibilidad.
+- Clip solo cobra.
+- El frontend solo muestra `checkout_url` y estados devueltos por backend.
+
+---
+
+## 11. Animaciones base
+
+Todas las animaciones deben ser suaves, elegantes y sin saturar.
+
+Duraciones recomendadas:
+
+```txt
+Microinteracción: 180ms - 260ms
+Cambio de step: 350ms - 480ms
+Scroll reveal: 550ms - 900ms
+Hover card: 220ms - 300ms
+Modal open: 240ms - 360ms
+```
+
+Curvas recomendadas:
+
+```scss
+--ease-premium: cubic-bezier(.2, .8, .2, 1);
+--ease-soft: cubic-bezier(.16, 1, .3, 1);
+```
+
+---
+
+## 12. Scroll reveal en Angular
+
+Cuando Cursor genere secciones de landing o páginas públicas, debe incluir patrón de scroll reveal con IntersectionObserver.
+
+Ejemplo TypeScript:
+
+```ts
+import { AfterViewInit, Directive, ElementRef, Renderer2 } from '@angular/core';
+
+@Directive({
+  selector: '[appRevealOnScroll]',
+  standalone: true,
+})
+export class RevealOnScrollDirective implements AfterViewInit {
+  constructor(
+    private readonly elementRef: ElementRef<HTMLElement>,
+    private readonly renderer: Renderer2
+  ) {}
+
+  ngAfterViewInit(): void {
+    const element = this.elementRef.nativeElement;
+
+    this.renderer.addClass(element, 'reveal');
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          this.renderer.addClass(element, 'is-visible');
+          observer.unobserve(element);
+        }
+      },
+      { threshold: 0.16 }
+    );
+
+    observer.observe(element);
+  }
+}
+```
+
+CSS:
+
+```scss
+.reveal {
+  opacity: 0;
+  transform: translateY(34px) scale(.98);
+  filter: blur(10px);
+  transition:
+    opacity 720ms cubic-bezier(.16, 1, .3, 1),
+    transform 720ms cubic-bezier(.16, 1, .3, 1),
+    filter 720ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+```
+
+---
+
+## 13. Animación de imágenes al hacer scroll
+
+Las imágenes de galería, servicios, barberos o hero deben aparecer con alguna de estas variantes:
+
+- Fade + slide up.
+- Clip-path reveal.
+- Scale suave.
+- Parallax leve.
+- Blur to sharp.
+- Máscara lateral.
+
+Ejemplo:
+
+```scss
+.image-reveal {
+  opacity: 0;
+  clip-path: inset(18% 0 18% 0 round 24px);
+  transform: translateY(28px) scale(1.04);
+  filter: blur(12px) saturate(.8);
+  transition:
+    opacity 900ms cubic-bezier(.16, 1, .3, 1),
+    clip-path 900ms cubic-bezier(.16, 1, .3, 1),
+    transform 900ms cubic-bezier(.16, 1, .3, 1),
+    filter 900ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.image-reveal.is-visible {
+  opacity: 1;
+  clip-path: inset(0 0 0 0 round 24px);
+  transform: translateY(0) scale(1);
+  filter: blur(0) saturate(1);
+}
+```
+
+---
+
+## 14. Hover premium para cards
+
+Cards de servicio, producto, barbero o cita:
+
+```scss
+.premium-card {
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, .08);
+  background: linear-gradient(180deg, rgba(99,127,110,.18), rgba(255,255,255,.03));
+  transition:
+    transform 260ms cubic-bezier(.2,.8,.2,1),
+    border-color 260ms ease,
+    box-shadow 260ms ease,
+    background 260ms ease;
+}
+
+.premium-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(212,175,55,.32);
+  box-shadow: 0 18px 50px rgba(0,0,0,.32);
+}
+
+.premium-card.is-selected {
+  border-color: rgba(212,175,55,.82);
+  box-shadow:
+    0 0 0 1px rgba(212,175,55,.22),
+    0 18px 48px rgba(212,175,55,.10);
+}
+```
+
+---
+
+## 15. Botones premium
+
+Botón principal:
+
+```scss
+.btn-primary-premium {
+  border: 0;
+  border-radius: 999px;
+  color: #1B1407;
+  background: linear-gradient(135deg, #F0CC55, #D4AF37);
+  font-weight: 800;
+  box-shadow: 0 14px 32px rgba(212,175,55,.22);
+  transition: transform 240ms ease, box-shadow 240ms ease;
+}
+
+.btn-primary-premium:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 44px rgba(212,175,55,.34);
+}
+```
+
+Botón secundario:
+
+```scss
+.btn-secondary-premium {
+  color: #F5F5F0;
+  background: rgba(99,127,110,.20);
+  border: 1px solid rgba(115,145,119,.28);
+}
+
+.btn-secondary-premium:hover {
+  background: rgba(99,127,110,.28);
+  border-color: rgba(212,175,55,.28);
+}
+```
+
+---
+
+## 16. Formularios
+
+Formularios de login, registro, citas, productos, empleados y configuración deben:
+
+- Usar labels claros.
+- Tener inputs altos.
+- Bordes redondeados.
+- Focus dorado/verde.
+- Mensajes de error visibles.
+- Estados loading.
+- No saturar con demasiados campos por fila en móvil.
+
+```scss
+.input-premium {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(7,9,8,.48);
+  color: #F5F5F0;
+  padding: 0 16px;
+  transition: border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.input-premium:focus {
+  outline: none;
+  border-color: rgba(212,175,55,.44);
+  box-shadow: 0 0 0 4px rgba(212,175,55,.10);
+}
+```
+
+---
+
+## 17. Responsive obligatorio
+
+Siempre considerar:
+
+- iPhone pequeño.
+- Android gama media.
+- Tablet.
+- Laptop.
+- Desktop.
+
+Reglas:
+
+- En móvil, layout de columnas pasa a una columna.
+- Sidebar admin pasa a drawer.
+- Resumen de cita lateral pasa a bloque inferior o accordion.
+- Navbar se vuelve compacto.
+- Cards pasan a una columna.
+- Tablas se vuelven cards.
+- Botones táctiles mínimo 44px.
+- No depender de hover para acciones críticas.
+- Reducir blur/glow excesivo en móvil.
+
+Breakpoints sugeridos:
+
+```scss
+$breakpoint-sm: 480px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+```
+
+---
+
+## 18. Flutter mobile equivalente
+
+En Flutter, replicar el estilo con:
+
+- `ThemeData.dark()`.
+- Cards con `BoxDecoration`.
+- Gradientes verde profundo/negro.
+- Dorado en botones principales.
+- Bordes redondeados.
+- Animaciones suaves con `AnimatedContainer`.
+- Transiciones con `PageRouteBuilder`.
+- Listas con `AnimatedOpacity` o `TweenAnimationBuilder`.
+- Scroll reveal simple con `VisibilityDetector` o animaciones al montar.
+
+Ejemplo de card Flutter:
+
+```dart
+Container(
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(22),
+    gradient: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Color(0x3327F6E), // verde suave translúcido conceptual
+        Color(0x11000000),
+      ],
+    ),
+    border: Border.all(
+      color: StyloColors.gold.withOpacity(.28),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(.35),
+        blurRadius: 30,
+        offset: const Offset(0, 18),
+      ),
+    ],
+  ),
+)
+```
+
+---
+
+## 19. Panel administrador
+
+El admin debe verse premium, no como dashboard genérico.
+
+Debe incluir:
+
+- Sidebar oscuro.
+- Header con buscador.
+- Cards KPI.
+- Gráficas con dorado/verde.
+- Tablas limpias.
+- Estados visuales.
+- Botones de acción claros.
+- Modales elegantes.
+- Formularios por secciones.
+- Animación de entrada por cards.
+- Filtros con chips.
+
+Módulos visuales:
+
+- Dashboard.
+- Usuarios.
+- Empleados.
+- Servicios.
+- Productos.
+- Inventario.
+- Citas.
+- Pedidos.
+- Ventas.
+- Reportes.
+- Apariencia.
+- Legal.
+- Auditoría.
+
+---
+
+## 20. Panel secretaria
+
+Debe priorizar operación rápida:
+
+- Agenda diaria clara.
+- Vista por día.
+- Filtros por barbero/silla/estado.
+- Cards de cita.
+- Botones rápidos: confirmar asistencia, marcar inasistencia, reprogramar, validar pago.
+- Colores por estado.
+- Modal de detalle.
+- Indicadores de anticipo.
+- Alertas de próximos clientes.
+
+---
+
+## 21. Panel barbero
+
+Debe ser simple:
+
+- Agenda del día.
+- Próxima cita destacada.
+- Servicio, cliente y duración.
+- Notas visibles.
+- Estado de cita.
+- Sin acciones de cobro.
+- Sin modificar pagos.
+- Sin modificar inventario.
+
+---
+
+## 22. Panel cliente
+
+Debe priorizar:
+
+- Próxima cita.
+- Agendar cita.
+- Mis citas.
+- Productos.
+- Mis pedidos.
+- Notificaciones.
+- Perfil.
+- Pago con Clip cuando aplique.
+- Historial simple.
+
+---
+
+## 23. Galería premium
+
+Crear secciones visuales con imágenes reales del local:
+
+- Sillas.
+- Espejos.
+- Productos.
+- Fachada.
+- Cortes.
+- Ambiente.
+- Equipo.
+
+Reglas:
+
+- Usar imágenes grandes.
+- Bordes redondeados.
+- Gradiente oscuro encima.
+- Scroll reveal.
+- Hover con scale leve.
+- No usar demasiadas imágenes pequeñas.
+
+```scss
+.gallery-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.04);
+  transition: transform 700ms cubic-bezier(.16,1,.3,1);
+}
+
+.gallery-card:hover img {
+  transform: scale(1.10);
+}
+```
+
+---
+
+## 24. Transiciones entre páginas Angular
+
+Usar transiciones suaves al cambiar de rutas principales.
+
+Recomendado:
+
+- Fade.
+- Slide up.
+- Blur suave.
+- No animaciones largas.
+
+Concepto:
+
+```scss
+.route-enter {
+  opacity: 0;
+  transform: translateY(18px);
+  filter: blur(6px);
+}
+
+.route-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+  transition: all 420ms cubic-bezier(.16,1,.3,1);
+}
+```
+
+---
+
+## 25. Loader premium
+
+Para cargas:
+
+- Skeleton cards.
+- Shimmer sutil en verde/dorado.
+- Spinner mínimo.
+- Texto claro: "Preparando tu experiencia".
+- No usar loaders básicos azules.
+
+```scss
+.skeleton {
+  border-radius: 18px;
+  background: linear-gradient(
+    90deg,
+    rgba(99,127,110,.10),
+    rgba(212,175,55,.10),
+    rgba(99,127,110,.10)
+  );
+  background-size: 220% 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+@keyframes shimmer {
+  from { background-position: 220% 0; }
+  to { background-position: -220% 0; }
+}
+```
+
+---
+
+## 26. Accesibilidad
+
+Aunque sea premium, debe ser usable:
+
+- Contraste suficiente.
+- Texto legible.
+- Focus visible.
+- Botones con labels.
+- Navegación por teclado.
+- No usar animaciones que bloqueen.
+- Respetar `prefers-reduced-motion`.
+
+```scss
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+```
+
+---
+
+## 27. Regla de no romper arquitectura
+
+El estilo visual no debe romper la arquitectura:
+
+- Angular consume API.
+- Flutter consume API.
+- Django valida.
+- PostgreSQL almacena.
+- Clip cobra.
+- El frontend no calcula montos finales.
+- El frontend no confirma pagos.
+- El frontend no modifica inventario.
+- El frontend no salta reglas de negocio.
+
+---
+
+## 28. Prompt interno para Cursor
+
+Cuando se pida generar una pantalla visual, Cursor debe pensar así:
+
+```txt
+Genera una pantalla premium dark-first para Stylo Barber Connect,
+inspirada en la barbería real con verde salvia grisáceo #637F6E,
+verde profundo #2F3A31, negro carbón #070908 y dorado #D4AF37.
+Usa diseño responsive, cards con glassmorphism controlado,
+bordes dorados sutiles, scroll reveal, microinteracciones,
+hover elegante, estados visuales y estructura lista para Angular.
+No uses colores genéricos ni estilos Bootstrap básicos.
+```
+
+Para Flutter:
+
+```txt
+Genera una pantalla Flutter premium dark-first para Stylo Barber Connect,
+con tema visual equivalente a Angular, usando verde salvia grisáceo,
+negro carbón y dorado. Usa widgets reutilizables, AnimatedContainer,
+cards con gradientes, bordes redondeados y navegación clara.
+```
+
+---
+
+## 29. Checklist visual antes de aceptar una pantalla
+
+Una pantalla se acepta solo si cumple:
+
+- [ ] Usa paleta real de la barbería.
+- [ ] Mantiene fondo oscuro premium.
+- [ ] Usa dorado solo como acento.
+- [ ] Tiene jerarquía visual clara.
+- [ ] Tiene estados hover/active/selected.
+- [ ] Es responsive.
+- [ ] Tiene animaciones suaves.
+- [ ] Tiene scroll reveal si es landing o sección pública.
+- [ ] No depende solo del hover.
+- [ ] Se ve bien en móvil.
+- [ ] No usa colores genéricos.
+- [ ] No rompe reglas de backend.
+- [ ] No expone lógica sensible en frontend.
+
+---
+
+## 30. Conclusión de estilo
+
+Stylo Barber Connect debe verse como una plataforma de barbería premium, no como una página escolar básica.
+
+La interfaz debe transmitir:
+
+- Confianza.
+- Lujo.
+- Orden.
+- Tecnología.
+- Estilo.
+- Profesionalismo.
+
+La combinación final será:
+
+```txt
+Negro carbón = profundidad.
+Verde salvia grisáceo = identidad real del local.
+Dorado oro = lujo y detalle.
+Blanco cálido = legibilidad.
+Animaciones suaves = experiencia premium.
+```

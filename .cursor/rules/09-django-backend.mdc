@@ -1,0 +1,93 @@
+---
+description: Reglas senior para backend Django REST Framework
+globs: ["backend/**/*.py"]
+alwaysApply: false
+---
+
+# Django REST Framework Backend
+
+## Stack
+- Python 3.12+.
+- Django 5+.
+- Django REST Framework.
+- PostgreSQL Neon.
+- JWT.
+- CORS seguro.
+- Variables de entorno.
+- Services + selectors + serializers + permissions.
+
+## Estructura recomendada
+```txt
+backend/
+├── config/
+│   ├── settings/
+│   │   ├── base.py
+│   │   ├── local.py
+│   │   ├── production.py
+│   │   └── security.py
+│   └── urls.py
+├── apps/
+│   ├── accounts/
+│   ├── users/
+│   ├── employees/
+│   ├── services/
+│   ├── appointments/
+│   ├── payments/
+│   ├── products/
+│   ├── inventory/
+│   ├── orders/
+│   ├── sales/
+│   ├── notifications/
+│   ├── reports/
+│   ├── business_settings/
+│   ├── appearance/
+│   ├── legal/
+│   ├── audit/
+│   └── integrations/
+└── common/
+```
+
+## Patrón por app
+```txt
+models.py
+serializers.py
+views.py
+urls.py
+permissions.py
+services.py
+selectors.py
+validators.py
+tests/
+```
+
+## Reglas de código
+- No poner lógica de negocio pesada en views.
+- Views llaman serializers y services.
+- Services ejecutan reglas y transacciones.
+- Selectors concentran consultas.
+- Permissions protegen por rol y objeto.
+- Serializers validan entrada y salida.
+- Usar `transaction.atomic()` en citas, pagos, pedidos, inventario y roles.
+
+## Base de datos existente
+- Si se usan tablas SQL ya creadas, usar `managed = False`.
+- Respetar esquemas `private`, `negocio`, `stg`, `rpt`.
+- Usar `db_table = 'negocio"."tabla'` cuando aplique.
+
+## Respuestas
+Usar:
+```json
+{
+  "success": true,
+  "message": "Operación realizada correctamente",
+  "data": {}
+}
+```
+
+## No permitido
+- `AllowAny` en endpoints privados.
+- SQL crudo sin parametrizar.
+- Confirmar pagos desde frontend.
+- Modificar stock sin movimiento.
+- Cambiar estado sin historial.
+- Exponer errores técnicos al cliente.

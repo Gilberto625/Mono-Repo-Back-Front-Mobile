@@ -1,0 +1,99 @@
+---
+description: Regla para mantener actualizados AGENTS.md y archivos de contexto vivos para Codex, Cursor y documentación de avance.
+globs:
+  - "AGENTS.md"
+  - "backend/AGENTS.md"
+  - "frontend/AGENTS.md"
+  - "mobile/AGENTS.md"
+  - "docs/context/**/*.md"
+  - "backend/**/*"
+  - "frontend/**/*"
+  - "mobile/**/*"
+alwaysApply: false
+---
+
+# Mantenimiento de contexto para Codex, Cursor y documentación viva
+
+## Objetivo
+
+Cada vez que se implemente, refactorice o cambie un módulo relevante, se deben actualizar los archivos de contexto correspondientes para que Codex, Cursor y futuros agentes entiendan el estado real del proyecto.
+
+## Archivos de contexto obligatorios
+
+Raíz:
+
+- `AGENTS.md`
+- `docs/context/PROJECT_CONTEXT.md`
+
+Backend:
+
+- `backend/AGENTS.md`
+- `backend/BACKEND_CONTEXT.md`
+
+Frontend Angular:
+
+- `frontend/AGENTS.md`
+- `frontend/FRONTEND_CONTEXT.md`
+
+Flutter:
+
+- `mobile/AGENTS.md`
+- `mobile/MOBILE_CONTEXT.md`
+
+## Regla principal
+
+Si cambias código importante, actualiza documentación contextual.
+
+Ejemplos:
+
+- Si creas un endpoint Django, actualiza `backend/BACKEND_CONTEXT.md`.
+- Si creas una pantalla Angular, actualiza `frontend/FRONTEND_CONTEXT.md`.
+- Si creas una pantalla Flutter, actualiza `mobile/MOBILE_CONTEXT.md`.
+- Si cambias arquitectura general, actualiza `docs/context/PROJECT_CONTEXT.md`.
+- Si cambias una regla global para agentes, actualiza `AGENTS.md`.
+
+## Qué debe actualizarse
+
+En los contextos se debe registrar:
+
+- Módulo trabajado.
+- Estado: Pendiente, En progreso, Parcial, Completo.
+- Archivos principales creados o modificados.
+- Endpoints creados.
+- Componentes creados.
+- Servicios creados.
+- Reglas de negocio implementadas.
+- Pendientes técnicos.
+- Riesgos o notas.
+
+## Reglas para Codex
+
+Codex debe usar `AGENTS.md`.
+
+No depender de reglas MDC para Codex.
+
+Si se trabaja dentro de una carpeta, Codex puede leer instrucciones más específicas:
+
+- `backend/AGENTS.md`
+- `frontend/AGENTS.md`
+- `mobile/AGENTS.md`
+
+## Reglas para Cursor
+
+Cursor usa `.cursor/rules/*.mdc`.
+
+Mantener:
+
+- `00-master-context-always.mdc` como contexto global.
+- Reglas especializadas por módulo.
+- Esta regla para mantener documentación viva.
+
+## Checklist antes de cerrar una tarea
+
+- [ ] Código compila o queda explicado si no se pudo ejecutar.
+- [ ] Se respetó arquitectura.
+- [ ] Se respetaron roles/permisos.
+- [ ] Se respetó diseño premium si es UI.
+- [ ] Se actualizó archivo de contexto correspondiente.
+- [ ] No se agregaron secretos.
+- [ ] No se rompieron reglas de negocio.

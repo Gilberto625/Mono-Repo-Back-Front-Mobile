@@ -1,0 +1,102 @@
+---
+description: Contratos API REST compartidos entre Angular y Flutter
+globs: ["backend/**/*.py", "frontend/**/*.ts", "mobile/**/*.dart"]
+alwaysApply: false
+---
+
+# API REST + Contratos
+
+## Principio
+Una sola API, dos clientes: Angular y Flutter.
+
+## Versionado
+Base:
+```txt
+/api/v1/
+```
+
+## Contextos
+```txt
+/api/v1/auth/
+/api/v1/public/
+/api/v1/client/
+/api/v1/secretary/
+/api/v1/barber/
+/api/v1/admin/
+/api/v1/shared/
+/api/v1/webhooks/
+```
+
+## Respuesta exitosa
+```json
+{
+  "success": true,
+  "message": "Operación realizada correctamente",
+  "data": {}
+}
+```
+
+## Respuesta error
+```json
+{
+  "success": false,
+  "message": "No fue posible realizar la operación",
+  "errors": {}
+}
+```
+
+## Paginación
+```json
+{
+  "success": true,
+  "message": "Listado obtenido correctamente",
+  "data": {
+    "count": 100,
+    "next": null,
+    "previous": null,
+    "results": []
+  }
+}
+```
+
+## Códigos HTTP
+- 200 OK.
+- 201 Created.
+- 204 No Content.
+- 400 Validación.
+- 401 No autenticado.
+- 403 Sin permiso.
+- 404 No encontrado.
+- 409 Conflicto de negocio.
+- 422 Regla de negocio no cumplida.
+- 500 Error servidor.
+
+## Reglas
+- JSON en `snake_case`.
+- Fechas en ISO 8601.
+- Montos como string o decimal seguro, no float en contratos críticos.
+- El frontend nunca manda montos finales de pagos.
+- Toda respuesta debe ser estable para Angular y Flutter.
+
+## Endpoints clave
+```txt
+POST /auth/login/
+POST /auth/refresh/
+POST /auth/logout/
+GET  /auth/me/
+
+GET  /public/config/
+GET  /public/services/
+GET  /public/products/
+
+POST /client/appointments/
+GET  /client/appointments/
+POST /client/orders/
+GET  /client/orders/
+
+POST /client/payments/clip/create/
+GET  /client/payments/{id}/status/
+
+GET  /shared/notifications/
+PATCH /shared/notifications/{id}/read/
+```

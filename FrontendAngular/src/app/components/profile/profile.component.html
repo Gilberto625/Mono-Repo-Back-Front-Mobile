@@ -1,0 +1,264 @@
+<div class="layout-sidebar">
+  <app-sidebar rol="cliente"></app-sidebar>
+
+  <main class="main-content">
+    <div class="cliente-page perfil-page">
+      <app-breadcrumb></app-breadcrumb>
+
+      <header class="perfil-page-hero">
+        <div class="perfil-page-hero__text">
+          <p class="perfil-eyebrow">Cuenta</p>
+          <h1 class="perfil-page-title">Mi perfil</h1>
+          <p class="perfil-page-sub text-muted">Datos personales, preferencias, seguridad y Alexa</p>
+        </div>
+      </header>
+
+      @if (currentUser) {
+        <article class="card perfil-hero-card mb-lg">
+          <div class="perfil-header">
+            @if (tieneAvatar) {
+              <img [src]="currentUser.avatar_url" alt="Foto de perfil" class="perfil-avatar perfil-avatar--img">
+            } @else {
+              <div class="perfil-avatar" aria-hidden="true">{{ iniciales }}</div>
+            }
+            <div class="perfil-header-info">
+              <h2 class="perfil-header-name">{{ nombreCompleto }}</h2>
+              <p class="perfil-header-email text-muted">{{ currentUser.email }}</p>
+              <span class="badge badge-gold perfil-role-badge">Cliente</span>
+            </div>
+            <div class="perfil-header-acciones">
+              <a routerLink="/cliente/perfil/editar" class="btn btn-secondary perfil-btn-editar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Editar perfil
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <div class="perfil-grid">
+          <section class="card perfil-card-section">
+            <h3 class="perfil-section-title">Información personal</h3>
+            <div class="info-list">
+              <div class="info-item">
+                <div class="info-icon-wrap" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="info-label">Nombre completo</p>
+                  <p class="info-value">{{ nombreCompleto }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-icon-wrap" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="info-label">Correo electrónico</p>
+                  <p class="info-value">{{ currentUser.email }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-icon-wrap" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="info-label">Teléfono</p>
+                  <p class="info-value">{{ currentUser.telefono || 'Sin registrar' }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-icon-wrap" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="info-label">Fecha de nacimiento</p>
+                  <p class="info-value">{{ currentUser.fecha_nacimiento || 'Sin registrar' }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-icon-wrap" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="info-label">Dirección</p>
+                  <p class="info-value">{{ currentUser.direccion || 'Sin registrar' }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-icon-wrap" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="info-label">Nombre de usuario</p>
+                  <p class="info-value">{{ currentUser.username }}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card perfil-card-section">
+            <h3 class="perfil-section-title">Preferencias</h3>
+            <div class="preferencias-list">
+              <label class="pref-item">
+                <input type="checkbox" [checked]="prefNotificaciones" name="prefNotif" disabled>
+                <span>Recibir notificaciones por email</span>
+              </label>
+              <label class="pref-item">
+                <input type="checkbox" [checked]="prefRecordatorios" name="prefRecor" disabled>
+                <span>Recibir recordatorios de citas</span>
+              </label>
+              <p class="perfil-hint text-muted">Estas preferencias se mantienen activas para garantizar la comunicación del servicio.</p>
+            </div>
+          </section>
+
+          <section class="card perfil-card-section">
+            <h3 class="perfil-section-title">Seguridad</h3>
+            <div class="preferencias-list">
+              <label class="switch-row">
+                <span>Verificación en dos pasos al iniciar sesión</span>
+                <span class="switch-control">
+                  <input
+                    type="checkbox"
+                    [ngModel]="email2FA"
+                    [disabled]="guardando2FA"
+                    (ngModelChange)="onToggle2FA($event)"
+                    name="toggle2fa"
+                  >
+                  <span class="switch-slider"></span>
+                </span>
+              </label>
+              <p class="perfil-hint text-muted">Estado: {{ estado2FATexto }}</p>
+              @if (guardando2FA) {
+                <p class="perfil-hint text-muted">Guardando configuración…</p>
+              }
+              @if (proveedor2FA === 'google') {
+                <p class="perfil-hint text-muted">Con Google no se solicita un código adicional al iniciar sesión.</p>
+              }
+            </div>
+          </section>
+
+          <section class="card perfil-card-section alexa-section">
+            <h3 class="perfil-section-title">Alexa — Tony Estilo</h3>
+            <p class="perfil-hint text-muted alexa-intro">
+              Vincula tu cuenta una sola vez para agendar y consultar citas con tu Echo.
+              Di: <strong>«Alexa, abre Tony Estilo»</strong>.
+            </p>
+
+            @if (cargandoEstadoAlexa) {
+              <p class="perfil-hint text-muted">Consultando estado de vinculación…</p>
+            } @else if (alexaVinculado) {
+              <div class="alexa-status alexa-status--linked">
+                <span class="badge badge-gold">Cuenta vinculada</span>
+                @if (alexaVinculadoEnTexto) {
+                  <p class="perfil-hint text-muted mb-0">Desde {{ alexaVinculadoEnTexto }}</p>
+                }
+                <p class="perfil-hint text-muted mb-0">
+                  Ya puedes usar la skill sin volver a ingresar un código.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="btn btn-secondary alexa-btn"
+                [disabled]="generandoCodigoAlexa"
+                (click)="generarCodigoAlexa()"
+              >
+                {{ generandoCodigoAlexa ? 'Generando…' : 'Generar código nuevo' }}
+              </button>
+              <p class="perfil-hint text-muted mb-0">
+                Solo si cambiaste de dispositivo Echo o necesitas revincular.
+              </p>
+            } @else {
+              <div class="alexa-status">
+                <span class="badge">Sin vincular</span>
+                <p class="perfil-hint text-muted mb-0">
+                  Genera un código de 4 dígitos y dicta a Alexa:
+                  <strong>«Vincular cuenta, mi código es …»</strong>
+                </p>
+              </div>
+              <button
+                type="button"
+                class="btn btn-primary alexa-btn"
+                [disabled]="generandoCodigoAlexa"
+                (click)="generarCodigoAlexa()"
+              >
+                {{ generandoCodigoAlexa ? 'Generando código…' : 'Generar código de vinculación' }}
+              </button>
+            }
+
+            @if (alexaCodigo) {
+              <div class="alexa-codigo-panel" aria-live="polite">
+                <p class="alexa-codigo-label">Tu código</p>
+                <p class="alexa-codigo-digits">{{ alexaCodigo }}</p>
+                <p class="perfil-hint text-muted mb-0">
+                  Expira en <strong>{{ alexaCountdownTexto }}</strong>
+                </p>
+                <ol class="alexa-pasos text-muted">
+                  <li>Di: «Alexa, abre Tony Estilo»</li>
+                  <li>Di: «Vincular cuenta, mi código es {{ alexaCodigo }}»</li>
+                </ol>
+              </div>
+            }
+          </section>
+        </div>
+
+        <section class="card perfil-card-section perfil-zona-peligro mt-lg">
+          <h3 class="perfil-section-title perfil-section-title--danger">Zona de peligro</h3>
+          <p class="perfil-hint text-muted perfil-zona-desc">Si eliminas tu cuenta, no podrás recuperarla.</p>
+          <button type="button" class="btn btn-danger" (click)="eliminarCuenta()">Eliminar mi cuenta</button>
+        </section>
+      }
+    </div>
+  </main>
+</div>
+
+<nav class="navbar-mobile" aria-label="Navegación cliente">
+  <a routerLink="/cliente" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    Inicio
+  </a>
+  <a routerLink="/cliente/servicios" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    Servicios
+  </a>
+  <a routerLink="/cliente/productos" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+    Productos
+  </a>
+  <a routerLink="/cliente/agendar" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+    Agendar
+  </a>
+  <a routerLink="/cliente/citas" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+    Citas
+  </a>
+  <a routerLink="/cliente/carrito" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    Carrito
+  </a>
+  <a routerLink="/cliente/perfil" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Perfil
+  </a>
+</nav>

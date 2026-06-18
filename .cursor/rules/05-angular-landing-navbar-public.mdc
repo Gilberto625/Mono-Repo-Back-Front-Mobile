@@ -1,0 +1,85 @@
+---
+description: Reglas para landing pública, navbar, catálogo público, imágenes y contenido visual administrable
+globs: ["frontend/src/app/features/public/**/*", "frontend/src/app/layouts/public-layout/**/*", "frontend/**/*.scss", "backend/apps/appearance/**/*.py", "backend/apps/business_settings/**/*.py"]
+alwaysApply: false
+---
+
+# Landing Pública y Navbar
+
+## Objetivo
+La landing debe vender la experiencia de Tony Stylo Barbería y permitir:
+- Ver servicios.
+- Ver productos destacados.
+- Conocer barberos.
+- Agendar cita.
+- Comprar productos.
+- Contactar por WhatsApp.
+- Ver ubicación.
+- Consultar contenido legal.
+- Cambiar entre modo dark/light si se implementa.
+
+## Secciones mínimas landing
+1. Navbar público.
+2. Hero premium.
+3. Servicios destacados.
+4. Barberos/estilistas.
+5. Productos destacados.
+6. Galería / imágenes de landing.
+7. Beneficios.
+8. Testimonios opcionales.
+9. CTA agendar cita.
+10. Ubicación Google Maps.
+11. Contacto / WhatsApp.
+12. Footer legal.
+
+## Navbar público
+Debe incluir:
+- Logo.
+- Inicio.
+- Servicios.
+- Productos.
+- Barberos.
+- Ubicación.
+- Login.
+- CTA "Agendar".
+- Menú hamburguesa mobile.
+
+## Imágenes administrables
+El admin debe poder gestionar:
+- Logo.
+- Hero desktop.
+- Hero mobile.
+- Galería landing.
+- Imágenes de servicios.
+- Imágenes de productos.
+- Imágenes de barberos si aplica.
+
+## Backend relacionado
+Crear o usar módulos:
+```txt
+apps/appearance/
+apps/business_settings/
+apps/services/
+apps/products/
+```
+
+Endpoints públicos sugeridos:
+```txt
+GET /api/v1/public/config/
+GET /api/v1/public/landing/
+GET /api/v1/public/services/
+GET /api/v1/public/products/
+GET /api/v1/public/barbers/
+```
+
+## Reglas de seguridad
+- El endpoint público no expone datos privados.
+- Las imágenes se suben desde admin con validación MIME, tamaño y extensión.
+- No permitir SVG no sanitizado.
+- Cloudinary/S3 se firma desde backend, nunca desde Angular.
+
+## Responsive
+- Hero debe tener versión mobile.
+- Navbar debe convertirse en drawer.
+- CTA visible en móvil.
+- Landing no debe romperse con imágenes pesadas.

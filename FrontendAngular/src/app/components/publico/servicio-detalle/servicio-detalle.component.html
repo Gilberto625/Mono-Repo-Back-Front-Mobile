@@ -1,0 +1,225 @@
+<!-- Layout para cliente autenticado -->
+@if (esCliente) {
+  <div class="layout-sidebar">
+    <app-sidebar rol="cliente"></app-sidebar>
+    <main class="main-content">
+      <app-breadcrumb></app-breadcrumb>
+      <ng-container *ngTemplateOutlet="contenido"></ng-container>
+    </main>
+  </div>
+} @else {
+  <app-navbar></app-navbar>
+  <ng-container *ngTemplateOutlet="contenido"></ng-container>
+  <app-footer></app-footer>
+}
+
+<ng-template #contenido>
+  @if (!esCliente) {
+    <div class="pm-sd-page">
+      <div class="container">
+        <ng-container *ngTemplateOutlet="cuerpoDetalle"></ng-container>
+      </div>
+    </div>
+  } @else {
+    <ng-container *ngTemplateOutlet="cuerpoDetalle"></ng-container>
+  }
+</ng-template>
+
+<ng-template #cuerpoDetalle>
+  @if (loading()) {
+    <div class="pm-sd-loading" [class.pm-sd-loading--public]="!esCliente">
+      <div class="pm-sd-loading__ring" aria-hidden="true"></div>
+      <p class="pm-sd-loading__text">Cargando servicio…</p>
+    </div>
+  } @else {
+    @if (servicio(); as s) {
+      <article class="pm-sd" [class.pm-sd--public]="!esCliente" [class.pm-sd--cliente]="esCliente">
+        @if (!esCliente) {
+          <header class="pm-sd-masthead" appScrollReveal>
+            <button type="button" class="pm-sd-back" (click)="volver()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              {{ textoVolver }}
+            </button>
+            <div class="pm-sd-eyebrow">
+              <span class="pm-sd-eyebrow__dot"></span>
+              Servicio
+            </div>
+            <h1 class="pm-sd-headline">{{ s.nombre }}</h1>
+            <p class="pm-sd-lede">
+              <span class="pm-sd-lede__accent">{{ s.duracionMinutos }} min</span>
+              <span class="pm-sd-lede__sep">·</span>
+              <span class="pm-sd-lede__accent">${{ s.precio }} MXN</span>
+              @if (s.categoria) {
+                <span class="pm-sd-lede__sep">·</span>
+                <span>{{ s.categoria }}</span>
+              }
+            </p>
+          </header>
+        } @else {
+          <div class="pm-sd-nav" appScrollReveal>
+            <button type="button" class="pm-sd-back" (click)="volver()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              {{ textoVolver }}
+            </button>
+          </div>
+        }
+
+        <div class="pm-sd-grid">
+          <div class="pm-sd-media" appScrollReveal="reveal-left">
+            <div class="pm-sd-media__glow" aria-hidden="true"></div>
+            @if (imagenes(s).length > 0) {
+              <div class="pm-sd-viewer">
+                <div class="pm-sd-frame">
+                  <img class="pm-sd-frame__img" [src]="imagenes(s)[imagenActual()]" [alt]="s.nombre" />
+                  @if (s.popular) {
+                    <span class="pm-sd-chip pm-sd-chip--popular">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path
+                          d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"
+                        />
+                      </svg>
+                      Popular
+                    </span>
+                  }
+                </div>
+                @if (imagenes(s).length > 1) {
+                  <div class="pm-sd-thumbs" role="tablist" aria-label="Miniaturas de la galería">
+                    @for (img of imagenes(s); track $index) {
+                      <button
+                        type="button"
+                        class="pm-sd-thumb"
+                        [class.pm-sd-thumb--active]="imagenActual() === $index"
+                        (click)="setImagenActual($index)"
+                        [attr.aria-selected]="imagenActual() === $index"
+                        [attr.aria-label]="'Vista ' + ($index + 1)"
+                      >
+                        <img [src]="img" alt="" />
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="pm-sd-frame pm-sd-frame--empty">
+                <div class="pm-sd-frame__placeholder" aria-hidden="true">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path
+                      d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
+                    />
+                  </svg>
+                </div>
+                @if (s.popular) {
+                  <span class="pm-sd-chip pm-sd-chip--popular">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"
+                      />
+                    </svg>
+                    Popular
+                  </span>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="pm-sd-panel" appScrollReveal="reveal-right">
+            @if (esCliente && s.categoria) {
+              <span class="pm-sd-tag">{{ s.categoria | uppercase }}</span>
+            }
+
+            @if (esCliente) {
+              <h1 class="pm-sd-title">{{ s.nombre }}</h1>
+            }
+
+            @if (s.descripcion) {
+              <div class="pm-sd-copy">
+                <p>{{ s.descripcion }}</p>
+              </div>
+            }
+
+            <div class="pm-sd-kpis">
+              <div class="pm-sd-kpi">
+                <span class="pm-sd-kpi__label">Precio</span>
+                <span class="pm-sd-kpi__value pm-sd-kpi__value--gold">${{ s.precio }} <small>MXN</small></span>
+              </div>
+              <div class="pm-sd-kpi">
+                <span class="pm-sd-kpi__label">Duración</span>
+                <span class="pm-sd-kpi__value pm-sd-kpi__value--row">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 6v6l4 2" />
+                  </svg>
+                  {{ s.duracionMinutos }} min
+                </span>
+              </div>
+            </div>
+
+            <div class="pm-sd-actions">
+              @if (esCliente) {
+                <a
+                  [routerLink]="'/cliente/agendar'"
+                  [queryParams]="{ servicio: s.id }"
+                  class="pm-sd-cta"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  Agendar cita
+                </a>
+                <p class="pm-sd-hint">Se preseleccionará este servicio al agendar.</p>
+              } @else {
+                <a routerLink="/login" class="pm-sd-cta">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  Agendar cita
+                </a>
+                <p class="pm-sd-hint">Inicia sesión para poder agendar una cita.</p>
+              }
+            </div>
+
+            <ul class="pm-sd-trust" appScrollReveal="stagger">
+              <li class="pm-sd-trust__item">
+                <span class="pm-sd-trust__icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                </span>
+                <span>Servicio profesional garantizado</span>
+              </li>
+              <li class="pm-sd-trust__item">
+                <span class="pm-sd-trust__icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                </span>
+                <span>Barberos especializados</span>
+              </li>
+              <li class="pm-sd-trust__item">
+                <span class="pm-sd-trust__icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 6v6l4 2" />
+                  </svg>
+                </span>
+                <span>Puntualidad en tu cita</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </article>
+    }
+  }
+</ng-template>

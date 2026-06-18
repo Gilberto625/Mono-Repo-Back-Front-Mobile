@@ -1,0 +1,74 @@
+---
+description: QA, pruebas, despliegue, CI/CD, staging y producción
+globs: ["backend/**/*.py", "frontend/**/*.ts", "mobile/**/*.dart", ".github/**/*.yml", "docs/**/*"]
+alwaysApply: false
+---
+
+# QA, Despliegue y CI/CD
+
+## Ambientes
+```txt
+development
+staging
+production
+```
+
+## Definition of Done
+Una tarea termina cuando:
+- Código implementado.
+- Revisado.
+- Funciona local.
+- Tiene validaciones.
+- Tiene permisos.
+- Maneja errores.
+- UI responsive.
+- Pruebas básicas.
+- Documentación actualizada.
+
+## Backend tests
+- Services.
+- Permissions.
+- Serializers.
+- API endpoints.
+- Pagos/webhooks.
+- Inventario transaccional.
+- Citas y disponibilidad.
+
+## Angular tests
+- Componentes críticos.
+- Guards.
+- Interceptors.
+- Services.
+- Responsive manual.
+- Flujos por rol.
+
+## Flutter tests
+- Repositories.
+- Models.
+- Widgets.
+- Auth.
+- Payments.
+
+## Seguridad
+- SAST.
+- DAST en staging.
+- SCA.
+- Secret scanning.
+- OWASP checks.
+
+## Deploy
+- Angular: Vercel.
+- Django: Render.
+- PostgreSQL: Neon.
+- Flutter: Android/iOS build.
+
+## Checklist pre-producción
+- DEBUG=False.
+- ALLOWED_HOSTS.
+- CORS dominios reales.
+- Variables env.
+- Migraciones/scripts.
+- Backups.
+- Logs.
+- Webhooks Clip con URL pública.
+- Pruebas con pagos pequeños.

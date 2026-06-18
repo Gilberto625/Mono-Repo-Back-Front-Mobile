@@ -1,0 +1,54 @@
+<app-navbar [isLoggedIn]="false"></app-navbar>
+
+<div class="error-container">
+  <div class="error-content">
+    <div class="error-illustration">
+      <svg viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Warning triangle -->
+        <path d="M200 50 L250 200 L150 200 Z" fill="#D4AF37" opacity="0.3"/>
+        <path d="M200 80 L230 190 L170 190 Z" fill="#D4AF37" opacity="0.6"/>
+        <path d="M200 110 L210 180 L190 180 Z" fill="#D4AF37"/>
+        <!-- Exclamation mark -->
+        <line x1="200" y1="130" x2="200" y2="160" stroke="#1a1a1a" stroke-width="8" stroke-linecap="round"/>
+        <circle cx="200" cy="175" r="6" fill="#1a1a1a"/>
+        <!-- Barber elements -->
+        <rect x="120" y="220" width="160" height="40" rx="5" fill="#D4AF37" opacity="0.2"/>
+        <text x="200" y="245" font-family="Arial" font-size="20" font-weight="bold" fill="#D4AF37" text-anchor="middle">!</text>
+      </svg>
+    </div>
+    
+    <div class="error-code">{{ errorCode }}</div>
+    <h1 class="error-title">{{ errorTitle }}</h1>
+    <p class="error-message">{{ errorMessage }}</p>
+    
+    <div class="error-actions">
+      <a routerLink="/" class="btn btn-primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Volver al Inicio
+      </a>
+      <button (click)="goBack()" class="btn btn-secondary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Página Anterior
+      </button>
+      <a routerLink="/login" class="btn btn-text">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/>
+          <line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+        Iniciar Sesión
+      </a>
+    </div>
+    
+    <div class="error-help">
+      <p class="text-small">Si el problema persiste, verifica que todos los campos del formulario estén completos correctamente.</p>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

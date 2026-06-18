@@ -1,0 +1,409 @@
+<div class="layout-sidebar">
+  <app-sidebar rol="cliente"></app-sidebar>
+
+  <main class="main-content">
+    <app-breadcrumb></app-breadcrumb>
+
+    <!-- ============================================ -->
+    <!-- PEDIDO EXITOSO -->
+    <!-- ============================================ -->
+    @if (pedidoExitoso()) {
+      <div class="card text-center" style="max-width: 600px; margin: 2rem auto;">
+        <div class="success-icon">
+          @if (estadoPedido() === 'comprobando_pago') {
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent, #c8a864)" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          } @else {
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          }
+        </div>
+
+        @if (estadoPedido() === 'comprobando_pago') {
+          <h2 class="mb-md" style="color: var(--color-accent, #c8a864);">Comprobando Pago</h2>
+        } @else {
+          <h2 class="mb-md" style="color: var(--color-success);">Pedido Confirmado</h2>
+        }
+
+        <p class="text-muted mb-sm">Pedido <strong>#{{ pedidoId() }}</strong></p>
+        <p class="text-muted mb-lg">{{ mensajeExito }}</p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+          <button class="btn btn-primary" (click)="irAPedidos()">Ver mis pedidos</button>
+          <button class="btn btn-secondary" (click)="irAProductos()">Seguir comprando</button>
+        </div>
+      </div>
+    } @else {
+      <h1 class="mb-md">Checkout</h1>
+
+      <!-- Pasos -->
+      <div class="checkout-steps mb-lg">
+        <div class="step" [class.active]="paso() >= 1" [class.done]="paso() > 1" (click)="irAPaso(1)">
+          <span class="step-number">1</span>
+          <span class="step-label">Entrega</span>
+        </div>
+        <div class="step-line" [class.active]="paso() > 1"></div>
+        <div class="step" [class.active]="paso() >= 2" [class.done]="paso() > 2" (click)="irAPaso(2)">
+          <span class="step-number">2</span>
+          <span class="step-label">Pago</span>
+        </div>
+        <div class="step-line" [class.active]="paso() > 2"></div>
+        <div class="step" [class.active]="paso() >= 3">
+          <span class="step-number">3</span>
+          <span class="step-label">Confirmar</span>
+        </div>
+      </div>
+
+      @if (carritoService.cantidadItems() === 0) {
+        <div class="card text-center">
+          <p class="text-muted mb-md">Tu carrito está vacío. Agrega productos antes de continuar.</p>
+          <a routerLink="/cliente/productos" class="btn btn-primary">Ver productos</a>
+        </div>
+      } @else {
+        <div class="checkout-layout">
+          <div class="checkout-main">
+
+            <!-- ============================================ -->
+            <!-- PASO 1: MÉTODO DE ENTREGA -->
+            <!-- ============================================ -->
+            @if (paso() === 1) {
+              <div class="card">
+                <h3 class="mb-md">Método de entrega</h3>
+                <div class="entrega-opciones">
+                  <!-- Recoger en local -->
+                  <button type="button" class="opcion-card" [class.selected]="metodoEntrega() === 'recoger_local'"
+                          (click)="seleccionarEntrega('recoger_local')">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    </svg>
+                    <span class="opcion-title">Recoger en local</span>
+                    <span class="opcion-price text-success">Gratis</span>
+                    <span class="opcion-desc">Pasa a recoger tu pedido en la barbería</span>
+                  </button>
+
+                  <!-- Moto mandado -->
+                  <button type="button" class="opcion-card" [class.selected]="metodoEntrega() === 'moto_mandado'"
+                          (click)="seleccionarEntrega('moto_mandado')">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="18.5" cy="18.5" r="3.5"/><circle cx="5.5" cy="18.5" r="3.5"/>
+                      <path d="M15 5h4l3 8H2"/>
+                    </svg>
+                    <span class="opcion-title">Moto mandado</span>
+                    <span class="opcion-price">${{ configPagos().costos_envio.moto_mandado | number:'1.2-2' }} MXN</span>
+                    <span class="opcion-desc">Envío local en moto, misma zona</span>
+                  </button>
+
+                  <!-- Paquetería -->
+                  <button type="button" class="opcion-card" [class.selected]="metodoEntrega() === 'paqueteria'"
+                          (click)="seleccionarEntrega('paqueteria')">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    </svg>
+                    <span class="opcion-title">Paquetería</span>
+                    <span class="opcion-price">${{ configPagos().costos_envio.paqueteria | number:'1.2-2' }} MXN</span>
+                    <span class="opcion-desc">Envío por mensajería externa</span>
+                  </button>
+                </div>
+
+                @if (metodoEntrega() === 'moto_mandado' || metodoEntrega() === 'paqueteria') {
+                  <div class="form-group mt-lg">
+                    <label class="form-label">Dirección de entrega <span class="required">*</span></label>
+                    <textarea class="form-input" rows="3" placeholder="Calle, número, colonia, ciudad, C.P."
+                              [(ngModel)]="direccion"></textarea>
+                    @if (direccion.trim().length < 6 && direccion.length > 0) {
+                      <p class="text-caption text-error mt-sm">Ingresa una dirección válida</p>
+                    }
+                  </div>
+                }
+                @if (metodoEntrega() === 'paqueteria') {
+                  <div class="form-group mt-md">
+                    <label class="form-label">Paquetería preferida <span class="required">*</span></label>
+                    <select class="form-input" [(ngModel)]="paqueteriaSeleccionada">
+                      <option value="">Selecciona una paquetería</option>
+                      @for (paq of paqueteriasDisponiblesLimpias; track paq) {
+                        <option [value]="paq">{{ paq }}</option>
+                      }
+                    </select>
+                  </div>
+                }
+
+                <div class="form-actions mt-lg">
+                  <a routerLink="/cliente/carrito" class="btn btn-secondary">Volver al carrito</a>
+                  <button class="btn btn-primary" (click)="siguiente()" [disabled]="!puedeAvanzarPaso1()">
+                    Continuar
+                  </button>
+                </div>
+              </div>
+            }
+
+            <!-- ============================================ -->
+            <!-- PASO 2: MÉTODO DE PAGO -->
+            <!-- ============================================ -->
+            @if (paso() === 2) {
+              <div class="card">
+                <h3 class="mb-md">Método de pago</h3>
+
+                @if (sinMetodosPago) {
+                  <div class="sin-metodos-pago">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                    </svg>
+                    <h4>No hay métodos de pago disponibles</h4>
+                    <p class="text-small text-muted">Por el momento no se pueden realizar pedidos con este método de entrega. El administrador aún no ha configurado los métodos de pago necesarios.</p>
+                    <button class="btn btn-secondary mt-md" (click)="anterior()">Cambiar método de entrega</button>
+                  </div>
+                } @else {
+
+                <div class="entrega-opciones">
+                  @for (metodo of metodosPagoDisponibles; track metodo.id) {
+                    @if (metodo.disponible) {
+                      <button type="button" class="opcion-card" [class.selected]="metodoPago() === metodo.id"
+                              (click)="seleccionarPago(metodo.id)">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                             [innerHTML]="getIconoPago(metodo.id)"></svg>
+                        <span class="opcion-title">{{ metodo.nombre }}</span>
+                      </button>
+                    } @else {
+                      <div class="opcion-card disabled">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity="0.3"
+                             [innerHTML]="getIconoPago(metodo.id)"></svg>
+                        <span class="opcion-title" style="opacity: 0.4;">{{ metodo.nombre }}</span>
+                        <span class="opcion-desc-disabled">{{ metodo.razon }}</span>
+                      </div>
+                    }
+                  }
+                </div>
+
+                <!-- Datos bancarios cuando se selecciona transferencia -->
+                @if (esTransferencia) {
+                  <div class="banco-info mt-lg">
+                    <h4 class="mb-sm">Datos para transferencia</h4>
+                    @if (configPagos().banco_nombre) {
+                      <div class="banco-dato">
+                        <span class="banco-label">Banco:</span>
+                        <span class="banco-valor">{{ configPagos().banco_nombre }}</span>
+                      </div>
+                    }
+                    @if (configPagos().banco_titular) {
+                      <div class="banco-dato">
+                        <span class="banco-label">Titular:</span>
+                        <span class="banco-valor">{{ configPagos().banco_titular }}</span>
+                      </div>
+                    }
+                    @if (configPagos().banco_cuenta) {
+                      <div class="banco-dato">
+                        <span class="banco-label">Cuenta / CLABE:</span>
+                        <span class="banco-valor banco-cuenta">{{ configPagos().banco_cuenta }}</span>
+                      </div>
+                    }
+                    <div class="banco-dato">
+                      <span class="banco-label">Monto a transferir:</span>
+                      <span class="banco-valor text-gold" style="font-size: 18px; font-weight: 700;">${{ totalFinal }} MXN</span>
+                    </div>
+
+                    <!-- Subir comprobante -->
+                    <div class="comprobante-section mt-md">
+                      <label class="form-label">Comprobante de transferencia <span class="required">*</span></label>
+                      <p class="text-caption text-muted mb-sm">Sube una foto o captura de pantalla de tu comprobante</p>
+
+                      @if (comprobantePreview()) {
+                        <div class="comprobante-preview">
+                          <img [src]="comprobantePreview()" alt="Comprobante" class="comprobante-img">
+                          <button type="button" class="btn btn-text btn-sm text-error" (click)="eliminarComprobante()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            Quitar
+                          </button>
+                        </div>
+                      } @else {
+                        <label class="comprobante-upload">
+                          <input type="file" accept="image/*" (change)="onComprobanteSeleccionado($event)" hidden>
+                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                          </svg>
+                          <span>Seleccionar imagen</span>
+                          <span class="text-caption text-muted">JPG, PNG — Máx. 5MB</span>
+                        </label>
+                      }
+                    </div>
+                  </div>
+                }
+
+                @if (esTarjetaClip) {
+                  <div class="banco-info mt-lg">
+                    <h4 class="mb-sm">Pago con tarjeta de crédito / débito</h4>
+                    <p class="text-small text-muted mb-sm">
+                      Al confirmar, Clip procesará el cobro con el monto exacto de tu pedido:
+                      <strong>${{ totalFinal }} MXN</strong> (productos + envío).
+                    </p>
+                    <p class="text-caption text-muted mb-0">
+                      El sistema tokeniza tu tarjeta de forma segura (Checkout Transparente) y realiza el cobro automáticamente.
+                    </p>
+                  </div>
+                }
+
+                <div class="form-group mt-lg">
+                  <label class="form-label">Notas adicionales (opcional)</label>
+                  <textarea class="form-input" rows="2" placeholder="Instrucciones de entrega, detalles del pedido..."
+                            [(ngModel)]="notas"></textarea>
+                </div>
+
+                @if (error()) {
+                  <div class="alert alert-error mt-md">
+                    <p>{{ error() }}</p>
+                  </div>
+                }
+
+                <div class="form-actions mt-lg">
+                  <button class="btn btn-secondary" (click)="anterior()">Atrás</button>
+                  <button class="btn btn-primary" (click)="siguiente()" [disabled]="!puedeAvanzarPaso2()">
+                    Revisar pedido
+                  </button>
+                </div>
+
+                } <!-- cierre del @else sinMetodosPago -->
+
+              </div>
+            }
+
+            <!-- ============================================ -->
+            <!-- PASO 3: CONFIRMAR -->
+            <!-- ============================================ -->
+            @if (paso() === 3) {
+              <div class="card">
+                <h3 class="mb-md">Confirmar Pedido</h3>
+
+                <div class="resumen-seccion">
+                  <h4 class="text-muted">Productos</h4>
+                  @for (item of carritoService.items(); track item.productoId) {
+                    <div class="resumen-item">
+                      @if (item.producto?.imagen) {
+                        <img [src]="item.producto?.imagen" [alt]="item.producto?.nombre" class="resumen-img">
+                      }
+                      <div class="resumen-info">
+                        <p class="resumen-nombre">{{ item.producto?.nombre }}</p>
+                        <p class="text-caption">{{ item.cantidad }} x ${{ item.precioUnitario }} MXN</p>
+                      </div>
+                      <p class="resumen-precio">${{ item.precioUnitario * item.cantidad }} MXN</p>
+                    </div>
+                  }
+                </div>
+
+                <div class="resumen-seccion">
+                  <h4 class="text-muted">Entrega</h4>
+                  <p>{{ getNombreEntrega(metodoEntrega()) }}
+                    @if (costoEnvio > 0) { — <strong>${{ costoEnvio }} MXN</strong> }
+                    @else { — <strong>Gratis</strong> }
+                  </p>
+                  @if (direccion) {
+                    <p class="text-small text-muted">{{ direccion }}</p>
+                  }
+                </div>
+
+                <div class="resumen-seccion">
+                  <h4 class="text-muted">Pago</h4>
+                  <p>{{ getNombrePago(metodoPago()) }}</p>
+                  @if (esTarjetaClip) {
+                    <div class="banco-info mt-md">
+                      <h4 class="mb-sm">Datos de tarjeta</h4>
+                      <div id="clip-checkout-sdk"></div>
+                      @if (clipInicializando()) {
+                        <p class="text-small text-muted mt-sm">Inicializando formulario seguro de Clip...</p>
+                      }
+                      @if (clipTokenizando()) {
+                        <p class="text-small text-muted mt-sm">Tokenizando tarjeta...</p>
+                      }
+                    </div>
+                  }
+                  @if (esTransferencia && comprobantePreview()) {
+                    <div class="comprobante-mini mt-sm">
+                      <img [src]="comprobantePreview()" alt="Comprobante" class="comprobante-mini-img">
+                      <span class="text-small text-success">Comprobante adjunto</span>
+                    </div>
+                  }
+                </div>
+
+                @if (notas) {
+                  <div class="resumen-seccion">
+                    <h4 class="text-muted">Notas</h4>
+                    <p class="text-small">{{ notas }}</p>
+                  </div>
+                }
+
+                @if (error()) {
+                  <div class="alert alert-error mt-md">
+                    <p>{{ error() }}</p>
+                  </div>
+                }
+
+                <div class="form-actions mt-lg">
+                  <button class="btn btn-secondary" (click)="anterior()">Atrás</button>
+                  <button class="btn btn-primary" (click)="confirmarPedido()" [disabled]="procesando()">
+                    @if (procesando()) {
+                      <span class="spinner-sm"></span>
+                      @if (subiendoComprobante()) {
+                        Subiendo comprobante...
+                      } @else {
+                        Procesando...
+                      }
+                    } @else {
+                      Confirmar pedido — ${{ totalFinal }} MXN
+                    }
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- ============================================ -->
+          <!-- RESUMEN LATERAL -->
+          <!-- ============================================ -->
+          <div class="checkout-sidebar">
+            <div class="card" style="position: sticky; top: var(--spacing-lg);">
+              <h4 class="mb-md">Resumen del pedido</h4>
+
+              @for (item of carritoService.items(); track item.productoId) {
+                <div class="flex-between mb-sm text-small">
+                  <span>{{ item.producto?.nombre }} x{{ item.cantidad }}</span>
+                  <span>${{ item.precioUnitario * item.cantidad }}</span>
+                </div>
+              }
+
+              <hr style="border: none; border-top: 1px solid var(--divider-color); margin: var(--spacing-md) 0;">
+
+              <div class="flex-between mb-sm">
+                <span>Subtotal</span>
+                <span>${{ carritoService.subtotal() }} MXN</span>
+              </div>
+              @if (carritoService.descuento() > 0) {
+                <div class="flex-between mb-sm text-success">
+                  <span>Descuento</span>
+                  <span>-${{ carritoService.descuento() }} MXN</span>
+                </div>
+              }
+              <div class="flex-between mb-sm">
+                <span>Envío</span>
+                <span>{{ costoEnvio > 0 ? '$' + costoEnvio + ' MXN' : 'Gratis' }}</span>
+              </div>
+
+              <hr style="border: none; border-top: 1px solid var(--divider-color); margin: var(--spacing-md) 0;">
+
+              <div class="flex-between">
+                <span style="font-weight: 700; font-size: 18px;">Total</span>
+                <span class="text-gold" style="font-weight: 700; font-size: 20px;">${{ totalFinal }} MXN</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    }
+  </main>
+</div>

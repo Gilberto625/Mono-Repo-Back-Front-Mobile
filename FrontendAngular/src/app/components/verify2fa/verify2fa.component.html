@@ -1,0 +1,196 @@
+<div class="auth-page auth-fit">
+  <div class="auth-page__glow auth-page__glow--1" aria-hidden="true"></div>
+  <div class="auth-page__glow auth-page__glow--2" aria-hidden="true"></div>
+
+  <div class="auth-toolbar">
+    <button
+      type="button"
+      class="auth-theme-toggle"
+      (click)="theme.toggle()"
+      [attr.aria-label]="theme.isDark() ? 'Activar modo claro' : 'Activar modo oscuro'"
+    >
+      @if (theme.isDark()) {
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      } @else {
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+        </svg>
+      }
+    </button>
+  </div>
+
+  <div class="auth-layout">
+    <div class="auth-card verify-card-inner">
+      <a routerLink="/login" class="auth-back verify-back-top">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        Volver al inicio de sesión
+      </a>
+
+      <div class="verify-header">
+        <div class="verify-header__icon" aria-hidden="true">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M9 12l2 2 4-4" />
+          </svg>
+        </div>
+        <div class="auth-eyebrow verify-eyebrow">
+          <span class="auth-eyebrow__dot"></span>
+          Seguridad
+        </div>
+        <h1 class="auth-title">Verificación 2FA</h1>
+        <p class="auth-sub">{{ type === 'register' ? 'Confirma tu registro con el código que enviamos.' : 'Confirma tu identidad para continuar.' }}</p>
+      </div>
+
+      <div class="verify-body">
+        <div class="method-selector-wrapper" *ngIf="type === 'login' && metodosDisponibles.length > 1">
+          <p class="method-label">Método de verificación</p>
+          <div class="method-toggle-group">
+            <button
+              *ngFor="let metodo of metodosDisponibles"
+              type="button"
+              [class.active]="metodoSeleccionado === metodo"
+              (click)="onMetodoChangeFromButton(metodo)"
+              class="method-toggle"
+            >
+              <span class="method-icon" aria-hidden="true">
+                @if (metodo === 'email') {
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
+                } @else if (metodo === 'totp') {
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                    <line x1="12" y1="18" x2="12.01" y2="18" />
+                  </svg>
+                } @else {
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+                  </svg>
+                }
+              </span>
+              <span class="method-text">
+                {{ metodo === 'email' ? 'Correo' : metodo === 'totp' ? 'Autenticador' : 'Código de respaldo' }}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-box">
+            <span class="info-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+            </span>
+            <div class="info-content">
+              <ng-container *ngIf="metodoSeleccionado === 'email'">
+                <p class="info-text">Código de 6 dígitos enviado a:</p>
+                <p class="info-email">{{ destination }}</p>
+              </ng-container>
+              <ng-container *ngIf="metodoSeleccionado === 'totp'">
+                <p class="info-text">Ingresa el código de 6 dígitos {{ metodoTexto }}</p>
+              </ng-container>
+              <ng-container *ngIf="metodoSeleccionado === 'backup'">
+                <p class="info-text">Ingresa uno de tus códigos de respaldo (8 dígitos)</p>
+              </ng-container>
+            </div>
+          </div>
+
+          <div class="warning-box" *ngIf="metodoSeleccionado === 'email' || metodoSeleccionado === 'totp'">
+            <span class="warning-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </span>
+            <span class="warning-text">El código expira en 5 minutos</span>
+          </div>
+
+          <div class="warning-box warning-box--alert" *ngIf="metodoSeleccionado === 'backup'">
+            <span class="warning-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </span>
+            <span class="warning-text">Cada código de respaldo solo puede usarse una vez</span>
+          </div>
+        </div>
+
+        <form [formGroup]="verifyForm" (ngSubmit)="onSubmit()" class="verify-form">
+          <div class="form-row">
+            <label for="codigo" class="input-label">Código de {{ codigoLength }} dígitos</label>
+            <div class="input-wrapper">
+              <input
+                id="codigo"
+                type="text"
+                formControlName="codigo"
+                [placeholder]="codigoPlaceholder"
+                [maxlength]="codigoLength"
+                autocomplete="off"
+                class="input-field code-input-field"
+                [class.input-error]="verifyForm.get('codigo')?.invalid && verifyForm.get('codigo')?.touched"
+              />
+              <div class="input-feedback error" *ngIf="verifyForm.get('codigo')?.hasError('required') && verifyForm.get('codigo')?.touched">
+                El código es obligatorio
+              </div>
+              <div class="input-feedback error" *ngIf="verifyForm.get('codigo')?.hasError('pattern') && verifyForm.get('codigo')?.touched">
+                Debe ser un código de {{ codigoLength }} dígitos
+              </div>
+            </div>
+          </div>
+
+          <div class="alternative-actions">
+            <button
+              *ngIf="type === 'login' && metodoSeleccionado === 'email'"
+              type="button"
+              (click)="solicitarCodigoPorEmail()"
+              [disabled]="loading || resendCooldown > 0"
+              class="btn btn-primary btn--premium-primary resend-button"
+            >
+              <span *ngIf="resendCooldown === 0">Reenviar código</span>
+              <span *ngIf="resendCooldown > 0">Reenviar en {{ resendCooldown }}s</span>
+            </button>
+
+            <button
+              *ngIf="type === 'login' && metodosDisponibles.includes('totp') && metodoSeleccionado !== 'email'"
+              type="button"
+              (click)="solicitarCodigoPorEmail()"
+              [disabled]="loading"
+              class="btn btn-alt alt-action-button"
+            >
+              ¿Sin acceso al autenticador? Recibir código por correo
+            </button>
+
+            <button
+              *ngIf="type === 'register' && metodoSeleccionado === 'email'"
+              type="button"
+              (click)="reenviarCodigoOTP()"
+              [disabled]="loading || resendCooldown > 0"
+              class="btn btn-primary btn--premium-primary resend-button"
+            >
+              <span *ngIf="resendCooldown === 0">Reenviar código OTP</span>
+              <span *ngIf="resendCooldown > 0">Reenviar en {{ resendCooldown }}s</span>
+            </button>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn--premium-primary submit-button" [disabled]="loading || verifyForm.invalid">
+              <span *ngIf="!loading">Verificar código</span>
+              <span *ngIf="loading" class="spinner"></span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

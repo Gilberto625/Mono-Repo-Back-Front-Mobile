@@ -1,0 +1,285 @@
+/* Page layout (solo estilos, cero lógica) */
+.perfil-page {
+  min-width: 0;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.page-head-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.page-title h1 {
+  margin: 0;
+  font-family: var(--font-display, var(--font-family));
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.page-sub {
+  margin: 3px 0 0;
+  color: var(--text-on-dark-tertiary);
+  font-size: 0.78rem;
+}
+
+.volver-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+/* (status-pill removido por petición) */
+
+.perfil-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 10px;
+  align-items: start;
+}
+
+@media (max-width: 980px) {
+  .perfil-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.perfil-card,
+.pass-card {
+  min-width: 0;
+}
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: var(--spacing-md);
+}
+
+.overline {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-on-dark-tertiary);
+  margin-bottom: 4px;
+}
+
+.card-title {
+  margin: 0;
+  font-family: var(--font-display, var(--font-family));
+  font-size: 0.93rem;
+  font-weight: 700;
+  color: var(--text-on-dark);
+}
+
+/* ============================================
+   AVATAR
+   ============================================ */
+.avatar-section {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--divider-color);
+}
+
+.avatar-xl {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
+  color: #111814;
+  font-size: 1.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.25);
+}
+
+.avatar-img {
+  object-fit: contain;
+  object-position: center;
+  border: 3px solid var(--color-accent);
+}
+
+.avatar-xl.avatar-img {
+  display: block;
+  box-sizing: border-box;
+}
+
+.avatar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.avatar-actions .btn-sm {
+  font-size: 0.82rem;
+  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.btn-remove-avatar {
+  color: var(--color-error) !important;
+  font-size: 0.78rem !important;
+  padding: 2px 0 !important;
+}
+
+.btn-remove-avatar:hover {
+  opacity: 0.8;
+}
+
+.text-caption {
+  font-size: 0.75rem;
+  color: var(--text-on-dark-tertiary);
+  margin: 0;
+}
+
+/* ============================================
+   FORMULARIO
+   ============================================ */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-input-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--text-on-dark-tertiary);
+  margin-top: 4px;
+}
+
+.required {
+  color: var(--color-accent);
+}
+
+/* ============================================
+   ACCIONES
+   ============================================ */
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================
+   SPINNER
+   ============================================ */
+.spinner-sm {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(212, 175, 55, 0.18);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   TEXTO CENTRADO
+   ============================================ */
+.text-center {
+  text-align: center;
+}
+
+/* Nota de seguridad contraseña */
+.password-security-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.80rem;
+  color: var(--text-on-dark-tertiary);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(62, 207, 130, 0.08);
+  border: 1px solid rgba(62, 207, 130, 0.18);
+  border-left: 3px solid var(--color-success);
+  border-radius: var(--dashboard-radius-2, 10px);
+}
+.password-security-note svg {
+  flex-shrink: 0;
+  color: var(--color-success);
+}
+
+/* Contraseña con botón ver/ocultar */
+.password-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.password-input-wrap .form-input {
+  padding-right: 48px;
+}
+.password-input-wrap .password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--card-border);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-on-dark-tertiary);
+  transition: color var(--transition-base);
+}
+.password-input-wrap .password-toggle-btn:hover {
+  color: var(--color-accent);
+  border-color: rgba(212, 175, 55, 0.28);
+}
+.password-input-wrap .password-toggle-btn:focus {
+  outline: none;
+}

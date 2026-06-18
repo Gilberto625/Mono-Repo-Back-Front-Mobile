@@ -1,0 +1,52 @@
+<div class="layout-sidebar">
+  <app-sidebar rol="secretaria"></app-sidebar>
+
+  <main class="main-content">
+    <app-breadcrumb></app-breadcrumb>
+
+    <div class="mb-lg page-header">
+      <a routerLink="/secretaria/inventario" class="btn btn-text volver-link">
+        Volver a inventario
+      </a>
+      <h1 class="page-title">{{ titulo }}</h1>
+      <p class="text-muted page-subtitle">{{ subtitulo }}</p>
+    </div>
+
+    <form (ngSubmit)="guardar()">
+      <div class="card futuristic-card">
+        <h3 class="mb-md section-title">Datos del movimiento</h3>
+
+        <div class="form-group">
+          <label class="form-label">Producto *</label>
+          <select class="form-select" [(ngModel)]="productoId" name="producto" required [disabled]="loading">
+            <option value="">Seleccionar producto</option>
+            @for (producto of productos; track producto.id) {
+              <option [value]="producto.id.toString()">{{ producto.nombre }} (Stock: {{ producto.stock }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Cantidad *</label>
+          <input type="number" class="form-input" [(ngModel)]="cantidad" name="cantidad" placeholder="0" min="1" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nota (obligatoria para secretaría) *</label>
+          <textarea
+            class="form-input"
+            [(ngModel)]="notas"
+            name="notas"
+            rows="3"
+            required
+            placeholder="Especifica el motivo y por qué se realiza este movimiento..."></textarea>
+        </div>
+
+        <div class="form-actions mt-lg">
+          <button type="button" class="btn btn-secondary" (click)="volver()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="guardando || loading">{{ labelBoton }}</button>
+        </div>
+      </div>
+    </form>
+  </main>
+</div>

@@ -1,0 +1,793 @@
+<div class="layout-sidebar">
+  <app-sidebar rol="cliente"></app-sidebar>
+
+  <main class="main-content">
+    <div class="cliente-page agendar-page">
+    <app-breadcrumb></app-breadcrumb>
+
+    <header class="agendar-hero">
+      <p class="agendar-eyebrow">Reserva</p>
+      <h1 class="agendar-title">Agendar cita</h1>
+      <p class="agendar-sub text-muted">Elige tu servicio principal, añade complementos si quieres, luego barbero, fecha y confirma.</p>
+    </header>
+
+    <!-- Progress Steps -->
+    <div class="progress-steps agendar-progress-steps agendar-progress-steps--5">
+      <div class="progress-step" [class.active]="pasoActual() === 1" [class.completed]="pasoActual() > 1">
+        <div class="progress-step-circle">
+          @if (pasoActual() > 1) {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20,6 9,17 4,12"/>
+            </svg>
+          } @else { 1 }
+        </div>
+        <span class="progress-step-label">Servicio</span>
+      </div>
+      <div class="progress-step" [class.active]="pasoActual() === 2" [class.completed]="pasoActual() > 2">
+        <div class="progress-step-circle">
+          @if (pasoActual() > 2) {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20,6 9,17 4,12"/>
+            </svg>
+          } @else { 2 }
+        </div>
+        <span class="progress-step-label">Extras</span>
+      </div>
+      <div class="progress-step" [class.active]="pasoActual() === 3" [class.completed]="pasoActual() > 3">
+        <div class="progress-step-circle">
+          @if (pasoActual() > 3) {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20,6 9,17 4,12"/>
+            </svg>
+          } @else { 3 }
+        </div>
+        <span class="progress-step-label">Barbero</span>
+      </div>
+      <div class="progress-step" [class.active]="pasoActual() === 4" [class.completed]="pasoActual() > 4">
+        <div class="progress-step-circle">
+          @if (pasoActual() > 4) {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20,6 9,17 4,12"/>
+            </svg>
+          } @else { 4 }
+        </div>
+        <span class="progress-step-label">Fecha/Hora</span>
+      </div>
+      <div class="progress-step" [class.active]="pasoActual() === 5">
+        <div class="progress-step-circle">5</div>
+        <span class="progress-step-label">Confirmar</span>
+      </div>
+    </div>
+
+    <!-- Paso 1: Servicio principal -->
+    @if (pasoActual() === 1) {
+      <div class="card agendar-panel">
+        <h2 class="mb-md">Servicio principal</h2>
+        <p class="text-muted mb-md">Elige el servicio principal de tu cita (corte, barba, paquete, tratamiento…).</p>
+
+        <!-- Filtro por categoría -->
+        <div class="filtro-categorias mb-lg">
+          @for (cat of CATEGORIAS; track cat.value) {
+            <button type="button"
+                    class="filtro-cat-btn"
+                    [class.active]="categoriaFiltro() === cat.value"
+                    (click)="filtrarCategoria(cat.value)">
+              @switch (cat.value) {
+                @case ('todos') {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                }
+                @case ('corte') {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                }
+                @case ('barba') {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/><line x1="4" y1="21" x2="20" y2="21"/></svg>
+                }
+                @case ('combo') {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                }
+                @case ('tratamiento') {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                }
+              }
+              {{ cat.label }}
+            </button>
+          }
+        </div>
+
+        @if (serviciosFiltrados.length > 0) {
+          <div class="servicios-grid">
+            @for (servicio of serviciosFiltrados; track servicio.id) {
+              <div class="servicio-card"
+                   [class.selected]="servicioSeleccionado()?.id === servicio.id"
+                   (click)="seleccionarServicio(servicio)">
+                <div class="servicio-card-img">
+                  @if (servicio.imagen) {
+                    <img [src]="servicio.imagen" [alt]="servicio.nombre" />
+                  } @else {
+                    <div class="servicio-card-img-placeholder">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                      </svg>
+                    </div>
+                  }
+                  @if (servicioSeleccionado()?.id === servicio.id) {
+                    <div class="servicio-card-check">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+                    </div>
+                  }
+                </div>
+                <div class="servicio-card-body">
+                  <h4 class="servicio-card-nombre">{{ servicio.nombre }}</h4>
+                  <div class="servicio-card-meta">
+                    <span class="servicio-card-duracion">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                      {{ servicio.duracionMinutos }} min
+                    </span>
+                    <span class="servicio-card-precio">$ {{ servicio.precio }} MXN</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="sin-servicios-filtro">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <p>No hay servicios en esta categoría</p>
+            <button type="button" class="btn btn-text btn-sm" (click)="filtrarCategoria('todos')">Ver todos</button>
+          </div>
+        }
+
+        <div class="flex-between mt-xl">
+          <a routerLink="/cliente" class="btn btn-text">Cancelar</a>
+          <button class="btn btn-primary" [disabled]="!servicioSeleccionado()" (click)="siguientePaso()">
+            Continuar
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Paso 2: Complementos opcionales (multiselección) -->
+    @if (pasoActual() === 2) {
+      <div class="card agendar-panel">
+        <h2 class="mb-md">¿Algo más en la misma cita?</h2>
+        <p class="text-muted mb-md">
+          Opcional: añade tratamientos, barba u otros servicios. Se suman al precio y al tiempo total.
+          Tu servicio principal: <strong>{{ servicioSeleccionado()?.nombre }}</strong>
+        </p>
+
+        @if (serviciosComplementoDisponibles.length > 0) {
+          <div class="filtro-categorias mb-lg">
+            @for (cat of CATEGORIAS; track cat.value) {
+              <button type="button"
+                      class="filtro-cat-btn"
+                      [class.active]="categoriaFiltro() === cat.value"
+                      (click)="filtrarCategoria(cat.value)">
+                {{ cat.label }}
+              </button>
+            }
+          </div>
+          @if (serviciosComplementoFiltrados.length > 0) {
+            <div class="servicios-grid agendar-complementos-grid">
+              @for (servicio of serviciosComplementoFiltrados; track servicio.id) {
+                <button type="button"
+                        class="servicio-card servicio-card--toggle"
+                        [class.selected]="complementoSeleccionado(servicio)"
+                        (click)="toggleComplemento(servicio)">
+                  <div class="servicio-card-img">
+                    @if (servicio.imagen) {
+                      <img [src]="servicio.imagen" [alt]="servicio.nombre" />
+                    } @else {
+                      <div class="servicio-card-img-placeholder">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                        </svg>
+                      </div>
+                    }
+                    @if (complementoSeleccionado(servicio)) {
+                      <div class="servicio-card-check" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+                      </div>
+                    }
+                  </div>
+                  <div class="servicio-card-body">
+                    <span class="badge badge-outline agendar-complemento-cat">{{ etiquetaCategoriaServicio(servicio.categoria) }}</span>
+                    <h4 class="servicio-card-nombre">{{ servicio.nombre }}</h4>
+                    <div class="servicio-card-meta">
+                      <span class="servicio-card-duracion">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        {{ servicio.duracionMinutos }} min
+                      </span>
+                      <span class="servicio-card-precio">+ $ {{ servicio.precio }} MXN</span>
+                    </div>
+                  </div>
+                </button>
+              }
+            </div>
+          } @else {
+            <p class="text-muted mb-lg">No hay servicios en esta categoría para añadir. Prueba otra pestaña o continúa sin extras.</p>
+          }
+          @if (complementosSeleccionados().length > 0) {
+            <p class="text-small text-muted mt-md agendar-complementos-resumen">
+              Seleccionados: {{ complementosSeleccionados().length }} · Tiempo total aprox. {{ totalDuracionReserva }} min · Subtotal ${{ precioBaseServicio | number:'1.2-2' }} MXN
+            </p>
+          }
+        } @else {
+          <p class="text-muted mb-lg">No hay otros servicios en el catálogo para añadir como complemento.</p>
+        }
+
+        <div class="flex-between mt-xl">
+          <button class="btn btn-text" type="button" (click)="pasoAnterior()">Atrás</button>
+          <button class="btn btn-primary" type="button" (click)="siguientePaso()">
+            Continuar
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Paso 3: Seleccionar Barbero -->
+    @if (pasoActual() === 3) {
+      <div class="card agendar-panel">
+        <h2 class="mb-md">Selecciona un barbero</h2>
+        <p class="text-muted mb-lg">
+          Barberos que pueden realizar tu reserva
+          @if (complementosSeleccionados().length > 0) {
+            (principal + {{ complementosSeleccionados().length }} complemento{{ complementosSeleccionados().length === 1 ? '' : 's' }})
+          } @else {
+            : "{{ servicioSeleccionado()?.nombre }}"
+          }
+        </p>
+
+        @if (cargandoBarberos()) {
+          <div class="text-center" style="padding: 2rem;">
+            <p class="text-muted">Cargando barberos disponibles...</p>
+          </div>
+        } @else if (barberosDisponibles().length === 0) {
+          <div class="text-center" style="padding: 2rem;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3" style="margin: 0 auto var(--spacing-md);">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            <h3 class="mb-sm">No hay barberos disponibles</h3>
+            <p class="text-muted">No hay barberos asignados para este servicio. Contacta al establecimiento.</p>
+          </div>
+        } @else {
+          <div class="grid grid-3">
+            @for (barbero of barberosDisponibles(); track barbero.id) {
+              <div class="card card-selectable"
+                   [class.selected]="barberoSeleccionado()?.id === barbero.id"
+                   (click)="seleccionarBarbero(barbero)">
+                <div class="flex" style="gap: var(--spacing-md); margin-bottom: var(--spacing-md);">
+                  <div class="avatar avatar-lg">
+                    <img [src]="getBarberoAvatar(barbero)" alt="Foto de barbero" class="avatar-img">
+                  </div>
+                  <div>
+                    <h4>{{ barbero.usuario.nombre }} {{ barbero.usuario.apellidos }}</h4>
+                    @if (barbero.usuario.bio) {
+                      <p class="text-caption text-muted">{{ barbero.usuario.bio }}</p>
+                    }
+                  </div>
+                </div>
+                @if (barbero.especialidades && barbero.especialidades.length > 0) {
+                  <p class="text-small">Especialidades:</p>
+                  <div class="flex" style="gap: var(--spacing-xs); flex-wrap: wrap;">
+                    @for (esp of barbero.especialidades; track esp) {
+                      <span class="badge badge-outline">{{ esp }}</span>
+                    }
+                  </div>
+                }
+                @if (barberoSeleccionado()?.id === barbero.id) {
+                  <span class="badge badge-gold mt-md">Seleccionado</span>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <div class="flex-between mt-xl">
+          <button class="btn btn-text" (click)="pasoAnterior()">Atrás</button>
+          <button class="btn btn-primary" [disabled]="!barberoSeleccionado()" (click)="siguientePaso()">
+            Continuar
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Paso 4: Seleccionar Fecha y Hora -->
+    @if (pasoActual() === 4) {
+      <div class="agendar-fecha-grid">
+        <div class="card agendar-panel">
+          <h2 class="mb-md">Selecciona una fecha</h2>
+
+          <div class="calendar">
+            <div class="calendar-header">
+              <button class="btn btn-text btn-sm" (click)="mesAnterior()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 18l-6-6 6-6"/>
+                </svg>
+              </button>
+              <h3>{{ nombreMes }} {{ anioActual }}</h3>
+              <button class="btn btn-text btn-sm" (click)="mesSiguiente()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </button>
+            </div>
+            <div class="calendar-grid">
+              <div class="calendar-day-header">Dom</div>
+              <div class="calendar-day-header">Lun</div>
+              <div class="calendar-day-header">Mar</div>
+              <div class="calendar-day-header">Mié</div>
+              <div class="calendar-day-header">Jue</div>
+              <div class="calendar-day-header">Vie</div>
+              <div class="calendar-day-header">Sáb</div>
+
+              @for (dia of diasCalendario; track $index) {
+                <div class="calendar-day" 
+                     [class.disabled]="!dia.disponible"
+                     [class.selected]="dia.fecha && fechaSeleccionada() && dia.fecha.getTime() === fechaSeleccionada()?.getTime()"
+                     (click)="dia.disponible && seleccionarFecha(dia.fecha!)">
+                  {{ dia.numero || '' }}
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="card agendar-panel">
+          <h2 class="mb-md">Horarios disponibles</h2>
+          @if (fechaSeleccionada()) {
+            <p class="text-muted mb-lg">{{ formatearFechaCompleta(fechaSeleccionada()!) }}</p>
+
+            @if (cargandoHorarios()) {
+              <div class="text-center" style="padding: 1rem;">
+                <p class="text-muted">Consultando disponibilidad...</p>
+              </div>
+            } @else if (horariosDisponibles().length === 0) {
+              <p class="text-muted">No hay horarios disponibles para este día.</p>
+            } @else {
+              <div class="time-slots">
+                @for (horario of horariosDisponibles(); track horario.hora) {
+                  <div class="time-slot"
+                       [class.disabled]="!horario.disponible"
+                       [class.selected]="horaSeleccionada() === horario.hora"
+                       (click)="horario.disponible && seleccionarHora(horario.hora)">
+                    {{ horario.hora }}
+                  </div>
+                }
+              </div>
+            }
+          } @else {
+            <p class="text-muted">Selecciona una fecha para ver los horarios disponibles</p>
+          }
+        </div>
+      </div>
+
+      <div class="card agendar-panel mt-lg">
+        <div class="flex-between">
+          <button class="btn btn-text" (click)="pasoAnterior()">Atrás</button>
+          <button class="btn btn-primary" [disabled]="!fechaSeleccionada() || !horaSeleccionada()" (click)="siguientePaso()">
+            Continuar
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Paso 5: Confirmar -->
+    @if (pasoActual() === 5) {
+      <div class="agendar-confirmar-grid">
+        <div>
+          <div class="card agendar-panel mb-lg">
+            <h2 class="mb-lg">Resumen de tu cita</h2>
+
+            <div class="list">
+              <div class="list-item" style="padding-left: 0;">
+                <div class="stat-card-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="6" cy="6" r="3"/><path d="M6 9v12"/><path d="M13 6l-3 9 7 4"/>
+                  </svg>
+                </div>
+                <div style="flex: 1;">
+                  <p class="text-caption">Servicio principal</p>
+                  <p style="font-weight: 600;">{{ servicioSeleccionado()?.nombre }}</p>
+                </div>
+                <button type="button" class="btn btn-text btn-sm" (click)="irAPaso(1)">Cambiar</button>
+              </div>
+              <div class="list-item" style="padding-left: 0;">
+                <div class="stat-card-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+                  </svg>
+                </div>
+                <div style="flex: 1;">
+                  <p class="text-caption">Complementos</p>
+                  @if (complementosSeleccionados().length > 0) {
+                    <ul class="agendar-resumen-complementos">
+                      @for (c of complementosSeleccionados(); track c.id) {
+                        <li>{{ c.nombre }} · ${{ c.precio }} · {{ c.duracionMinutos }} min</li>
+                      }
+                    </ul>
+                  } @else {
+                    <p style="font-weight: 500; margin: 0;">Ninguno</p>
+                  }
+                </div>
+                <button type="button" class="btn btn-text btn-sm" (click)="irAPaso(2)">Cambiar</button>
+              </div>
+              <div class="list-item" style="padding-left: 0;">
+                <div class="avatar">
+                  <img [src]="getBarberoAvatar(barberoSeleccionado())" alt="Foto de barbero" class="avatar-img">
+                </div>
+                <div style="flex: 1;">
+                  <p class="text-caption">Barbero</p>
+                  <p style="font-weight: 600;">{{ barberoSeleccionado()?.usuario?.nombre }} {{ barberoSeleccionado()?.usuario?.apellidos }}</p>
+                </div>
+                <button type="button" class="btn btn-text btn-sm" (click)="irAPaso(3)">Cambiar</button>
+              </div>
+              <div class="list-item" style="padding-left: 0;">
+                <div class="stat-card-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                  </svg>
+                </div>
+                <div style="flex: 1;">
+                  <p class="text-caption">Fecha y hora</p>
+                  <p style="font-weight: 600;">{{ formatearFechaCompleta(fechaSeleccionada()!) }}, {{ horaSeleccionada() }}</p>
+                </div>
+                <button type="button" class="btn btn-text btn-sm" (click)="irAPaso(4)">Cambiar</button>
+              </div>
+              <div class="list-item" style="padding-left: 0;">
+                <div class="stat-card-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 6v6l4 2"/>
+                  </svg>
+                </div>
+                <div style="flex: 1;">
+                  <p class="text-caption">Duración estimada (total)</p>
+                  <p style="font-weight: 600;">{{ totalDuracionReserva }} minutos</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección de pago -->
+          <div class="card agendar-panel">
+            <h3 class="mb-md">Pago</h3>
+
+            <div class="mb-lg">
+              <label class="form-label">Cupón de descuento</label>
+              <div class="flex" style="gap: var(--spacing-sm);">
+                <input
+                  class="form-input"
+                  type="text"
+                  placeholder="Ingresa tu cupón"
+                  [value]="codigoDescuento()"
+                  (input)="actualizarCodigoDescuento($any($event.target).value)"
+                  style="text-transform: uppercase;"
+                />
+                <button class="btn btn-secondary" type="button" (click)="aplicarCuponServicio()" [disabled]="validandoPromocion()">
+                  @if (validandoPromocion()) { Aplicando... } @else { Aplicar }
+                </button>
+                @if (promoAplicada()) {
+                  <button class="btn btn-text" type="button" (click)="quitarCuponServicio()">Quitar</button>
+                }
+              </div>
+              @if (mensajePromocion()) {
+                <p class="text-small" style="color: #4CAF50; margin-top: var(--spacing-xs);">{{ mensajePromocion() }}</p>
+              }
+              @if (errorPromocion()) {
+                <p class="text-small text-muted" style="color: #f44336; margin-top: var(--spacing-xs);">{{ errorPromocion() }}</p>
+              }
+            </div>
+
+            @if (cargandoPolitica()) {
+              <p class="text-muted">Cargando información de pago...</p>
+            } @else {
+
+              <!-- ═══ CASO 1: PENALIZACIÓN ACTIVA → anticipo obligatorio ═══ -->
+              @if (anticipoObligatorio) {
+                <div class="alert alert-warning mb-lg">
+                  <div style="display: flex; align-items: flex-start; gap: var(--spacing-sm);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <div>
+                      <p style="font-weight: 600; margin: 0 0 4px;">Anticipo obligatorio por inasistencia</p>
+                      <p style="margin: 0; font-size: 0.85rem;">
+                        Tienes {{ politicaPago()?.total_inasistencias }} inasistencia(s) sin cancelar. 
+                        Debes pagar un anticipo del {{ politicaPago()?.porcentaje_anticipo }}% (${{ montoAnticipoObligatorio | number:'1.2-2' }} MXN) para confirmar tu cita.
+                        Puedes pagarlo por transferencia o tarjeta de crédito / débito, e incluso liquidar el total si lo deseas.
+                        Te faltan {{ politicaPago()?.citas_restantes_penalizacion }} cita(s) cumplida(s) de {{ politicaPago()?.citas_penalizacion_total }} para liberar esta penalización.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pago-voluntario mb-lg">
+                  <p style="font-weight: 600; margin-bottom: var(--spacing-sm);">¿Cómo quieres pagar el anticipo?</p>
+                  <div class="flex" style="gap: var(--spacing-sm);">
+                    <button type="button" class="btn"
+                            [class.btn-primary]="metodoPagoAnticipo() === 'tarjeta'"
+                            [class.btn-secondary]="metodoPagoAnticipo() !== 'tarjeta'"
+                            (click)="seleccionarMetodoAnticipo('tarjeta')">
+                      Tarjeta de crédito / débito
+                    </button>
+                    <button type="button" class="btn"
+                            [class.btn-primary]="metodoPagoAnticipo() === 'transferencia'"
+                            [class.btn-secondary]="metodoPagoAnticipo() !== 'transferencia'"
+                            [disabled]="!politicaPago()?.tiene_banco"
+                            (click)="seleccionarMetodoAnticipo('transferencia')">
+                      Transferencia
+                    </button>
+                  </div>
+                </div>
+
+                @if (metodoPagoAnticipo() === 'transferencia') {
+                  @if (politicaPago()?.tiene_banco) {
+                    <div class="banco-info-card mb-lg">
+                      <h4 class="mb-sm">Transferencia bancaria</h4>
+                      <div class="banco-dato"><span class="banco-dato-label">Banco</span><span class="banco-dato-valor">{{ politicaPago()?.banco_nombre }}</span></div>
+                      <div class="banco-dato"><span class="banco-dato-label">Titular</span><span class="banco-dato-valor">{{ politicaPago()?.banco_titular }}</span></div>
+                      <div class="banco-dato"><span class="banco-dato-label">Cuenta / CLABE</span><span class="banco-dato-valor banco-cuenta">{{ politicaPago()?.banco_cuenta }}</span></div>
+                    </div>
+                    <div class="comprobante-upload-card mb-lg">
+                      <h4 class="mb-sm">Adjuntar comprobante de transferencia</h4>
+                      @if (!comprobantePreview()) {
+                        <label class="comprobante-dropzone">
+                          <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onComprobanteSelected($event)" hidden>
+                          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+                          <span>Haz clic para seleccionar imagen</span>
+                          <span class="text-small text-muted">JPG, PNG o WEBP · Máx. 10MB</span>
+                        </label>
+                      } @else {
+                        <div class="comprobante-preview-card">
+                          <img [src]="comprobantePreview()" alt="Comprobante" class="comprobante-preview-img">
+                          <button type="button" class="comprobante-remove-btn" (click)="eliminarComprobante()" title="Eliminar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                          <p class="text-small text-muted mt-sm">{{ comprobanteFile()?.name }}</p>
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <div class="alert alert-warning mb-lg">
+                      <p style="margin: 0; font-size: 0.85rem;">No hay cuenta bancaria configurada para transferencias. Elige pago con tarjeta.</p>
+                    </div>
+                  }
+                } @else {
+                  <div class="anticipo-voluntario-card mb-lg">
+                    <label class="form-label mb-sm">Monto a pagar ahora</label>
+                    <div class="anticipo-input-wrap">
+                      <span class="anticipo-input-prefix">$</span>
+                      <input type="number" class="anticipo-input"
+                             [value]="montoAnticipo"
+                             [min]="montoAnticipoObligatorio" [max]="totalServicioFinal"
+                             (input)="setAnticipoVoluntario(+$any($event.target).value)"
+                             placeholder="0">
+                      <span class="anticipo-input-suffix">MXN</span>
+                    </div>
+                    <p class="text-small text-muted" style="margin-top: var(--spacing-xs);">
+                      Mínimo obligatorio: ${{ montoAnticipoObligatorio | number:'1.2-2' }} · Máximo: ${{ totalServicioFinal | number:'1.2-2' }}
+                    </p>
+                    <div id="clip-cita-card" style="min-height: 70px; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px; margin-top: 10px;"></div>
+                    @if (clipError()) { <p class="text-small" style="color:#f44336; margin-top: 6px;">{{ clipError() }}</p> }
+                  </div>
+                }
+
+              } @else {
+                <!-- ═══ CASO 2: SIN PENALIZACIÓN → pago al llegar + anticipo voluntario ═══ -->
+                <div class="pago-info-card mb-lg">
+                  <div class="pago-info-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                      <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p style="font-weight: 600; margin: 0;">Pago en efectivo al llegar</p>
+                    <p class="text-small text-muted" style="margin: 4px 0 0;">
+                      Tu cita se agenda directamente. Pagas el total en el establecimiento al terminar tu servicio.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="pago-voluntario mb-lg">
+                  <label class="pago-voluntario-toggle">
+                    <input type="checkbox" [checked]="quierePagarAnticipo()" (change)="quierePagarAnticipo.set(!quierePagarAnticipo()); setAnticipoVoluntario(0)">
+                    <span class="pago-voluntario-label">
+                      <span style="font-weight: 600;">¿Deseas dejar anticipo? (Opcional)</span>
+                      <span class="text-small text-muted">Puedes adelantar una parte o el total por transferencia o tarjeta de crédito / débito.</span>
+                    </span>
+                  </label>
+                </div>
+
+                @if (quierePagarAnticipo()) {
+                  <div class="anticipo-voluntario-card mb-lg">
+                    <label class="form-label mb-sm">¿Cuánto deseas adelantar?</label>
+                    <div class="anticipo-input-wrap">
+                      <span class="anticipo-input-prefix">$</span>
+                      <input type="number" class="anticipo-input"
+                             [value]="anticipoVoluntario()"
+                             [min]="1" [max]="totalServicioFinal"
+                             (input)="setAnticipoVoluntario(+$any($event.target).value)"
+                             placeholder="0">
+                      <span class="anticipo-input-suffix">MXN</span>
+                    </div>
+                    <p class="text-small text-muted" style="margin-top: var(--spacing-xs);">
+                      Mínimo $1 · Máximo ${{ totalServicioFinal | number:'1.2-2' }}
+                    </p>
+
+                    <div class="flex" style="gap: var(--spacing-sm); margin-top: var(--spacing-md);">
+                      <button type="button" class="btn"
+                              [class.btn-primary]="metodoPagoAnticipo() === 'tarjeta'"
+                              [class.btn-secondary]="metodoPagoAnticipo() !== 'tarjeta'"
+                              (click)="seleccionarMetodoAnticipo('tarjeta')">
+                        Tarjeta de crédito / débito
+                      </button>
+                      <button type="button" class="btn"
+                              [class.btn-primary]="metodoPagoAnticipo() === 'transferencia'"
+                              [class.btn-secondary]="metodoPagoAnticipo() !== 'transferencia'"
+                              [disabled]="!politicaPago()?.tiene_banco"
+                              (click)="seleccionarMetodoAnticipo('transferencia')">
+                        Transferencia
+                      </button>
+                    </div>
+
+                    @if (metodoPagoAnticipo() === 'transferencia') {
+                      @if (politicaPago()?.tiene_banco) {
+                        <div class="banco-info-card" style="margin-top: var(--spacing-md);">
+                          <h4 class="mb-sm">Datos para transferencia</h4>
+                          <div class="banco-dato"><span class="banco-dato-label">Banco</span><span class="banco-dato-valor">{{ politicaPago()?.banco_nombre }}</span></div>
+                          <div class="banco-dato"><span class="banco-dato-label">Titular</span><span class="banco-dato-valor">{{ politicaPago()?.banco_titular }}</span></div>
+                          <div class="banco-dato"><span class="banco-dato-label">Cuenta / CLABE</span><span class="banco-dato-valor banco-cuenta">{{ politicaPago()?.banco_cuenta }}</span></div>
+                        </div>
+                        <div class="comprobante-upload-card" style="margin-top: var(--spacing-lg);">
+                          <h4 class="mb-sm">Adjuntar comprobante de transferencia</h4>
+                          @if (!comprobantePreview()) {
+                            <label class="comprobante-dropzone">
+                              <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onComprobanteSelected($event)" hidden>
+                              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+                              <span>Haz clic para seleccionar imagen</span>
+                              <span class="text-small text-muted">JPG, PNG o WEBP · Máx. 10MB</span>
+                            </label>
+                          } @else {
+                            <div class="comprobante-preview-card">
+                              <img [src]="comprobantePreview()" alt="Comprobante" class="comprobante-preview-img">
+                              <button type="button" class="comprobante-remove-btn" (click)="eliminarComprobante()" title="Eliminar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                              <p class="text-small text-muted mt-sm">{{ comprobanteFile()?.name }}</p>
+                            </div>
+                          }
+                        </div>
+                      } @else {
+                        <div class="alert alert-warning mb-lg" style="margin-top: var(--spacing-md);">
+                          <p style="margin: 0; font-size: 0.85rem;">No hay cuenta bancaria configurada para transferencias.</p>
+                        </div>
+                      }
+                    } @else {
+                      <div id="clip-cita-card" style="min-height: 70px; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px; margin-top: 12px;"></div>
+                      @if (clipError()) { <p class="text-small" style="color:#f44336; margin-top: 6px;">{{ clipError() }}</p> }
+                    }
+                  </div>
+                }
+              }
+            }
+          </div>
+        </div>
+
+        <!-- Panel lateral: detalle de pago -->
+        <div>
+          <div class="card agendar-panel agendar-sticky">
+            <h3 class="mb-md">Detalle de pago</h3>
+
+            @for (linea of serviciosReservaCompleta; track linea.id) {
+              <div class="flex-between mb-sm">
+                <span>
+                  @if ($first) {
+                    {{ linea.nombre }}
+                  } @else {
+                    + {{ linea.nombre }}
+                  }
+                </span>
+                <span>${{ linea.precio | number:'1.2-2' }}</span>
+              </div>
+            }
+
+            @if (promoAplicada()) {
+              <div class="flex-between mb-sm text-gold">
+                <span>Descuento ({{ promoAplicada()?.codigo }})</span>
+                <span>-${{ descuentoAplicadoMonto | number:'1.2-2' }}</span>
+              </div>
+            }
+
+            <hr style="border: none; border-top: 1px solid var(--divider-color); margin: var(--spacing-md) 0;">
+
+            <div class="flex-between mb-sm">
+              <span style="font-weight: 600;">Total del servicio</span>
+              <span style="font-weight: 600;">${{ totalServicioFinal | number:'1.2-2' }}</span>
+            </div>
+
+            @if (pagaraAnticipo) {
+              <div class="flex-between mb-sm text-gold">
+                <span style="font-weight: 600;">
+                  @if (anticipoObligatorio) {
+                    Anticipo obligatorio ({{ politicaPago()?.porcentaje_anticipo }}%)
+                  } @else {
+                    Anticipo voluntario
+                  }
+                </span>
+                <span style="font-weight: 600;">${{ montoAnticipo | number:'1.2-2' }}</span>
+              </div>
+              <p class="text-caption mb-sm">Método: {{ metodoPagoAnticipo() === 'tarjeta' ? 'Tarjeta de crédito / débito' : 'Transferencia' }}</p>
+              <p class="text-caption mb-lg">Restante a liquidar en sucursal: ${{ calcularRestante() | number:'1.2-2' }}</p>
+            } @else {
+              <p class="text-caption mb-lg" style="color: var(--color-accent);">
+                Pagas ${{ totalServicioFinal | number:'1.2-2' }} en sucursal
+              </p>
+            }
+
+            @if (errorCita()) {
+              <div class="alert alert-warning mb-md">
+                <p style="margin: 0; font-size: 0.85rem;">{{ errorCita() }}</p>
+              </div>
+            }
+            @if (exitoCita()) {
+              <div class="alert alert-success mb-md">
+                <p style="margin: 0; font-size: 0.85rem;">{{ exitoCita() }}</p>
+              </div>
+            }
+
+            <button class="btn btn-primary btn-block mb-sm" (click)="confirmarCita()"
+                    [disabled]="creandoCita() || subiendoComprobante() || clipCargando() || clipTokenizando() || (pagaraAnticipo && metodoPagoAnticipo() === 'tarjeta' && !tarjetaCargada) || (pagaraAnticipo && metodoPagoAnticipo() === 'transferencia' && !comprobanteFile())">
+              @if (subiendoComprobante()) {
+                Subiendo comprobante...
+              } @else if (clipTokenizando()) {
+                Tokenizando tarjeta...
+              } @else if (creandoCita()) {
+                Agendando...
+              } @else if (pagaraAnticipo) {
+                Confirmar cita · Anticipo ${{ montoAnticipo | number:'1.2-2' }}
+              } @else {
+                Confirmar cita · Pago al llegar
+              }
+            </button>
+            <button class="btn btn-text btn-block" (click)="pasoAnterior()">Atrás</button>
+          </div>
+        </div>
+      </div>
+    }
+    </div>
+  </main>
+</div>
+
+<!-- Mobile Nav -->
+<nav class="navbar-mobile">
+  <a routerLink="/cliente" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    Inicio
+  </a>
+  <a routerLink="/cliente/servicios" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    Servicios
+  </a>
+  <a routerLink="/cliente/productos" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+    Productos
+  </a>
+  <a routerLink="/cliente/agendar" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>
+    Agendar
+  </a>
+  <a routerLink="/cliente/citas" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+    Citas
+  </a>
+  <a routerLink="/cliente/carrito" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    Tienda
+  </a>
+  <a routerLink="/cliente/perfil" routerLinkActive="active" class="navbar-mobile-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Perfil
+  </a>
+</nav>

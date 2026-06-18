@@ -1,0 +1,190 @@
+<div class="layout-sidebar">
+  <app-sidebar [rol]="esSecretaria ? 'secretaria' : 'admin'"></app-sidebar>
+
+  <main class="main-content producto-create-page">
+    <app-breadcrumb></app-breadcrumb>
+
+    <div class="page-head">
+      <div class="page-head-left">
+        <a [routerLink]="catalogoBase" class="btn btn-text volver-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Volver a productos
+        </a>
+        <div class="page-title">
+          <h1>Crear Nuevo Producto</h1>
+          <p class="page-sub">Agrega un producto al catálogo</p>
+        </div>
+      </div>
+    </div>
+
+    <form (ngSubmit)="guardar()">
+      <div class="grid">
+        <div class="card">
+          <div class="card-head mb-md">
+            <div>
+              <div class="overline">Producto</div>
+              <div class="card-title">Información del producto</div>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/>
+            </svg>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="prodNombre">Nombre del producto *</label>
+            <input type="text" class="form-input" [(ngModel)]="form.nombre" name="nombre"
+                   id="prodNombre" placeholder="Ej: Pomada Fijadora Premium" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="prodMarca">Marca del producto</label>
+            <select id="prodMarca" class="form-select" [(ngModel)]="form.marca" name="marca">
+              <option value="">— Sin marca —</option>
+              @for (m of marcasOrdenadas; track m.id) {
+                <option [value]="m.nombre">{{ m.nombre }}</option>
+              }
+            </select>
+            @if (loadingMarcas) {
+              <p class="text-small text-muted">Cargando marcas...</p>
+            } @else if (marcasOrdenadas.length === 0) {
+              <p class="text-small text-muted">No hay marcas dadas de alta.
+                <a [routerLink]="esSecretaria ? '/secretaria/marcas' : '/admin/marcas'" class="link-marca">Agregar marca</a>
+              </p>
+            } @else {
+              <p class="text-small text-muted">
+                <a [routerLink]="esSecretaria ? '/secretaria/marcas' : '/admin/marcas'" class="link-marca">Agregar nueva marca</a>
+              </p>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="prodDesc">Descripción</label>
+            <textarea class="form-input" rows="3" [(ngModel)]="form.descripcion" name="descripcion"
+                      id="prodDesc" placeholder="Descripción detallada del producto..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="prodPeso">Volumen o peso</label>
+            <input type="text" class="form-input" [(ngModel)]="form.peso_volumen" name="peso_volumen"
+                   id="prodPeso" placeholder="Ej: 250ml, 100gr, 1L" maxlength="60">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="prodCategoria">Categoría *</label>
+            <select id="prodCategoria" class="form-select" [(ngModel)]="form.categoria" name="categoria" required>
+              <option value="">Seleccionar categoría</option>
+              @for (c of categorias; track c.value) {
+                <option [value]="c.value">{{ c.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head mb-md">
+            <div>
+              <div class="overline">Inventario</div>
+              <div class="card-title">Precios e inventario</div>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+
+          <div class="form-row-duo">
+            <div class="form-group">
+              <label class="form-label" for="prodPrecio">Precio de venta *</label>
+              <input type="number" class="form-input" [(ngModel)]="form.precio" name="precio"
+                     id="prodPrecio" placeholder="0" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prodStock">Stock inicial *</label>
+              <input type="number" class="form-input" [(ngModel)]="form.stock" name="stock"
+                     id="prodStock" placeholder="0" min="0" required>
+            </div>
+          </div>
+
+          <div class="form-row-duo">
+            <div class="form-group">
+              <label class="form-label" for="prodStockMin">Stock mínimo (alerta)</label>
+              <input type="number" class="form-input" [(ngModel)]="form.stock_minimo" name="stock_minimo"
+                     id="prodStockMin" placeholder="10" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prodActivo">Estado</label>
+              <select id="prodActivo" class="form-select" [(ngModel)]="form.activo" name="activo">
+                <option [ngValue]="true">Activo (disponible para venta)</option>
+                <option [ngValue]="false">Inactivo (oculto)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-check-label">
+              <input id="prodDestacado" type="checkbox" [(ngModel)]="form.destacado" name="destacado">
+              Marcar como destacado
+            </label>
+          </div>
+
+          <div class="card-head mt-lg mb-md">
+            <div>
+              <div class="overline">Galería</div>
+              <div class="card-title">Galería del producto (hasta 5 fotos)</div>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+            </svg>
+          </div>
+          <p class="text-small text-muted mb-md">La primera imagen se usará como miniatura en la lista.</p>
+
+          <div class="galeria-grid">
+            @for (i of galeriaIndices; track i) {
+              <div class="galeria-slot">
+                <span class="galeria-slot-label">Foto {{ i + 1 }}</span>
+                @if (galeriaPreviews[i] || form.imagenes_galeria[i]) {
+                  <div class="image-preview">
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" [src]="galeriaPreviews[i] || form.imagenes_galeria[i]" alt="Foto {{ i + 1 }}">
+                    <button type="button" class="btn-remove-image" (click)="eliminarImagenGaleria(i)" [attr.aria-label]="'Eliminar foto ' + (i + 1)" title="Eliminar">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
+                } @else {
+                  <label class="image-upload-box galeria-upload" [attr.for]="'galeria-prod-' + i">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                      <path d="M21 15l-5-5L5 21"/>
+                    </svg>
+                    <span class="text-small">Subir</span>
+                  </label>
+                }
+                <input type="file" class="sr-only-file" [id]="'galeria-prod-' + i" accept="image/*,.heic,.heif,.avif" (change)="onImagenGaleriaSeleccionada(i, $event)">
+              </div>
+            }
+          </div>
+          @if (subiendoImagen) {
+            <p class="text-small text-info mt-sm">Subiendo imagen(es)...</p>
+          }
+        </div>
+      </div>
+
+      <div class="form-actions mt-lg">
+        <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="guardando || subiendoImagen">
+          {{ guardando ? 'Guardando...' : (subiendoImagen ? 'Subiendo imagen...' : 'Crear Producto') }}
+        </button>
+      </div>
+    </form>
+  </main>
+</div>
+
+<nav class="navbar-mobile">
+  <a [routerLink]="esSecretaria ? '/secretaria' : '/admin'" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="navbar-mobile-item">Dashboard</a>
+  <a [routerLink]="esSecretaria ? '/secretaria/agenda' : '/admin/empleados'" routerLinkActive="active" class="navbar-mobile-item">{{ esSecretaria ? 'Agenda' : 'Empleados' }}</a>
+  <a [routerLink]="esSecretaria ? '/secretaria/ventas' : '/admin/servicios'" routerLinkActive="active" class="navbar-mobile-item">{{ esSecretaria ? 'Ventas' : 'Servicios' }}</a>
+  <a [routerLink]="catalogoBase" routerLinkActive="active" class="navbar-mobile-item">Productos</a>
+  <a [routerLink]="esSecretaria ? '/secretaria/inventario' : '/admin/configuracion'" routerLinkActive="active" class="navbar-mobile-item">{{ esSecretaria ? 'Inventario' : 'Config' }}</a>
+</nav>

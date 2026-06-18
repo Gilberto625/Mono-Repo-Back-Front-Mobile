@@ -1,0 +1,578 @@
+<div class="layout-sidebar">
+  <app-sidebar rol="admin"></app-sidebar>
+
+  <main class="main-content">
+    <app-breadcrumb></app-breadcrumb>
+
+    <div class="reporte-vista-header mb-lg">
+      <a routerLink="/admin/reportes" class="btn btn-text volver-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Volver a reportes
+      </a>
+      <div class="reporte-vista-header-main">
+        @if (!loading && !error) {
+          <div class="reporte-marca">
+            @if (mostrarLogoImagenEnVista) {
+              <img class="reporte-marca-logo" [src]="logoUrlNormalizado" alt="Logo del negocio">
+            } @else {
+              <div class="reporte-marca-logo-texto">{{ logoTextoEnVista }}</div>
+            }
+            <div class="reporte-marca-texto">
+              <h2 class="reporte-marca-nombre">{{ nombreEmpresa }}</h2>
+              <p class="text-small text-muted mb-0">Reporte generado desde configuración del administrador</p>
+            </div>
+          </div>
+        }
+        @if (!loading && !error && data && (tipo === 'ventas-dia' || tipo === 'ventas-semana' || tipo === 'ventas-mes')) {
+          <!-- Título y período se muestran dentro del bloque de ventas -->
+        } @else {
+          <h1>{{ titulo }}</h1>
+          @if (data?.periodo) {
+            <p class="text-muted mb-0">Período: {{ data.periodo.inicio }} {{ data.periodo.fin ? '– ' + data.periodo.fin : '' }}{{ data.periodo.hoy ? ' (' + data.periodo.hoy + ')' : '' }}</p>
+          }
+        }
+      </div>
+      @if (!loading && !error && data) {
+        <div class="reporte-header-actions">
+          <button type="button" class="btn btn-secondary" (click)="copiarResumen()" [disabled]="exportandoPDF || exportandoExcel || exportandoCSV || copiandoResumen">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            {{ copiandoResumen ? 'Copiando...' : 'Copiar resumen' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="exportarCSV()" [disabled]="exportandoPDF || exportandoExcel || exportandoCSV">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            {{ exportandoCSV ? 'Exportando CSV...' : 'Exportar CSV' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="exportarPDF()" [disabled]="exportandoPDF || exportandoExcel">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+            {{ exportandoPDF ? 'Exportando PDF...' : 'Exportar PDF' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="exportarExcel()" [disabled]="exportandoPDF || exportandoExcel || exportandoCSV">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            {{ exportandoExcel ? 'Exportando Excel...' : 'Exportar Excel' }}
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Filtro por período: Día / Semana / Mes + Desde / Hasta + Aplicar -->
+    @if (tipo && mostrarFiltroPeriodo) {
+      <div class="card reporte-filtro-periodo mb-lg">
+        <div class="reporte-filtro-periodo-inner">
+          <div class="reporte-filtro-field">
+            <label class="reporte-filtro-label">Periodo</label>
+            <select class="reporte-filtro-select" [(ngModel)]="periodoSelect" (ngModelChange)="onPeriodoChange()">
+              <option value="dia">Día</option>
+              <option value="semana">Semana</option>
+              <option value="mes">Mes</option>
+            </select>
+          </div>
+          <div class="reporte-filtro-field">
+            <label class="reporte-filtro-label">Desde</label>
+            <input type="date" class="reporte-filtro-input" [(ngModel)]="fechaDesde" (ngModelChange)="onDesdeChange()">
+          </div>
+          <div class="reporte-filtro-field">
+            <label class="reporte-filtro-label">Hasta</label>
+            <input type="date" class="reporte-filtro-input" [(ngModel)]="fechaHasta">
+          </div>
+          <div class="reporte-filtro-field reporte-filtro-apply">
+            <label class="reporte-filtro-label">&nbsp;</label>
+            <button type="button" class="btn btn-primary" (click)="aplicarFiltro()">Aplicar</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (loading) {
+      <div class="card reporte-vista-body">
+        <p class="text-muted mb-0">Cargando reporte…</p>
+      </div>
+    } @else if (error) {
+      <div class="card reporte-vista-body">
+        <p class="text-error mb-0">No se pudo cargar el reporte. <button type="button" class="btn btn-text btn-sm" (click)="cargarReporte()">Reintentar</button></p>
+      </div>
+    } @else if (data?.mensaje) {
+      <div class="card reporte-vista-body">
+        <p class="text-muted mb-0">{{ data.mensaje }}</p>
+      </div>
+    } @else if (data) {
+      <!-- Ventas (día / semana / mes): diseño como 13-vista-reporte.html, datos reales -->
+      @if (tipo === 'ventas-dia' || tipo === 'ventas-semana' || tipo === 'ventas-mes') {
+        <div class="reporte-ventas-layout">
+          <div class="reporte-ventas-header-actions flex-between mb-lg">
+            <div>
+              <h1 class="reporte-ventas-titulo">{{ titulo }}</h1>
+              <p class="text-muted mb-0">{{ getPeriodoLabel() }}</p>
+              <p class="text-small text-muted mb-0">Este reporte solo incluye pagos cobrados/validados.</p>
+            </div>
+          </div>
+
+          <!-- Stats principales: Ingresos Totales, Servicios, Productos, Transacciones -->
+          <div class="stats-grid mb-lg">
+            <div class="stat-card">
+              <p class="stat-card-label">Ingresos Totales</p>
+              <p class="stat-card-value text-gold">{{ formatMonto(data.total ?? 0) }}</p>
+              @if (data.variacion !== undefined) {
+                <p class="text-small mb-0" [ngClass]="getVariacionClase(data.variacion)">{{ data.variacion >= 0 ? '+' : '' }}{{ data.variacion }}% vs período anterior</p>
+              }
+              @if (totalVentasDescuadre !== 0) {
+                <p class="text-small text-warning mb-0">Ajuste detectado: {{ formatMonto(totalVentasDescuadre) }}</p>
+              }
+            </div>
+            <div class="stat-card">
+              <p class="stat-card-label">Ventas por servicios</p>
+              <p class="stat-card-value">{{ formatMonto(data.servicios_total ?? 0) }}</p>
+              <p class="text-small text-muted mb-0">Citas / ventas a clientes · {{ data.servicios_porcentaje ?? 0 }}% del total</p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-card-label">Ventas por productos</p>
+              <p class="stat-card-value">{{ formatMonto(data.productos_total ?? 0) }}</p>
+              <p class="text-small text-muted mb-0">Ventas a clientes o por secretaría · {{ data.productos_porcentaje ?? 0 }}% del total</p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-card-label">Transacciones</p>
+              <p class="stat-card-value">{{ data.transacciones ?? cantidadTransacciones }}</p>
+              @if (data.variacion_transacciones !== undefined) {
+                <p class="text-small mb-0" [ngClass]="getVariacionClase(data.variacion_transacciones)">{{ data.variacion_transacciones >= 0 ? '+' : '' }}{{ data.variacion_transacciones }}% vs período anterior</p>
+              } @else {
+                <p class="text-small text-muted mb-0">citas completadas</p>
+              }
+            </div>
+          </div>
+
+          <div class="card mb-lg">
+            <h3 class="mb-md">Distribución de Ingresos</h3>
+            <div class="reporte-pie-wrap">
+              <div class="reporte-pie-container">
+                @if (distribucionIngresos.total > 0) {
+                  <div class="reporte-pie-circle" [style.background]="'conic-gradient(var(--reporte-pie-servicios) 0deg ' + (pieServiciosPct / 100 * 360) + 'deg, var(--reporte-pie-productos) ' + (pieServiciosPct / 100 * 360) + 'deg 360deg)'"></div>
+                } @else {
+                  <div class="reporte-pie-circle reporte-pie-circle-empty"></div>
+                }
+              </div>
+              <div class="reporte-pie-legend">
+                <div class="reporte-pie-legend-item">
+                  <span class="reporte-pie-legend-color reporte-pie-legend-servicios"></span>
+                  <span>Servicios: {{ formatMonto(distribucionIngresos.servicios) }} ({{ distribucionIngresos.serviciosPct }}%)</span>
+                </div>
+                <div class="reporte-pie-legend-item">
+                  <span class="reporte-pie-legend-color reporte-pie-legend-productos"></span>
+                  <span>Productos: {{ formatMonto(distribucionIngresos.productos) }} ({{ distribucionIngresos.productosPct }}%)</span>
+                </div>
+              </div>
+            </div>
+            @if (distribucionIngresos.total === 0) {
+              <p class="text-muted mb-0 text-small">No hay ingresos en el período seleccionado.</p>
+            }
+          </div>
+
+          <!-- Tabla detallada -->
+          <div class="card">
+            <h3 class="mb-md">Detalle de servicios (cortes) vendidos</h3>
+            @if (data.detalle?.length) {
+              <div class="table-container">
+                <table class="reporte-table reporte-table-full">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Hora</th>
+                      <th>Cliente</th>
+                      <th>Servicio</th>
+                      <th class="text-right">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (fila of data.detalle; track $index) {
+                      <tr>
+                        <td style="font-weight: 500;">{{ fila.fecha }}</td>
+                        <td>{{ fila.hora }}</td>
+                        <td>{{ fila.cliente_nombre || '-' }}</td>
+                        <td>{{ fila.servicio_nombre || '-' }}</td>
+                        <td class="text-right text-gold" style="font-weight: 600;">{{ formatMonto(fila.precio_total) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                  <tfoot>
+                    <tr class="reporte-table-tfoot">
+                      <td>TOTAL</td>
+                      <td>—</td>
+                      <td>—</td>
+                      <td>—</td>
+                      <td class="text-right text-gold">{{ formatMonto(totalDetalle) }}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            } @else {
+              <p class="text-muted mb-0" style="padding: var(--spacing-lg);">No hay registros en este período.</p>
+            }
+          </div>
+
+          <div class="card mt-lg">
+            <h3 class="mb-md">Detalle de productos vendidos</h3>
+            @if (loadingProductosVendidos) {
+              <p class="text-muted mb-0">Cargando productos vendidos...</p>
+            } @else if (productosVendidosDetalle.length) {
+              <div class="table-container">
+                <table class="reporte-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Hora</th>
+                      <th>Cliente</th>
+                      <th>Producto</th>
+                      <th class="text-right">Unidades vendidas</th>
+                      <th class="text-right">Total vendido</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (fila of productosVendidosDetalle; track $index) {
+                      <tr>
+                        <td>{{ fila.fecha }}</td>
+                        <td>{{ fila.hora }}</td>
+                        <td>{{ fila.cliente_nombre || '-' }}</td>
+                        <td>{{ fila.producto_nombre }}</td>
+                        <td class="text-right">{{ fila.unidades }}</td>
+                        <td class="text-right">{{ formatMonto(fila.total) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                  <tfoot>
+                    <tr class="reporte-table-tfoot">
+                      <td>TOTAL</td>
+                      <td>—</td>
+                      <td>—</td>
+                      <td>—</td>
+                      <td class="text-right">{{ totalUnidadesProductosDetalle }}</td>
+                      <td class="text-right text-gold">{{ formatMonto(totalProductosDetalle) }}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            } @else {
+              <p class="text-muted mb-0">No hay productos vendidos en este período.</p>
+            }
+          </div>
+
+        </div>
+      }
+
+      <!-- Servicios más populares -->
+      @if (tipo === 'servicios-populares') {
+        <div class="card">
+          <p class="text-muted mb-md">Período: {{ data.periodo?.inicio }} – {{ data.periodo?.fin }}</p>
+          <p class="mb-xs"><strong>Citas válidas:</strong> {{ data.total_citas_validas ?? 0 }}</p>
+          <p class="mb-md"><strong>Anticipos validados:</strong> {{ formatMonto(data.anticipos_validados_total ?? 0) }}</p>
+          @if (data.detalle?.length) {
+            <div class="table-container">
+              <table class="reporte-table">
+                <thead>
+                  <tr>
+                    <th>Servicio</th>
+                    <th class="text-right">Cantidad</th>
+                    <th class="text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (fila of data.detalle; track $index) {
+                    <tr>
+                      <td>{{ fila.servicio_nombre }}</td>
+                      <td class="text-right">{{ fila.cantidad }}</td>
+                      <td class="text-right">{{ formatMonto(fila.total) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <p class="text-muted mb-0">No hay datos en este período.</p>
+          }
+        </div>
+      }
+
+      <!-- Reporte de citas -->
+      @if (tipo === 'citas') {
+        <div class="card mb-lg">
+          <p class="text-muted mb-md">Período: {{ data.periodo?.inicio }} – {{ data.periodo?.fin }}</p>
+          <p class="mb-xs"><strong>Total de citas:</strong> {{ data.total_citas ?? 0 }}</p>
+          <p class="mb-xs"><strong>Tasa de asistencia:</strong> {{ data.tasa_asistencia ?? 0 }}%</p>
+          <p class="mb-0"><strong>Anticipos validados:</strong> {{ formatMonto(data.anticipos_validados_total ?? 0) }}</p>
+        </div>
+        @if (data.por_estado?.length) {
+          <div class="card">
+            <h3 class="mb-md">Por estado</h3>
+            <ul class="list">
+              @for (item of data.por_estado; track item.estado) {
+                <li class="list-item flex-between">
+                  <span>{{ estadoLabel(item.estado) }}</span>
+                  <strong>{{ item.total }}</strong>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      }
+
+      <!-- Ocupación por horario -->
+      @if (tipo === 'horarios') {
+        <div class="card">
+          <p class="text-muted mb-md">Período: {{ data.periodo?.inicio }} – {{ data.periodo?.fin }}</p>
+          <p class="mb-xs"><strong>Citas validadas:</strong> {{ data.total_citas_validadas ?? 0 }}</p>
+          <p class="mb-md"><strong>Anticipos validados:</strong> {{ formatMonto(data.anticipos_validados_total ?? 0) }}</p>
+          @if (data.detalle?.length) {
+            <div class="table-container">
+              <table class="reporte-table">
+                <thead>
+                  <tr>
+                    <th>Hora</th>
+                    <th class="text-right">Cantidad de citas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (fila of data.detalle; track fila.hora) {
+                    <tr>
+                      <td>{{ fila.hora }}:00</td>
+                      <td class="text-right">{{ fila.cantidad }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <p class="text-muted mb-0">No hay datos en este período.</p>
+          }
+        </div>
+      }
+
+      <!-- Productos más vendidos -->
+      @if (tipo === 'productos-vendidos') {
+        <div class="card">
+          <p class="text-muted mb-md">Período: {{ data.periodo?.inicio }} – {{ data.periodo?.fin }}</p>
+          @if (data.detalle?.length) {
+            <div class="table-container">
+              <table class="reporte-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Cliente</th>
+                    <th>Producto</th>
+                    <th class="text-right">Unidades vendidas</th>
+                    <th class="text-right">Total vendido</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (fila of data.detalle; track $index) {
+                    <tr>
+                      <td>{{ fila.fecha || '-' }}</td>
+                      <td>{{ fila.hora || '-' }}</td>
+                      <td>{{ fila.cliente_nombre || '-' }}</td>
+                      <td>{{ fila.producto_nombre }}</td>
+                      <td class="text-right">{{ fila.unidades }}</td>
+                      <td class="text-right">{{ formatMonto(fila.total || 0) }}</td>
+                    </tr>
+                  }
+                </tbody>
+                <tfoot>
+                  <tr class="reporte-table-tfoot">
+                    <td>TOTAL</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td class="text-right">{{ totalUnidadesProductosReporte }}</td>
+                    <td class="text-right text-gold">{{ formatMonto(totalProductosReporte) }}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          } @else {
+            <p class="text-muted mb-0">No hay ventas de productos en este período.</p>
+          }
+        </div>
+      }
+
+      <!-- Movimientos de inventario -->
+      @if (tipo === 'inventario') {
+        <div class="card">
+          <p class="text-muted mb-md">Período: {{ data.periodo?.inicio }} – {{ data.periodo?.fin }}</p>
+          <div class="reporte-fuente-wrap mb-md">
+            @if (data.sin_movimientos) {
+              <span class="reporte-fuente-chip reporte-fuente-chip-warning">
+                Fuente: existencias actuales (sin movimientos en el período)
+              </span>
+            } @else {
+              <span class="reporte-fuente-chip reporte-fuente-chip-ok">
+                Fuente: bitácora de movimientos de inventario
+              </span>
+            }
+          </div>
+          @if (data.sin_movimientos) {
+            <p class="text-small text-warning mb-md">
+              No hay movimientos registrados en el período. Se muestra el estado actual de existencias.
+            </p>
+          }
+          <div class="inventario-resumen-row mb-lg">
+            <p class="mb-0"><strong>Total movimientos:</strong> {{ data.total_movimientos ?? 0 }}</p>
+            <p class="mb-0"><strong>Productos afectados:</strong> {{ data.productos_afectados ?? 0 }}</p>
+            <p class="mb-0"><strong>Entradas:</strong> {{ data.entradas ?? 0 }}</p>
+            <p class="mb-0"><strong>Salidas:</strong> {{ data.salidas ?? 0 }}</p>
+            <p class="mb-0"><strong>Ventas:</strong> {{ data.ventas ?? 0 }}</p>
+            <p class="mb-0"><strong>Ventas web:</strong> {{ data.ventas_web ?? 0 }}</p>
+            <p class="mb-0"><strong>Ventas secretaría:</strong> {{ data.ventas_secretaria ?? 0 }}</p>
+            <p class="mb-0"><strong>Ajustes:</strong> {{ data.ajustes ?? 0 }}</p>
+            <p class="mb-0"><strong>Balance neto:</strong> {{ data.balance_neto ?? 0 }}</p>
+            <p class="mb-0"><strong>Existencias actuales:</strong> {{ data.total_existencias ?? 0 }}</p>
+            <p class="mb-0"><strong>Valor inventario:</strong> {{ formatMonto(data.valor_total_inventario ?? 0) }}</p>
+            <p class="mb-0"><strong>Stock bajo actual:</strong> {{ data.productos_stock_bajo_actual ?? 0 }}</p>
+          </div>
+          <div class="inventario-auditoria mb-lg">
+            <p class="mb-xs"><strong>Auditoría · Devoluciones por cancelación de pedidos:</strong> {{ data.cancelaciones_pedido ?? 0 }} unidades</p>
+            <p class="text-small text-muted mb-0">Estas devoluciones no se consideran ganancia.</p>
+          </div>
+          @if (data.detalle?.length) {
+            <div class="table-container">
+              <table class="reporte-table">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th class="text-right">Cantidad</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (fila of data.detalle; track fila.tipo) {
+                    <tr>
+                      <td>{{ fila.tipo }}</td>
+                      <td class="text-right">{{ fila.total }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+          @if (data.top_productos?.length) {
+            <div class="mt-lg">
+              <h3 class="mb-md">Top productos con mayor movimiento</h3>
+              <div class="table-container">
+                <table class="reporte-table">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Tipo</th>
+                      <th class="text-right">Unidades movidas</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (fila of data.top_productos; track $index) {
+                      <tr>
+                        <td>{{ fila.producto }}</td>
+                        <td>{{ fila.tipo }}</td>
+                        <td class="text-right">{{ fila.total_unidades }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+          @if (data.detalle_reciente?.length) {
+            <div class="mt-lg">
+              <h3 class="mb-md">Bitácora de movimientos recientes</h3>
+              <div class="table-container">
+                <table class="reporte-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Hora</th>
+                      <th>Producto</th>
+                      <th>Tipo</th>
+                      <th class="text-right">Cantidad</th>
+                      <th class="text-right">Stock anterior</th>
+                      <th class="text-right">Stock posterior</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (fila of data.detalle_reciente; track $index) {
+                      <tr>
+                        <td>{{ fila.fecha }}</td>
+                        <td>{{ fila.hora }}</td>
+                        <td>{{ fila.producto }}</td>
+                        <td>{{ fila.tipo }}</td>
+                        <td class="text-right">{{ fila.cantidad }}</td>
+                        <td class="text-right">{{ fila.stock_anterior }}</td>
+                        <td class="text-right">{{ fila.stock_posterior }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+          @if (data.existencias?.length) {
+            <div class="mt-lg">
+              <h3 class="mb-md">Estado actual de existencias</h3>
+              <div class="table-container">
+                <table class="reporte-table">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th class="text-right">Stock actual</th>
+                      <th class="text-right">Stock mínimo</th>
+                      <th class="text-right">Precio venta</th>
+                      <th class="text-right">Valor inventario</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (fila of data.existencias; track $index) {
+                      <tr>
+                        <td>{{ fila.producto }}</td>
+                        <td class="text-right">{{ fila.stock_actual }}</td>
+                        <td class="text-right">{{ fila.stock_minimo }}</td>
+                        <td class="text-right">{{ formatMonto(fila.precio_venta || 0) }}</td>
+                        <td class="text-right">{{ formatMonto(fila.valor_inventario || 0) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+          @if (data.detalle_cancelaciones?.length) {
+            <div class="mt-lg">
+              <h3 class="mb-md">Detalle de cancelaciones</h3>
+              <div class="table-container">
+                <table class="reporte-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Producto</th>
+                      <th class="text-right">Cantidad devuelta</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (fila of data.detalle_cancelaciones; track $index) {
+                      <tr>
+                        <td>{{ fila.fecha | date:'short' }}</td>
+                        <td>{{ fila.producto }}</td>
+                        <td class="text-right">{{ fila.cantidad }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Tipos de reporte no implementados: mensaje genérico -->
+      @if (tipo !== 'ventas-dia' && tipo !== 'ventas-semana' && tipo !== 'ventas-mes' && tipo !== 'servicios-populares' && tipo !== 'citas' && tipo !== 'horarios' && tipo !== 'productos-vendidos' && tipo !== 'inventario') {
+        <div class="card reporte-vista-body">
+          <p class="text-muted mb-0">Este reporte estará disponible próximamente.</p>
+        </div>
+      }
+    } @else {
+      <div class="card reporte-vista-body">
+        <p class="text-muted mb-0">Selecciona un tipo de reporte desde la lista.</p>
+      </div>
+    }
+  </main>
+</div>
