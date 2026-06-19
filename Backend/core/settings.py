@@ -16,6 +16,7 @@ import json
 import sys
 
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from decouple import Csv, config
 from corsheaders.defaults import default_headers, default_methods
 
@@ -27,25 +28,34 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config(
-    "SECRET_KEY",
-    default="django-insecure-change-me-in-env",
-)
+SECRET_KEY = config("SECRET_KEY", default="").strip()
+if not SECRET_KEY:
+    raise ImproperlyConfigured("SECRET_KEY debe definirse mediante una variable de entorno.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DEBUG", default=True, cast=bool)
+DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = config(
-    "ALLOWED_HOSTS",
-    default="localhost,127.0.0.1",
-    cast=Csv(),
-)
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in config("ALLOWED_HOSTS", default="", cast=Csv())
+    if host.strip()
+]
+if not DEBUG and not ALLOWED_HOSTS:
+    raise ImproperlyConfigured("ALLOWED_HOSTS debe configurarse en producción.")
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=True, cast=bool)
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = config("SECURE_HSTS_SECONDS", default=31536000, cast=int)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
 
 
 # Application definition
@@ -209,7 +219,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.AllowAny",
+        "rest_framework.permissions.IsAuthenticated",
     ),
     "DEFAULT_THROTTLE_RATES": {
         "login_anon": config("THROTTLE_LOGIN_ANON", default="20/min"),
@@ -236,11 +246,11 @@ SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": False,
 }
 
-CORS_ALLOWED_ORIGINS = config(
-    "CORS_ALLOWED_ORIGINS",
-    default="https://localhost:4200,https://127.0.0.1:4200",
-    cast=Csv(),
-)
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in config("CORS_ALLOWED_ORIGINS", default="", cast=Csv())
+    if origin.strip()
+]
 
 # Frontend Angular usa withCredentials=true en HttpClient.
 # Sin esta bandera el navegador bloquea requests tras el preflight (OPTIONS).
@@ -250,14 +260,11 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = list(default_methods)
 CORS_ALLOW_HEADERS = list(default_headers)
 
-CSRF_TRUSTED_ORIGINS = config(
-    "CSRF_TRUSTED_ORIGINS",
-    default=(
-        "http://localhost:4200,http://127.0.0.1:4200,"
-        "http://127.0.0.1:8000,http://localhost:8000"
-    ),
-    cast=Csv(),
-)
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
+    if origin.strip()
+]
 
 # Email: Brevo API (HTTPS) y/o SMTP de respaldo.
 # En Render plan gratuito el SMTP suele estar bloqueado → usa BREVO_API_KEY (API HTTPS).

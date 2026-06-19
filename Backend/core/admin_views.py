@@ -19,6 +19,7 @@ from typing import Any
 
 from django.core.cache import cache
 from core.mail_utils import build_otp_email_pair, send_stylo_transactional
+from core.permissions import IsAdminOrSecretary, IsAdminRole, get_business_role
 from core.upload_utils import is_allowed_image_upload
 from django.core.signing import TimestampSigner
 
@@ -29,7 +30,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.conf import settings
 from django.db import DatabaseError, connection, transaction
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -69,10 +69,10 @@ def _clip_decrypt(value: str) -> str:
 
 
 class AdminSillasView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _get_rol_codigo(self, request) -> str:
         username = str(getattr(request.user, "username", "") or "").strip()
@@ -257,10 +257,10 @@ class AdminSillasView(APIView):
 
 class AdminMarcasView(APIView):
     """Lista y crea marcas de productos. Acceso admin y secretaria."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _get_rol_codigo(self, request) -> str:
         username = str(getattr(request.user, "username", "") or "").strip()
@@ -354,10 +354,10 @@ class AdminMarcasView(APIView):
 
 
 class AdminSillaDetalleView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _get_rol_codigo(self, request) -> str:
         username = str(getattr(request.user, "username", "") or "").strip()
@@ -436,14 +436,14 @@ class AdminSillaDetalleView(APIView):
 
 
 class AdminPromocionesView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminRole]
 
     TIPOS_DESCUENTO = {"porcentaje", "monto_fijo", "2x1", "producto_gratis"}
     APLICA_EN = {"servicios", "productos", "ambos"}
     ESTADOS_VALIDOS = {"activas", "programadas", "finalizadas", "pausadas", "todas"}
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _to_bool(self, value: Any, default: bool = False) -> bool:
         if value is None:
@@ -760,7 +760,7 @@ class AdminPromocionesView(APIView):
 
 
 class AdminPromocionDetalleView(AdminPromocionesView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminRole]
 
     def get(self, request, promocion_id: int):
         if not self._is_admin(request):
@@ -865,10 +865,10 @@ class AdminPromocionDetalleView(AdminPromocionesView):
 
 
 class AdminDashboardView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminRole]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _row_value(self, row: Any, idx: int, default: Any = 0) -> Any:
         if not row:
@@ -1244,10 +1244,10 @@ class AdminDashboardView(APIView):
 
 
 class AdminReportesView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminRole]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _parse_date(self, raw: str | None) -> date | None:
         txt = str(raw or "").strip()
@@ -2277,7 +2277,7 @@ class AdminReportesView(APIView):
 
 
 class AdminEmpleadosView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     ROLE_MAP_FRONT_TO_DB = {
         "admin": "administrador",
@@ -2294,7 +2294,7 @@ class AdminEmpleadosView(APIView):
     DIA_KEYS = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _get_rol_codigo(self, request) -> str:
         username = str(getattr(request.user, "username", "") or "").strip()
@@ -3114,10 +3114,10 @@ def _send_clip_2fa_email(email: str, codigo: str) -> bool:
 
 class ClipSolicitar2FAView(APIView):
     """Solicita envío de código 2FA por email para poder actualizar credenciales Clip."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminRole]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def post(self, request):
         if not self._is_admin(request):
@@ -3138,16 +3138,14 @@ class ClipSolicitar2FAView(APIView):
         }
         if not enviado:
             payload["mensaje"] = "No se pudo enviar el correo. Revisa la configuración de email."
-            if settings.DEBUG:
-                payload["codigo_debug"] = codigo
         return Response(payload)
 
 
 class AdminConfiguracionView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _get_rol_codigo(self, request) -> str:
         username = str(getattr(request.user, "username", "") or "").strip()
@@ -3994,7 +3992,7 @@ class AdminConfiguracionView(APIView):
 
 
 class AdminContenidoLegalView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     TIPOS_BASE = {
         "mision": "Misión",
@@ -4005,7 +4003,7 @@ class AdminContenidoLegalView(APIView):
     }
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _serialize_row(self, row: tuple[Any, ...]) -> dict[str, Any]:
         return {
@@ -4154,10 +4152,10 @@ class AdminContenidoLegalView(APIView):
 
 
 class AdminContenidoLegalDetalleView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def put(self, request, contenido_id: int):
         if not self._is_admin(request):
@@ -4247,10 +4245,10 @@ class AdminContenidoLegalDetalleView(APIView):
 
 
 class AdminPrediccionVentasView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminRole]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _to_int(self, raw: Any) -> int | None:
         try:
@@ -5207,7 +5205,7 @@ class AdminPrediccionVentasView(APIView):
 
 
 class AdminServiciosView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     FRONT_TO_DB_CATEGORIA = {
         "corte": "corte",
@@ -5224,7 +5222,7 @@ class AdminServiciosView(APIView):
     }
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _get_rol_codigo(self, request) -> str:
         username = str(getattr(request.user, "username", "") or "").strip()
@@ -5621,7 +5619,7 @@ class AdminServiciosView(APIView):
 
 
 class AdminServicioDetalleView(AdminServiciosView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     def get(self, request, servicio_id: int):
         if not self._is_admin_or_secretaria(request):
@@ -5754,7 +5752,7 @@ class AdminServicioDetalleView(AdminServiciosView):
 
 
 class AdminProductosView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     FRONT_TO_DB_CATEGORIA = {
         "cabello": "cabello",
@@ -5781,7 +5779,7 @@ class AdminProductosView(APIView):
     }
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _get_rol_codigo(self, request) -> str:
         username = str(getattr(request.user, "username", "") or "").strip()
@@ -6340,7 +6338,7 @@ class AdminProductosView(APIView):
 
 
 class AdminProductoDetalleView(AdminProductosView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     def get(self, request, producto_id: int):
         if not self._is_admin_or_secretaria(request):
@@ -6467,7 +6465,7 @@ class AdminProductoDetalleView(AdminProductosView):
 
 
 class AdminProductoStockView(AdminProductosView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     def put(self, request, producto_id: int):
         if not self._is_admin_or_secretaria(request):
@@ -6592,10 +6590,10 @@ class AdminProductoStockView(AdminProductosView):
 
 
 class AdminInventarioMovimientosView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _is_secretaria(self, request) -> bool:
         username = str(getattr(request.user, "username", "") or "").strip()
@@ -6691,10 +6689,10 @@ class AdminInventarioMovimientosView(APIView):
 
 
 class AdminInventarioSalidasMasivasView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def post(self, request):
         if not self._is_admin(request):
@@ -6807,10 +6805,10 @@ class AdminInventarioSalidasMasivasView(APIView):
             return db_structure_error_response(exc)
 
 class AdminRespaldoDBDescargarView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminRole]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _backups_dir(self) -> Path:
         root = Path(getattr(settings, "BASE_DIR", Path.cwd()))
@@ -6835,11 +6833,11 @@ class AdminRespaldoDBDescargarView(APIView):
 
 
 class AdminImageUploadView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
     parser_classes = [MultiPartParser, FormParser]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _get_rol_codigo(self, request) -> str:
         user = getattr(request, "user", None)
@@ -6889,35 +6887,24 @@ class AdminImageUploadView(APIView):
             secure=True,
         )
 
-        folder = str(request.data.get("folder", "barberia") or "barberia").strip() or "barberia"
+        folder_raw = str(request.data.get("folder", "barberia") or "barberia").strip().lower()
+        folder = re.sub(r"[^a-z0-9_-]", "-", folder_raw).strip("-")[:60] or "barberia"
         image_file = request.FILES.get("image")
-        image_data = request.data.get("image")
 
-        if not image_file and not image_data:
+        if not image_file:
             return Response({"ok": False, "error": "Debes enviar una imagen en el campo 'image'."}, status=400)
 
         try:
-            if image_file:
-                if not is_allowed_image_upload(image_file):
-                    return Response({"ok": False, "error": "El archivo debe ser una imagen válida (JPG, PNG, WebP, HEIC, etc.)."}, status=400)
-                if int(getattr(image_file, "size", 0) or 0) > 5 * 1024 * 1024:
-                    return Response({"ok": False, "error": "La imagen supera el límite de 5 MB."}, status=400)
-                result = cloudinary.uploader.upload(
-                    image_file,
-                    folder=f"stylo-barber/{folder}",
-                    resource_type="image",
-                    overwrite=False,
-                )
-            else:
-                image_str = str(image_data or "").strip()
-                if not image_str:
-                    return Response({"ok": False, "error": "Imagen inválida."}, status=400)
-                result = cloudinary.uploader.upload(
-                    image_str,
-                    folder=f"stylo-barber/{folder}",
-                    resource_type="image",
-                    overwrite=False,
-                )
+            if not is_allowed_image_upload(image_file):
+                return Response({"ok": False, "error": "El archivo debe ser una imagen JPG, PNG o WebP válida."}, status=400)
+            if int(getattr(image_file, "size", 0) or 0) > 5 * 1024 * 1024:
+                return Response({"ok": False, "error": "La imagen supera el límite de 5 MB."}, status=400)
+            result = cloudinary.uploader.upload(
+                image_file,
+                folder=f"stylo-barber/{folder}",
+                resource_type="image",
+                overwrite=False,
+            )
 
             return Response(
                 {
@@ -6926,16 +6913,17 @@ class AdminImageUploadView(APIView):
                     "public_id": result.get("public_id"),
                 }
             )
-        except Exception as exc:
-            return Response({"ok": False, "error": f"No se pudo subir la imagen: {exc}"}, status=502)
+        except Exception:
+            logger.exception("No se pudo subir una imagen administrativa")
+            return Response({"ok": False, "error": "No se pudo subir la imagen."}, status=502)
 
 
 class AdminLogoUploadView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminRole]
     parser_classes = [MultiPartParser, FormParser]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def post(self, request):
         if not self._is_admin(request):
@@ -6946,7 +6934,7 @@ class AdminLogoUploadView(APIView):
             return Response({"detail": "Debes enviar un archivo en el campo 'logo'."}, status=400)
 
         if not is_allowed_image_upload(logo_file):
-            return Response({"detail": "El archivo debe ser una imagen valida (JPG, PNG, WebP, HEIC, etc.)."}, status=400)
+            return Response({"detail": "El archivo debe ser una imagen JPG, PNG o WebP válida."}, status=400)
 
         # Limite simple de 5 MB para evitar cargas excesivas.
         if getattr(logo_file, "size", 0) > 5 * 1024 * 1024:
@@ -6987,12 +6975,12 @@ class AdminLogoUploadView(APIView):
 
 
 class AdminRespaldoDBView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminRole]
 
     ALLOWED_EXPORT_SCHEMAS = {"negocio", "stg", "rpt"}
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def _is_valid_identifier(self, value: str) -> bool:
         return bool(re.fullmatch(r"[a-zA-Z_][a-zA-Z0-9_]*", value or ""))
@@ -7670,10 +7658,10 @@ class AdminRespaldoDBView(APIView):
 
 
 class AdminMonitoreoBDView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminRole]
 
     def _is_admin(self, request) -> bool:
-        return bool(request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser))
+        return get_business_role(request.user) in {"administrador", "admin"}
 
     def get(self, request):
         if not self._is_admin(request):
@@ -7848,4 +7836,3 @@ class AdminMonitoreoBDView(APIView):
             return db_structure_error_response(exc)
         except Exception as exc:
             return Response({"ok": False, "error": str(exc)}, status=500)
-

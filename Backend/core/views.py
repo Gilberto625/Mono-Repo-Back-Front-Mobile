@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import make_password
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from django.db import connection
 from django.db import transaction
 from django.utils import timezone
@@ -15,6 +15,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from core.timezone_mx import combine_fecha_hora_mx, sql_citas_ocupadas_dia
+from core.permissions import IsAdminOrSecretary
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.throttling import SimpleRateThrottle
@@ -551,6 +552,7 @@ class EmailOrUsernameTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class EmailOrUsernameTokenObtainPairView(TokenObtainPairView):
+    permission_classes = [AllowAny]
     serializer_class = EmailOrUsernameTokenObtainPairSerializer
 
 
@@ -659,6 +661,7 @@ class LoginView(APIView):
     """
 
     TEMP_TOKEN_SALT = "login-2fa-temp-token"
+    permission_classes = [AllowAny]
     OTP_EXP_MINUTES = 10
     throttle_classes = [LoginAnonRateThrottle, LoginUserRateThrottle]
     USERNAME_EMAIL_REGEX = re.compile(r"^[A-Za-z0-9_.@+\-]{3,254}$")
@@ -852,8 +855,6 @@ class LoginView(APIView):
         }
         if not enviado:
             payload["mensaje"] = "No se pudo enviar el correo en este momento."
-            if settings.DEBUG:
-                payload["codigo_debug"] = codigo
         return Response(payload)
 
 
@@ -866,6 +867,7 @@ class GoogleLoginView(APIView):
     """
 
     ROLE_MAP_DB_TO_FRONT = LoginView.ROLE_MAP_DB_TO_FRONT
+    permission_classes = [AllowAny]
     throttle_classes = [LoginAnonRateThrottle]
 
     def _dev_decode_firebase_token(self, id_token: str) -> dict:
@@ -1095,22 +1097,12 @@ class GoogleLoginView(APIView):
         try:
             with transaction.atomic():
                 self._ensure_negocio_user(user, email, firebase_uid)
-        except DatabaseError as exc:
+        except DatabaseError:
             logger.exception("Google login: fallo al sincronizar negocio.usuario")
-            if settings.DEBUG:
-                return Response(
-                    {"ok": False, "error": f"No se pudo preparar tu sesión con Google: {exc}"},
-                    status=500,
-                )
             return Response(
                 {
                     "ok": False,
-                    "error": (
-                        "No se pudo preparar tu sesión con Google. "
-                        "Suele deberse a que la base de datos en Render/Neon no tiene aplicado el script SQL del proyecto "
-                        "(esquema negocio y tablas como negocio.usuario), o DATABASE_URL apunta a otra BD distinta a la que usas en local. "
-                        "Ejecuta STYLO_BARBER_CONNECT_EJECUTAR.md en el editor SQL de Neon y vuelve a intentar."
-                    ),
+                    "error": "No se pudo preparar tu sesión con Google.",
                 },
                 status=500,
             )
@@ -1136,6 +1128,7 @@ class GoogleLoginView(APIView):
 
 
 class Login2FAVerificarView(APIView):
+    permission_classes = [AllowAny]
     TEMP_TOKEN_SALT = LoginView.TEMP_TOKEN_SALT
     OTP_EXP_MINUTES = LoginView.OTP_EXP_MINUTES
     throttle_classes = [Login2FAVerifyRateThrottle]
@@ -1235,6 +1228,7 @@ class Login2FAVerificarView(APIView):
 
 
 class Login2FASolicitarCodigoView(APIView):
+    permission_classes = [AllowAny]
     TEMP_TOKEN_SALT = LoginView.TEMP_TOKEN_SALT
     OTP_EXP_MINUTES = LoginView.OTP_EXP_MINUTES
     throttle_classes = [Login2FAResendRateThrottle]
@@ -1296,12 +1290,11 @@ class Login2FASolicitarCodigoView(APIView):
         response = {"ok": True, "mensaje": "Código reenviado."}
         if not enviado:
             response["mensaje"] = "No se pudo enviar el correo en este momento."
-            if settings.DEBUG:
-                response["codigo_debug"] = codigo
         return Response(response)
 
 
 class RegisterView(APIView):
+    permission_classes = [AllowAny]
     TEMP_TOKEN_SALT = "register-otp-temp-token"
     OTP_EXP_MINUTES = 10
     throttle_classes = [RegisterAnonRateThrottle, RegisterUserRateThrottle]
@@ -1378,8 +1371,6 @@ class RegisterView(APIView):
 
         codigo = f"{secrets.randbelow(1_000_000):06d}"
         expira_en = timezone.now() + timezone.timedelta(minutes=self.OTP_EXP_MINUTES)
-        codigo_debug = None
-
         try:
             with transaction.atomic():
                 with connection.cursor() as cursor:
@@ -1505,13 +1496,11 @@ class RegisterView(APIView):
         }
         if not email_enviado:
             payload["mensaje"] = "No se pudo enviar el correo en este momento."
-            if settings.DEBUG:
-                codigo_debug = codigo
-                payload["codigo_otp"] = codigo_debug
         return Response(payload, status=201)
 
 
 class VerifyRegisterOTPView(APIView):
+    permission_classes = [AllowAny]
     TEMP_TOKEN_SALT = RegisterView.TEMP_TOKEN_SALT
     OTP_EXP_MINUTES = RegisterView.OTP_EXP_MINUTES
     throttle_classes = [Login2FAVerifyRateThrottle]
@@ -1609,6 +1598,7 @@ class VerifyRegisterOTPView(APIView):
 
 
 class ReenviarRegistroOTPView(APIView):
+    permission_classes = [AllowAny]
     OTP_EXP_MINUTES = RegisterView.OTP_EXP_MINUTES
     throttle_classes = [Login2FAResendRateThrottle]
 
@@ -1662,12 +1652,11 @@ class ReenviarRegistroOTPView(APIView):
         response = {"ok": True, "mensaje": "Código OTP reenviado."}
         if not enviado:
             response["mensaje"] = "No se pudo enviar el correo en este momento."
-            if settings.DEBUG:
-                response["codigo_otp"] = codigo
         return Response(response)
 
 
 class RecuperarOTPView(APIView):
+    permission_classes = [AllowAny]
     TEMP_TOKEN_SALT = "recovery-otp-temp-token"
     OTP_EXP_MINUTES = 10
     EMAIL_REGEX = RegisterView.EMAIL_REGEX
@@ -1759,12 +1748,11 @@ class RecuperarOTPView(APIView):
         }
         if not enviado:
             payload["mensaje"] = "No se pudo enviar el correo en este momento."
-            if settings.DEBUG:
-                payload["codigo_otp"] = codigo
         return Response(payload)
 
 
 class VerificarOTPRecuperacionView(APIView):
+    permission_classes = [AllowAny]
     TEMP_TOKEN_SALT = RecuperarOTPView.TEMP_TOKEN_SALT
     OTP_EXP_MINUTES = RecuperarOTPView.OTP_EXP_MINUTES
     VERIFIED_TOKEN_SALT = "recovery-otp-verified-temp-token"
@@ -1835,6 +1823,7 @@ class VerificarOTPRecuperacionView(APIView):
 
 
 class ReenviarOTPRecuperacionView(APIView):
+    permission_classes = [AllowAny]
     OTP_EXP_MINUTES = RecuperarOTPView.OTP_EXP_MINUTES
     EMAIL_REGEX = RecuperarOTPView.EMAIL_REGEX
     throttle_classes = [RecoveryAnonRateThrottle, RecoveryEmailRateThrottle]
@@ -1891,12 +1880,11 @@ class ReenviarOTPRecuperacionView(APIView):
         response = {"ok": True, "mensaje": "Código OTP reenviado.", "email_enviado": enviado}
         if not enviado:
             response["mensaje"] = "No se pudo enviar el correo en este momento."
-            if settings.DEBUG:
-                response["codigo_otp"] = codigo
         return Response(response)
 
 
 class ActualizarContrasenaOTPView(APIView):
+    permission_classes = [AllowAny]
     VERIFIED_TOKEN_SALT = VerificarOTPRecuperacionView.VERIFIED_TOKEN_SALT
     VERIFIED_MAX_AGE_MIN = 30
     throttle_classes = [RecoveryVerifyRateThrottle]
@@ -2209,6 +2197,101 @@ class ClienteDashboardStatsView(APIView):
             return Response({"ok": False, "error": "No se pudo cargar el dashboard del cliente."}, status=500)
 
 
+HIGH_DEMAND_WEEKDAYS = frozenset({4, 5, 6})  # viernes, sábado y domingo
+PENALTY_APPOINTMENTS = 10
+PENALTY_DEPOSIT_PERCENT = Decimal("50.00")
+
+
+def _appointment_policy(cursor, cliente_id: int, exclude_cita_id: int | None = None) -> dict:
+    exclude_sql = "AND c.cita_id <> %s" if exclude_cita_id else ""
+    params: list[Any] = [cliente_id]
+    if exclude_cita_id:
+        params.append(exclude_cita_id)
+
+    cursor.execute(
+        f"""
+        SELECT COALESCE(COUNT(*), 0)
+        FROM negocio.cita c
+        LEFT JOIN negocio.estado_cita ec ON ec.estado_cita_id = c.estado_cita_id
+        WHERE c.cliente_usuario_id = %s
+          AND LOWER(COALESCE(ec.codigo, '')) <> 'cancelada'
+          {exclude_sql}
+        """,
+        params,
+    )
+    total_citas = int((cursor.fetchone() or [0])[0] or 0)
+
+    cursor.execute(
+        f"""
+        SELECT c.cita_id, c.fecha_hora
+        FROM negocio.cita c
+        JOIN negocio.estado_cita ec ON ec.estado_cita_id = c.estado_cita_id
+        WHERE c.cliente_usuario_id = %s
+          AND LOWER(COALESCE(ec.codigo, '')) = 'no_asistio'
+          {exclude_sql}
+        ORDER BY c.fecha_hora DESC, c.cita_id DESC
+        LIMIT 1
+        """,
+        params,
+    )
+    last_no_show = cursor.fetchone()
+    cursor.execute(
+        f"""
+        SELECT COALESCE(COUNT(*), 0)
+        FROM negocio.cita c
+        JOIN negocio.estado_cita ec ON ec.estado_cita_id = c.estado_cita_id
+        WHERE c.cliente_usuario_id = %s
+          AND LOWER(COALESCE(ec.codigo, '')) = 'no_asistio'
+          {exclude_sql}
+        """,
+        params,
+    )
+    total_no_shows = int((cursor.fetchone() or [0])[0] or 0)
+    completed_since = 0
+    if last_no_show:
+        last_id, last_date = int(last_no_show[0]), last_no_show[1]
+        completed_params: list[Any] = [cliente_id, last_date, last_date, last_id]
+        completed_exclude = ""
+        if exclude_cita_id:
+            completed_exclude = "AND c.cita_id <> %s"
+            completed_params.append(exclude_cita_id)
+        cursor.execute(
+            f"""
+            SELECT COALESCE(COUNT(*), 0)
+            FROM negocio.cita c
+            JOIN negocio.estado_cita ec ON ec.estado_cita_id = c.estado_cita_id
+            WHERE c.cliente_usuario_id = %s
+              AND LOWER(COALESCE(ec.codigo, '')) IN ('completada', 'atendida', 'asistio')
+              AND (c.fecha_hora > %s OR (c.fecha_hora = %s AND c.cita_id > %s))
+              {completed_exclude}
+            """,
+            completed_params,
+        )
+        completed_since = int((cursor.fetchone() or [0])[0] or 0)
+
+    penalized = bool(last_no_show and completed_since < PENALTY_APPOINTMENTS)
+    remaining = max(0, PENALTY_APPOINTMENTS - completed_since) if penalized else 0
+    return {
+        "primera_cita": total_citas == 0,
+        "penalizado": penalized,
+        "total_inasistencias": total_no_shows,
+        "requiere_anticipo": penalized,
+        "porcentaje_anticipo": int(PENALTY_DEPOSIT_PERCENT) if penalized else 0,
+        "citas_restantes_penalizacion": remaining,
+        "citas_penalizacion_total": PENALTY_APPOINTMENTS,
+    }
+
+
+def _minimum_booking_date(fecha_obj: date) -> tuple[date, int]:
+    days = 3 if fecha_obj.weekday() in HIGH_DEMAND_WEEKDAYS else 1
+    return timezone.localdate() + timedelta(days=days), days
+
+
+def _cancellation_deadline(fecha_obj: date) -> tuple[date, int]:
+    days = 2 if fecha_obj.weekday() in HIGH_DEMAND_WEEKDAYS else 1
+    return fecha_obj - timedelta(days=days), days
+
+
 class CitaPoliticaPagoView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -2219,18 +2302,26 @@ class CitaPoliticaPagoView(APIView):
             return Decimal("0.00")
 
     def get(self, request):
-        cliente_id_raw = str(request.query_params.get("cliente_id", "") or "").strip()
-        if not cliente_id_raw:
-            return Response({"ok": False, "error": "cliente_id es obligatorio."}, status=400)
-        try:
-            cliente_id = int(cliente_id_raw)
-        except (TypeError, ValueError):
-            return Response({"ok": False, "error": "cliente_id inválido."}, status=400)
-        if cliente_id <= 0:
-            return Response({"ok": False, "error": "cliente_id inválido."}, status=400)
-
         try:
             with connection.cursor() as cursor:
+                username = str(getattr(request.user, "username", "") or "").strip()
+                email = str(getattr(request.user, "email", "") or "").strip()
+                cursor.execute(
+                    """
+                    SELECT usuario_id
+                    FROM negocio.usuario
+                    WHERE (LOWER(username) = LOWER(%s) AND %s <> '')
+                       OR (LOWER(email) = LOWER(%s) AND %s <> '')
+                    ORDER BY usuario_id DESC
+                    LIMIT 1
+                    """,
+                    [username, username, email, email],
+                )
+                user_row = cursor.fetchone()
+                if not user_row:
+                    return Response({"ok": False, "error": "Usuario de negocio no encontrado."}, status=404)
+                cliente_id = int(user_row[0])
+
                 cursor.execute(
                     """
                     SELECT
@@ -2243,23 +2334,9 @@ class CitaPoliticaPagoView(APIView):
                     """
                 )
                 row_pol = cursor.fetchone()
-                porcentaje_anticipo = int(self._to_money(row_pol[0] if row_pol else 50))
-                citas_penalizacion = int(row_pol[1] if row_pol else 3)
                 tiempo_espera_maximo = int(row_pol[2] if row_pol else 10)
-
-                cursor.execute(
-                    """
-                    SELECT COALESCE(COUNT(*), 0)
-                    FROM negocio.cita c
-                    JOIN negocio.estado_cita ec ON ec.estado_cita_id = c.estado_cita_id
-                    WHERE c.cliente_usuario_id = %s
-                      AND LOWER(COALESCE(ec.codigo, '')) = 'no_asistio'
-                    """,
-                    [cliente_id],
-                )
-                total_inasistencias = int((cursor.fetchone() or [0])[0] or 0)
-                penalizado = total_inasistencias > 0
-                citas_restantes_penalizacion = citas_penalizacion if penalizado else 0
+                tiempo_espera_maximo = min(10, max(5, tiempo_espera_maximo))
+                policy = _appointment_policy(cursor, cliente_id)
 
                 cursor.execute(
                     """
@@ -2282,12 +2359,7 @@ class CitaPoliticaPagoView(APIView):
             return Response(
                 {
                     "ok": True,
-                    "requiere_anticipo": penalizado,
-                    "porcentaje_anticipo": porcentaje_anticipo,
-                    "penalizado": penalizado,
-                    "total_inasistencias": total_inasistencias,
-                    "citas_restantes_penalizacion": citas_restantes_penalizacion,
-                    "citas_penalizacion_total": citas_penalizacion,
+                    **policy,
                     "tiempo_espera_maximo": tiempo_espera_maximo,
                     "tiene_banco": tiene_banco,
                     "banco_nombre": banco_nombre,
@@ -2397,6 +2469,83 @@ class CitasView(APIView):
                 hg,
             )
 
+    def _resolve_service_discount(
+        self,
+        cursor,
+        code: str,
+        base_price: Decimal,
+        cliente_id: int,
+    ) -> tuple[Decimal, int | None, str]:
+        normalized = str(code or "").strip().upper()
+        if not normalized:
+            return Decimal("0.00"), None, ""
+
+        cursor.execute(
+            """
+            SELECT promocion_id, tipo_descuento, aplica_en, valor_descuento,
+                   fecha_inicio, fecha_fin, solo_clientes_nuevos,
+                   requiere_compra_minima, monto_compra_minima,
+                   limite_usos, usos_actuales, activa
+            FROM negocio.promocion
+            WHERE UPPER(COALESCE(codigo, '')) = %s
+            LIMIT 1
+            FOR UPDATE
+            """,
+            [normalized],
+        )
+        row = cursor.fetchone()
+        if not row:
+            return Decimal("0.00"), None, "Código promocional inválido."
+
+        (
+            promo_id,
+            discount_type,
+            applies_to,
+            value,
+            start_date,
+            end_date,
+            only_new_clients,
+            requires_minimum,
+            minimum_amount,
+            usage_limit,
+            current_uses,
+            active,
+        ) = row
+        today = timezone.localdate()
+        if not bool(active) or (start_date and today < start_date) or (end_date and today > end_date):
+            return Decimal("0.00"), None, "La promoción no está vigente."
+        if str(applies_to or "").strip().lower() not in {"servicios", "ambos"}:
+            return Decimal("0.00"), None, "La promoción no aplica a servicios."
+        if usage_limit is not None and int(current_uses or 0) >= int(usage_limit):
+            return Decimal("0.00"), None, "La promoción alcanzó su límite de usos."
+        if bool(requires_minimum) and base_price < self._to_money(minimum_amount):
+            return Decimal("0.00"), None, "La cita no alcanza el monto mínimo de la promoción."
+        if bool(only_new_clients):
+            cursor.execute(
+                """
+                SELECT COUNT(*)
+                FROM negocio.cita c
+                JOIN negocio.estado_cita ec ON ec.estado_cita_id = c.estado_cita_id
+                WHERE c.cliente_usuario_id = %s
+                  AND LOWER(COALESCE(ec.codigo, '')) NOT IN ('cancelada', 'pago_expirado')
+                """,
+                [cliente_id],
+            )
+            if int((cursor.fetchone() or [0])[0] or 0) > 0:
+                return Decimal("0.00"), None, "La promoción es exclusiva para clientes nuevos."
+
+        numeric_value = self._to_money(value)
+        kind = str(discount_type or "").strip().lower()
+        if kind == "porcentaje" and Decimal("0.00") < numeric_value <= Decimal("100.00"):
+            discount = (base_price * numeric_value / Decimal("100")).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+        elif kind == "monto_fijo" and numeric_value > Decimal("0.00"):
+            discount = min(base_price, numeric_value)
+        else:
+            return Decimal("0.00"), None, "Tipo de promoción no válido para una cita."
+        return discount, int(promo_id), ""
+
     def get(self, request):
         cliente_id = self._resolver_usuario_negocio_id(request)
         if not cliente_id:
@@ -2444,6 +2593,8 @@ class CitasView(APIView):
 
             citas = []
             for row in rows:
+                appointment_date = date.fromisoformat(str(row[4]))
+                cancellation_date, cancellation_days = _cancellation_deadline(appointment_date)
                 citas.append(
                     {
                         "id": int(row[0]),
@@ -2458,6 +2609,8 @@ class CitasView(APIView):
                         "anticipo_pagado": float(Decimal(str(row[9] or "0")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
                         "notas": str(row[10] or ""),
                         "fecha_creacion": row[11].isoformat() if row[11] else "",
+                        "cancelacion_hasta": cancellation_date.isoformat(),
+                        "dias_cancelacion": cancellation_days,
                     }
                 )
 
@@ -2471,38 +2624,41 @@ class CitasView(APIView):
             cliente_id = int(data.get("cliente_id", 0) or 0)
             barbero_id = int(data.get("barbero_id", 0) or 0)
             servicio_id = int(data.get("servicio_id", 0) or 0)
-            duracion_min = int(data.get("duracion_minutos", 0) or 0)
         except (TypeError, ValueError):
-            return Response({"ok": False, "error": "IDs o duración inválidos."}, status=400)
+            return Response({"ok": False, "error": "IDs inválidos."}, status=400)
 
         fecha_str = str(data.get("fecha", "") or "").strip()
         hora_str = str(data.get("hora", "") or "").strip()
         comprobante_pago = str(data.get("comprobante_pago", "") or "").strip()
         notas = str(data.get("notas", "") or "").strip()
         codigo_descuento = str(data.get("codigo_descuento", "") or "").strip().upper()
-        descuento_monto = self._to_money(data.get("descuento_monto", 0))
-        precio_total = self._to_money(data.get("precio_total", 0))
-        anticipo_pagado = self._to_money(data.get("anticipo_pagado", 0))
 
-        if cliente_id <= 0 or barbero_id <= 0 or servicio_id <= 0:
-            return Response({"ok": False, "error": "cliente_id, barbero_id y servicio_id son obligatorios."}, status=400)
-        if duracion_min <= 0:
-            return Response({"ok": False, "error": "duracion_minutos inválida."}, status=400)
-        if precio_total <= Decimal("0.00"):
-            return Response({"ok": False, "error": "precio_total debe ser mayor a cero."}, status=400)
-        if anticipo_pagado < Decimal("0.00") or anticipo_pagado > precio_total:
-            return Response({"ok": False, "error": "anticipo_pagado fuera de rango."}, status=400)
-
+        if barbero_id <= 0 or servicio_id <= 0:
+            return Response({"ok": False, "error": "barbero_id y servicio_id son obligatorios."}, status=400)
         try:
             fecha_obj = date.fromisoformat(fecha_str)
             hora_obj = datetime.strptime(hora_str[:5], "%H:%M").time()
         except ValueError:
             return Response({"ok": False, "error": "Fecha u hora inválida."}, status=400)
 
+        minimum_date, advance_days = _minimum_booking_date(fecha_obj)
+        if fecha_obj < minimum_date:
+            demand = "alta" if fecha_obj.weekday() in HIGH_DEMAND_WEEKDAYS else "baja/media"
+            return Response(
+                {
+                    "ok": False,
+                    "error": (
+                        f"Para demanda {demand} debes reservar con al menos "
+                        f"{advance_days} día(s) de anticipación."
+                    ),
+                    "fecha_minima": minimum_date.isoformat(),
+                },
+                status=422,
+            )
+
         inicio_min = int(hora_obj.hour) * 60 + int(hora_obj.minute)
         if inicio_min % self.SLOT_MINUTES != 0:
             return Response({"ok": False, "error": "Ese horario no está disponible."}, status=400)
-        fin_min = inicio_min + duracion_min
 
         usuario_negocio_id = self._resolver_usuario_negocio_id(request, cliente_id_hint=cliente_id)
         if not usuario_negocio_id:
@@ -2523,6 +2679,7 @@ class CitasView(APIView):
                           AND COALESCE(e.activo, FALSE) = TRUE
                           AND LOWER(COALESCE(r.codigo, '')) = 'barbero'
                         LIMIT 1
+                        FOR UPDATE OF e
                         """,
                         [barbero_id],
                     )
@@ -2548,11 +2705,33 @@ class CitasView(APIView):
                     activo_serv = bool(row_serv[2])
                     if not activo_serv:
                         return Response({"ok": False, "error": "Servicio inactivo."}, status=400)
-                    if duracion_base > 0 and duracion_min != duracion_base:
-                        duracion_min = duracion_base
-                        fin_min = inicio_min + duracion_min
-                    if precio_total > precio_base:
-                        return Response({"ok": False, "error": "precio_total no puede exceder el precio del servicio."}, status=400)
+                    if duracion_base <= 0:
+                        return Response({"ok": False, "error": "El servicio no tiene una duración válida."}, status=409)
+                    # La duración oficial proviene del servicio, nunca del frontend.
+                    duracion_min = duracion_base
+                    fin_min = inicio_min + duracion_min
+                    if precio_base <= Decimal("0.00"):
+                        return Response({"ok": False, "error": "El servicio no tiene un precio válido."}, status=409)
+
+                    descuento_monto, promocion_id, promo_error = self._resolve_service_discount(
+                        cursor, codigo_descuento, precio_base, cliente_id
+                    )
+                    if promo_error:
+                        return Response({"ok": False, "error": promo_error}, status=422)
+                    precio_total = max(Decimal("0.00"), precio_base - descuento_monto).quantize(
+                        Decimal("0.01"), rounding=ROUND_HALF_UP
+                    )
+                    policy = _appointment_policy(cursor, cliente_id)
+                    anticipo_requerido = (
+                        (precio_total * PENALTY_DEPOSIT_PERCENT / Decimal("100")).quantize(
+                            Decimal("0.01"), rounding=ROUND_HALF_UP
+                        )
+                        if policy["requiere_anticipo"]
+                        else Decimal("0.00")
+                    )
+                    monto_restante = (precio_total - anticipo_requerido).quantize(
+                        Decimal("0.01"), rounding=ROUND_HALF_UP
+                    )
 
                     cursor.execute(
                         """
@@ -2655,14 +2834,16 @@ class CitasView(APIView):
                         if inicio_min < c_fin and c_ini < fin_min:
                             return Response({"ok": False, "error": "Ese horario ya está ocupado."}, status=400)
 
+                    desired_state = "esperando_pago" if policy["requiere_anticipo"] else "confirmada"
                     cursor.execute(
                         """
                         SELECT estado_cita_id
                         FROM negocio.estado_cita
-                        WHERE LOWER(COALESCE(codigo, '')) IN ('pendiente', 'confirmada')
-                        ORDER BY CASE WHEN LOWER(codigo) = 'pendiente' THEN 1 ELSE 2 END
+                        WHERE LOWER(COALESCE(codigo, '')) IN (%s, 'pendiente')
+                        ORDER BY CASE WHEN LOWER(codigo) = %s THEN 1 ELSE 2 END
                         LIMIT 1
-                        """
+                        """,
+                        [desired_state, desired_state],
                     )
                     row_estado = cursor.fetchone()
                     if not row_estado:
@@ -2680,6 +2861,30 @@ class CitasView(APIView):
                         }
                         marker = f"[PROMO_CITA]{json.dumps(promo_payload, ensure_ascii=False)}"
                         notas_final = f"{notas_final}\n{marker}".strip() if notas_final else marker
+
+                    policy_payload = {
+                        **policy,
+                        "anticipo_requerido": str(anticipo_requerido),
+                        "monto_restante": str(monto_restante),
+                        "demanda": "alta" if fecha_obj.weekday() in HIGH_DEMAND_WEEKDAYS else "baja_media",
+                        "dias_anticipacion": advance_days,
+                    }
+                    policy_marker = f"[CITA_POLITICA_PAGO]{json.dumps(policy_payload, ensure_ascii=False)}"
+                    notas_final = f"{notas_final}\n{policy_marker}".strip() if notas_final else policy_marker
+
+                    # Revalidación final dentro de la misma transacción. El bloqueo del
+                    # barbero serializa reservas concurrentes para su agenda.
+                    cursor.execute(sql_citas_ocupadas_dia(), [barbero_id, fecha_obj])
+                    for occupied_time, occupied_duration in cursor.fetchall():
+                        if not occupied_time:
+                            continue
+                        occupied_start = int(occupied_time.hour) * 60 + int(occupied_time.minute)
+                        occupied_end = occupied_start + int(occupied_duration or 0)
+                        if inicio_min < occupied_end and occupied_start < fin_min:
+                            return Response(
+                                {"ok": False, "error": "El horario fue ocupado por otra reserva."},
+                                status=409,
+                            )
 
                     cursor.execute(
                         """
@@ -2710,6 +2915,16 @@ class CitasView(APIView):
                         ],
                     )
                     cita_id = int(cursor.fetchone()[0])
+
+                    if promocion_id:
+                        cursor.execute(
+                            """
+                            UPDATE negocio.promocion
+                            SET usos_actuales = COALESCE(usos_actuales, 0) + 1
+                            WHERE promocion_id = %s
+                            """,
+                            [promocion_id],
+                        )
 
                     cursor.execute(
                         """
@@ -2742,7 +2957,8 @@ class CitasView(APIView):
                             hora_guardada=str(row_guardada[1] or ""),
                         )
 
-                    if anticipo_pagado > Decimal("0.00") and comprobante_pago:
+                    anticipo_registrado = Decimal("0.00")
+                    if anticipo_requerido > Decimal("0.00") and comprobante_pago:
                         cursor.execute(
                             """
                             SELECT metodo_pago_id
@@ -2761,8 +2977,9 @@ class CitasView(APIView):
                                 )
                                 VALUES (%s, %s, %s, %s, 'pendiente')
                                 """,
-                                [cita_id, anticipo_pagado, metodo_pago_id, comprobante_pago],
+                                [cita_id, anticipo_requerido, metodo_pago_id, comprobante_pago],
                             )
+                            anticipo_registrado = anticipo_requerido
 
             return Response(
                 {
@@ -2771,7 +2988,13 @@ class CitasView(APIView):
                     "fecha": fecha_str,
                     "hora": hora_str[:5],
                     "precio_total": float(precio_total),
-                    "anticipo_pagado": float(anticipo_pagado),
+                    "descuento": float(descuento_monto),
+                    "requiere_anticipo": bool(policy["requiere_anticipo"]),
+                    "porcentaje_anticipo": int(policy["porcentaje_anticipo"]),
+                    "anticipo_requerido": float(anticipo_requerido),
+                    "anticipo_pagado": float(anticipo_registrado),
+                    "monto_restante": float(monto_restante),
+                    "citas_restantes_penalizacion": int(policy["citas_restantes_penalizacion"]),
                     "comprobante_pago": comprobante_pago,
                 },
                 status=201,
@@ -2781,7 +3004,7 @@ class CitasView(APIView):
 
 
 class SecretariaCitasTransferenciasView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     def _to_money(self, value) -> Decimal:
         try:
@@ -3208,7 +3431,7 @@ class SecretariaCitasTransferenciasView(APIView):
 class SecretariaDashboardView(APIView):
     """Resumen del día para secretaría: mismas reglas de negocio que el panel admin (solo lectura)."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretary]
 
     def _to_money(self, value) -> Decimal:
         try:
@@ -3507,6 +3730,445 @@ class PedidosView(APIView):
         base = str(actual or "").rstrip()
         bloque = f"[{marker}]{json.dumps(payload, ensure_ascii=False)}"
         return f"{base}\n{bloque}".strip() if base else bloque
+
+    def _marker_payloads(self, notes: str | None, marker: str) -> list[dict]:
+        prefix = f"[{marker}]"
+        payloads: list[dict] = []
+        for line in str(notes or "").splitlines():
+            if not line.startswith(prefix):
+                continue
+            try:
+                value = json.loads(line[len(prefix):])
+            except (TypeError, ValueError, json.JSONDecodeError):
+                continue
+            if isinstance(value, dict):
+                payloads.append(value)
+        return payloads
+
+    def _append_structured_note_once(
+        self,
+        notes: str | None,
+        marker: str,
+        payload: dict,
+        identity_fields: tuple[str, ...] = ("reference",),
+    ) -> tuple[str, bool]:
+        for current in self._marker_payloads(notes, marker):
+            if all(str(current.get(field, "")) == str(payload.get(field, "")) for field in identity_fields):
+                return str(notes or ""), False
+        return self._append_nota(notes, marker, payload), True
+
+    def _normalize_clip_status(self, value) -> str:
+        status_value = str(value or "").strip().lower()
+        aliases = {
+            "complete": "completed",
+            "success": "successful",
+            "capture": "captured",
+        }
+        return aliases.get(status_value, status_value)
+
+    def _extract_clip_payment_identity(self, payload: dict) -> dict:
+        data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+        metadata = payload.get("metadata") if isinstance(payload.get("metadata"), dict) else {}
+        data_metadata = data.get("metadata") if isinstance(data.get("metadata"), dict) else {}
+        explicit_payment_request_id = str(
+            payload.get("payment_request_id")
+            or payload.get("paymentRequestId")
+            or data.get("payment_request_id")
+            or data.get("paymentRequestId")
+            or ""
+        ).strip()
+        generic_id = str(payload.get("id") or data.get("id") or "").strip()
+        return {
+            "payment_request_id": explicit_payment_request_id,
+            "transaction_id": str(
+                payload.get("transaction_id")
+                or payload.get("transactionId")
+                or payload.get("payment_id")
+                or data.get("transaction_id")
+                or data.get("transactionId")
+                or data.get("payment_id")
+                or generic_id
+                or ""
+            ).strip(),
+            "receipt_no": str(
+                payload.get("receipt_no")
+                or payload.get("receiptNo")
+                or data.get("receipt_no")
+                or data.get("receiptNo")
+                or ""
+            ).strip(),
+            "reference": str(
+                payload.get("reference")
+                or payload.get("external_reference")
+                or payload.get("customTransactionId")
+                or payload.get("custom_transaction_id")
+                or data.get("reference")
+                or data.get("external_reference")
+                or metadata.get("reference")
+                or data_metadata.get("reference")
+                or ""
+            ).strip(),
+        }
+
+    def _extract_clip_amount(self, payload: dict) -> tuple[Decimal, bool]:
+        data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+        if "amount" in payload and payload.get("amount") is not None:
+            return self._to_money(payload.get("amount")), True
+        if "amount" in data and data.get("amount") is not None:
+            return self._to_money(data.get("amount")), True
+        return Decimal("0.00"), False
+
+    def _register_expected_payment(
+        self,
+        *,
+        tipo: str,
+        target_id: int,
+        reference: str,
+        expected_amount: Decimal,
+        total_amount: Decimal,
+        modo_cobro: str,
+        penalizada: bool,
+        payment_request_id: str = "",
+        receipt_no: str = "",
+        payment_url: str = "",
+    ) -> dict:
+        marker_payload = {
+            "reference": reference,
+            "tipo": tipo,
+            "target_id": int(target_id),
+            "modo_cobro": modo_cobro,
+            "monto_total": str(total_amount),
+            "monto_cobrar": str(expected_amount),
+            "penalizada": bool(penalizada),
+            "payment_request_id": str(payment_request_id or ""),
+            "receipt_no": str(receipt_no or ""),
+            "payment_url": str(payment_url or ""),
+            "estado": "pendiente",
+        }
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                table = "negocio.pedido" if tipo == "pedido" else "negocio.cita"
+                id_column = "pedido_id" if tipo == "pedido" else "cita_id"
+                cursor.execute(
+                    f"SELECT COALESCE(notas, '') FROM {table} WHERE {id_column} = %s FOR UPDATE",
+                    [target_id],
+                )
+                row = cursor.fetchone()
+                if not row:
+                    return {"ok": False, "reason": "not_found"}
+                notes = str(row[0] or "")
+                confirmed = self._marker_payloads(notes, "CLIP_PAGO_CONFIRMADO")
+                if confirmed:
+                    return {"ok": False, "reason": "already_confirmed"}
+                existing = [
+                    item for item in self._marker_payloads(notes, "CLIP_PAGO_REGISTRO")
+                    if str(item.get("reference", "")) == reference
+                ]
+                if existing:
+                    current = existing[-1]
+                    if self._to_money(current.get("monto_cobrar")) != expected_amount:
+                        return {"ok": False, "reason": "amount_conflict"}
+                    current_request_id = str(current.get("payment_request_id", "") or "")
+                    if current_request_id and payment_request_id and current_request_id != payment_request_id:
+                        return {"ok": False, "reason": "identity_conflict"}
+                    if payment_request_id and not current_request_id:
+                        notes = self._append_nota(notes, "CLIP_PAGO_REGISTRO", marker_payload)
+                        cursor.execute(f"UPDATE {table} SET notas = %s WHERE {id_column} = %s", [notes, target_id])
+                else:
+                    notes = self._append_nota(notes, "CLIP_PAGO_REGISTRO", marker_payload)
+                    cursor.execute(f"UPDATE {table} SET notas = %s WHERE {id_column} = %s", [notes, target_id])
+
+                if tipo == "cita":
+                    metodo_pago_id = self._get_pago_tarjeta_id(cursor)
+                    if metodo_pago_id:
+                        cursor.execute(
+                            """
+                            SELECT anticipo_id, monto_anticipo, LOWER(COALESCE(estado_validacion, ''))
+                            FROM negocio.anticipo_cita
+                            WHERE cita_id = %s AND comprobante_url = %s
+                            ORDER BY anticipo_id DESC
+                            LIMIT 1
+                            FOR UPDATE
+                            """,
+                            [target_id, f"clip://{reference}"],
+                        )
+                        advance = cursor.fetchone()
+                        if advance and self._to_money(advance[1]) != expected_amount:
+                            transaction.set_rollback(True)
+                            return {"ok": False, "reason": "advance_amount_conflict"}
+                        if not advance:
+                            cursor.execute(
+                                """
+                                INSERT INTO negocio.anticipo_cita
+                                    (cita_id, monto_anticipo, metodo_pago_id, comprobante_url, estado_validacion)
+                                VALUES (%s, %s, %s, %s, 'pendiente')
+                                """,
+                                [target_id, expected_amount, metodo_pago_id, f"clip://{reference}"],
+                            )
+        return {"ok": True, "reason": "registered", "payload": marker_payload}
+
+    def _process_clip_payment_once(
+        self,
+        *,
+        tipo: str,
+        target_id: int,
+        actor_id: int,
+        reference: str,
+        status_value: str,
+        identity: dict,
+        received_amount: Decimal,
+        amount_present: bool,
+        source: str,
+    ) -> dict:
+        success_codes = {"approved", "paid", "successful", "succeeded", "completed", "captured"}
+        normalized_status = self._normalize_clip_status(status_value)
+        if normalized_status not in success_codes:
+            return {"result": "pending", "reason": "status_not_confirmed"}
+
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                table = "negocio.pedido" if tipo == "pedido" else "negocio.cita"
+                id_column = "pedido_id" if tipo == "pedido" else "cita_id"
+                cursor.execute(
+                    f"SELECT COALESCE(notas, '') FROM {table} WHERE {id_column} = %s FOR UPDATE",
+                    [target_id],
+                )
+                row = cursor.fetchone()
+                if not row:
+                    return {"result": "error", "reason": "not_found"}
+                notes = str(row[0] or "")
+                expected_matches = [
+                    item for item in self._marker_payloads(notes, "CLIP_PAGO_REGISTRO")
+                    if str(item.get("reference", "")) == reference
+                ]
+                if not expected_matches:
+                    return {"result": "suspicious", "reason": "missing_expected_payment"}
+                expected = expected_matches[-1]
+                expected_amount = self._to_money(expected.get("monto_cobrar"))
+                expected_request_id = str(expected.get("payment_request_id", "") or "")
+                incoming_request_id = str(identity.get("payment_request_id", "") or "")
+                incoming_transaction_id = str(identity.get("transaction_id", "") or "")
+                incoming_receipt = str(identity.get("receipt_no", "") or "")
+                provider_reference = str(identity.get("reference", "") or "")
+
+                confirmations = self._marker_payloads(notes, "CLIP_PAGO_CONFIRMADO")
+                same_reference = [item for item in confirmations if str(item.get("reference", "")) == reference]
+                if same_reference:
+                    confirmed = same_reference[-1]
+                    comparable = []
+                    for field in ("payment_request_id", "transaction_id", "receipt_no"):
+                        previous = str(confirmed.get(field, "") or "")
+                        incoming = str(identity.get(field, "") or "")
+                        if previous and incoming:
+                            comparable.append(previous == incoming)
+                    identity_conflict = bool(comparable and not any(comparable))
+                    amount_conflict = amount_present and self._to_money(confirmed.get("monto")) != received_amount
+                    if identity_conflict or amount_conflict:
+                        return {"result": "suspicious", "reason": "confirmed_identity_conflict"}
+                    return {"result": "idempotent", "reason": "already_confirmed", "expected_amount": expected_amount}
+                if confirmations:
+                    return {"result": "suspicious", "reason": "target_already_confirmed"}
+                if expected_request_id and incoming_request_id and expected_request_id != incoming_request_id:
+                    return {"result": "suspicious", "reason": "payment_request_mismatch"}
+                if amount_present:
+                    if received_amount <= 0 or received_amount != expected_amount:
+                        return {"result": "suspicious", "reason": "amount_mismatch"}
+                else:
+                    trusted_identity = bool(
+                        (provider_reference and provider_reference == reference)
+                        or (expected_request_id and incoming_request_id == expected_request_id)
+                    )
+                    if not trusted_identity:
+                        return {"result": "pending", "reason": "amount_unverifiable"}
+                if not (incoming_transaction_id or incoming_request_id or incoming_receipt):
+                    return {"result": "pending", "reason": "missing_payment_identity"}
+
+                if tipo == "pedido":
+                    stock_ok, _stock_error = self._descontar_stock_pedido_si_no_aplicado(
+                        cursor, target_id, actor_id, f"Pago Clip confirmado ({source})"
+                    )
+                    if not stock_ok:
+                        raise DatabaseError("No fue posible aplicar el inventario del pedido pagado")
+                    cursor.execute("SELECT COALESCE(notas, '') FROM negocio.pedido WHERE pedido_id = %s", [target_id])
+                    notes = str((cursor.fetchone() or [""])[0] or "")
+                else:
+                    cursor.execute(
+                        """
+                        SELECT anticipo_id, monto_anticipo, LOWER(COALESCE(estado_validacion, ''))
+                        FROM negocio.anticipo_cita
+                        WHERE cita_id = %s AND comprobante_url = %s
+                        ORDER BY anticipo_id DESC
+                        LIMIT 1
+                        FOR UPDATE
+                        """,
+                        [target_id, f"clip://{reference}"],
+                    )
+                    advance = cursor.fetchone()
+                    if not advance or self._to_money(advance[1]) != expected_amount:
+                        return {"result": "suspicious", "reason": "advance_not_found_or_amount_mismatch"}
+                    if str(advance[2]) != "validado":
+                        cursor.execute(
+                            """
+                            UPDATE negocio.anticipo_cita
+                            SET estado_validacion = 'validado', fecha_validacion = NOW()
+                            WHERE anticipo_id = %s
+                            """,
+                            [int(advance[0])],
+                        )
+                    cursor.execute(
+                        """
+                        SELECT c.estado_cita_id, LOWER(COALESCE(ec.codigo, ''))
+                        FROM negocio.cita c
+                        LEFT JOIN negocio.estado_cita ec ON ec.estado_cita_id = c.estado_cita_id
+                        WHERE c.cita_id = %s
+                        FOR UPDATE OF c
+                        """,
+                        [target_id],
+                    )
+                    appointment = cursor.fetchone()
+                    cursor.execute(
+                        "SELECT estado_cita_id FROM negocio.estado_cita WHERE LOWER(COALESCE(codigo, '')) = 'confirmada' LIMIT 1"
+                    )
+                    confirmed_state = cursor.fetchone()
+                    if appointment and confirmed_state and str(appointment[1]) != "confirmada":
+                        cursor.execute(
+                            "UPDATE negocio.cita SET estado_cita_id = %s WHERE cita_id = %s",
+                            [int(confirmed_state[0]), target_id],
+                        )
+                        cursor.execute(
+                            """
+                            INSERT INTO negocio.cita_estado_historial
+                                (cita_id, estado_cita_id, cambiado_por_usuario_id, motivo)
+                            VALUES (%s, %s, %s, %s)
+                            """,
+                            [target_id, int(confirmed_state[0]), actor_id, f"Pago Clip confirmado ({source})"],
+                        )
+
+                confirmation = {
+                    "reference": reference,
+                    "tipo": tipo,
+                    "target_id": int(target_id),
+                    "payment_request_id": incoming_request_id or expected_request_id,
+                    "transaction_id": incoming_transaction_id,
+                    "receipt_no": incoming_receipt,
+                    "monto": str(expected_amount),
+                    "estado": "pagado",
+                    "status_clip": normalized_status,
+                    "source": source,
+                    "confirmed_at": timezone.now().isoformat(),
+                }
+                notes, _added = self._append_structured_note_once(
+                    notes, "CLIP_PAGO_CONFIRMADO", confirmation, ("reference",)
+                )
+                cursor.execute(f"UPDATE {table} SET notas = %s WHERE {id_column} = %s", [notes, target_id])
+        return {
+            "result": "confirmed",
+            "reason": "processed",
+            "expected_amount": expected_amount,
+            "confirmation": confirmation,
+        }
+
+    def _extract_clip_identifiers(self, payload: dict) -> tuple[str, str]:
+        data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+        payment_request_id = str(
+            payload.get("payment_request_id")
+            or payload.get("paymentRequestId")
+            or payload.get("id")
+            or data.get("payment_request_id")
+            or data.get("id")
+            or ""
+        ).strip()
+        receipt_no = str(
+            payload.get("receipt_no")
+            or payload.get("receiptNo")
+            or data.get("receipt_no")
+            or data.get("receiptNo")
+            or ""
+        ).strip()
+        return payment_request_id, receipt_no
+
+    def _save_external_payment_if_available(
+        self,
+        *,
+        reference_type: str,
+        reference_id: int,
+        payment_request_id: str,
+        receipt_no: str,
+        checkout_url: str,
+        amount: Decimal,
+        state: str,
+        request_payload: dict,
+        response_payload: dict,
+    ) -> bool:
+        """Persiste en negocio.pago_externo cuando la tabla SQL ya existe.
+
+        El proyecto no gestiona todavía esa tabla con migraciones Django. Si el
+        esquema aún no la contiene, las notas estructuradas siguen siendo el
+        fallback compatible y el pago no se confirma por esa ausencia.
+        """
+        try:
+            with transaction.atomic():
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT to_regclass('negocio.pago_externo')")
+                    if not (cursor.fetchone() or [None])[0]:
+                        return False
+                    cursor.execute(
+                        """
+                        SELECT column_name
+                        FROM information_schema.columns
+                        WHERE table_schema = 'negocio' AND table_name = 'pago_externo'
+                        """
+                    )
+                    columns = {str(row[0]) for row in cursor.fetchall()}
+                    values = {
+                        "proveedor": "clip",
+                        "referencia_tipo": reference_type,
+                        "referencia_id": reference_id,
+                        "payment_request_id": payment_request_id or None,
+                        "receipt_no": receipt_no or None,
+                        "checkout_url": checkout_url or None,
+                        "monto": amount,
+                        "moneda": "MXN",
+                        "estado": state,
+                        "request_payload": json.dumps(request_payload, ensure_ascii=False),
+                        "response_payload": json.dumps(response_payload, ensure_ascii=False),
+                    }
+                    selected = [name for name in values if name in columns]
+                    required = {"proveedor", "referencia_tipo", "referencia_id", "monto", "estado"}
+                    if not required.issubset(selected):
+                        return False
+                    existing = None
+                    if "pago_externo_id" in columns:
+                        cursor.execute(
+                            """
+                            SELECT pago_externo_id
+                            FROM negocio.pago_externo
+                            WHERE proveedor = %s AND referencia_tipo = %s AND referencia_id = %s
+                            ORDER BY pago_externo_id DESC
+                            LIMIT 1
+                            FOR UPDATE
+                            """,
+                            ["clip", reference_type, reference_id],
+                        )
+                        existing = cursor.fetchone()
+                    if existing:
+                        mutable = [name for name in selected if name not in {"proveedor", "referencia_tipo", "referencia_id"}]
+                        assignments = ", ".join(f'"{name}" = %s' for name in mutable)
+                        cursor.execute(
+                            f"UPDATE negocio.pago_externo SET {assignments} WHERE pago_externo_id = %s",
+                            [values[name] for name in mutable] + [int(existing[0])],
+                        )
+                    else:
+                        quoted = ", ".join(f'"{name}"' for name in selected)
+                        placeholders = ", ".join(["%s"] * len(selected))
+                        cursor.execute(
+                            f"INSERT INTO negocio.pago_externo ({quoted}) VALUES ({placeholders})",
+                            [values[name] for name in selected],
+                        )
+            return True
+        except DatabaseError:
+            logger.exception("No se pudo persistir pago Clip en negocio.pago_externo")
+            return False
 
     def _get_tipo_movimiento_id(self, cursor, codigo: str) -> int | None:
         cursor.execute(
@@ -4999,6 +5661,16 @@ class ClipPagoIntentarView(APIView):
         except (InvalidOperation, ValueError, TypeError):
             return Decimal("0.00")
 
+    _extract_clip_identifiers = PedidosView._extract_clip_identifiers
+    _save_external_payment_if_available = PedidosView._save_external_payment_if_available
+    _marker_payloads = PedidosView._marker_payloads
+    _append_structured_note_once = PedidosView._append_structured_note_once
+    _normalize_clip_status = PedidosView._normalize_clip_status
+    _extract_clip_payment_identity = PedidosView._extract_clip_payment_identity
+    _extract_clip_amount = PedidosView._extract_clip_amount
+    _register_expected_payment = PedidosView._register_expected_payment
+    _process_clip_payment_once = PedidosView._process_clip_payment_once
+
     def _get_negocio_usuario_id(self, request_user) -> int | None:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -5569,16 +6241,13 @@ class ClipPagoIntentarView(APIView):
             )
 
         tipo = str(data.get("tipo", "")).strip().lower()  # pedido | cita
-        modo_cobro = str(data.get("modo_cobro", "total")).strip().lower()  # total | anticipo_monto | anticipo_porcentaje
-        penalizada = bool(data.get("penalizada", False))
+        # El frontend expresa intención; Django decide siempre modalidad y monto final.
+        modo_cobro = "total"
+        penalizada = False
         card_token_id = str(data.get("card_token_id", "") or "").strip()
 
         if tipo not in {"pedido", "cita"}:
             return Response({"ok": False, "error": "tipo inválido. Usa 'pedido' o 'cita'."}, status=400)
-        if modo_cobro not in {"total", "anticipo_monto", "anticipo_porcentaje"}:
-            return Response({"ok": False, "error": "modo_cobro inválido."}, status=400)
-        if tipo == "pedido" and modo_cobro != "total":
-            return Response({"ok": False, "error": "En pedidos solo se permite cobro total."}, status=400)
 
         negocio_usuario_id = self._get_negocio_usuario_id(request.user)
         if not negocio_usuario_id:
@@ -5600,8 +6269,9 @@ class ClipPagoIntentarView(APIView):
                         return Response({"ok": False, "error": "pedido_id inválido."}, status=400)
                     cursor.execute(
                         """
-                        SELECT p.total
+                        SELECT p.total, COALESCE(p.notas, ''), LOWER(COALESCE(ep.codigo, ''))
                         FROM negocio.pedido p
+                        LEFT JOIN negocio.estado_pedido ep ON ep.estado_pedido_id = p.estado_pedido_id
                         WHERE p.pedido_id = %s
                           AND p.cliente_usuario_id = %s
                         LIMIT 1
@@ -5613,6 +6283,12 @@ class ClipPagoIntentarView(APIView):
                         return Response({"ok": False, "error": "Pedido no encontrado."}, status=404)
                     target_id = pedido_id
                     monto_total = self._to_money(row[0])
+                    existing_notes = str(row[1] or "")
+                    existing_state = str(row[2] or "")
+                    if "[CLIP_PAGO_DIRECTO_OK]" in existing_notes or "[CLIP_WEBHOOK_OK]" in existing_notes:
+                        return Response({"ok": False, "error": "El pedido ya tiene un pago Clip aplicado."}, status=409)
+                    if existing_state in {"confirmado", "pago_validado", "pagado", "entregado"}:
+                        return Response({"ok": False, "error": "El pedido ya se encuentra pagado."}, status=409)
                     monto_cobrar = monto_total
                 else:
                     cita_id = int(data.get("cita_id", 0) or 0)
@@ -5620,7 +6296,13 @@ class ClipPagoIntentarView(APIView):
                         return Response({"ok": False, "error": "cita_id inválido."}, status=400)
                     cursor.execute(
                         """
-                        SELECT c.precio_total
+                        SELECT c.precio_total,
+                               COALESCE((
+                                   SELECT SUM(ac.monto_anticipo)
+                                   FROM negocio.anticipo_cita ac
+                                   WHERE ac.cita_id = c.cita_id
+                                     AND LOWER(COALESCE(ac.estado_validacion, '')) = 'validado'
+                               ), 0)
                         FROM negocio.cita c
                         WHERE c.cita_id = %s
                           AND c.cliente_usuario_id = %s
@@ -5633,49 +6315,18 @@ class ClipPagoIntentarView(APIView):
                         return Response({"ok": False, "error": "Cita no encontrada."}, status=404)
                     target_id = cita_id
                     monto_total = self._to_money(row[0])
-
-                    cursor.execute(
-                        """
-                        SELECT porcentaje_anticipo
-                        FROM negocio.politica_anticipo
-                        ORDER BY politica_anticipo_id DESC
-                        LIMIT 1
-                        """
-                    )
-                    row_pol = cursor.fetchone()
-                    porcentaje_penalizacion = self._to_money(row_pol[0] if row_pol else 0)
-
-                    if modo_cobro == "total":
-                        monto_cobrar = monto_total
-                    elif modo_cobro == "anticipo_monto":
-                        monto_cobrar = self._to_money(data.get("anticipo_monto", 0))
-                    else:
-                        porcentaje = int(data.get("anticipo_porcentaje", 0) or 0)
-                        if porcentaje <= 0 or porcentaje > 100 or (porcentaje % 10 != 0):
-                            return Response(
-                                {"ok": False, "error": "anticipo_porcentaje debe ser múltiplo de 10 entre 10 y 100."},
-                                status=400,
-                            )
-                        monto_cobrar = self._to_money((monto_total * Decimal(porcentaje)) / Decimal("100"))
-
-                    if monto_cobrar < Decimal("1.00") or monto_cobrar > monto_total:
-                        return Response(
-                            {"ok": False, "error": "El anticipo debe estar entre $1.00 y el total de la cita."},
-                            status=400,
+                    policy = _appointment_policy(cursor, negocio_usuario_id, exclude_cita_id=cita_id)
+                    penalizada = bool(policy["penalizado"])
+                    if policy["requiere_anticipo"]:
+                        modo_cobro = "anticipo_porcentaje"
+                        monto_cobrar = self._to_money(
+                            monto_total * PENALTY_DEPOSIT_PERCENT / Decimal("100")
                         )
-
-                    if penalizada and modo_cobro != "total":
-                        minimo_penalizacion = self._to_money((monto_total * porcentaje_penalizacion) / Decimal("100"))
-                        if monto_cobrar < minimo_penalizacion:
-                            return Response(
-                                {
-                                    "ok": False,
-                                    "error": (
-                                        f"Por penalización el anticipo mínimo es ${minimo_penalizacion} MXN."
-                                    ),
-                                },
-                                status=400,
-                            )
+                    else:
+                        modo_cobro = "total"
+                        monto_cobrar = monto_total
+                    if self._to_money(row[1]) >= monto_cobrar:
+                        return Response({"ok": False, "error": "La cita ya tiene cubierto el monto requerido."}, status=409)
         except (ValueError, TypeError):
             return Response({"ok": False, "error": "Datos inválidos para generar pago Clip."}, status=400)
         except DatabaseError:
@@ -5717,6 +6368,20 @@ class ClipPagoIntentarView(APIView):
         # Flujo recomendado de Clip Checkout Transparente:
         # frontend tokeniza tarjeta con clip-sdk.js y backend cobra con /payments.
         if card_token_id:
+            expected_registration = self._register_expected_payment(
+                tipo=tipo,
+                target_id=int(target_id),
+                reference=referencia,
+                expected_amount=monto_cobrar,
+                total_amount=monto_total,
+                modo_cobro=modo_cobro,
+                penalizada=penalizada,
+            )
+            if not expected_registration.get("ok"):
+                return Response(
+                    {"ok": False, "error": "No fue posible registrar de forma segura el pago esperado."},
+                    status=409,
+                )
             api_key_public = self._clip_api_key_public(clip_cfg)
             api_key_sec, api_secret_sec = self._clip_resolve_api_credentials(clip_cfg)
             auth_token = self._normalize_clip_auth_token(str(clip_cfg.get("clip_auth_token", "") or "").strip())
@@ -5885,9 +6550,6 @@ class ClipPagoIntentarView(APIView):
                                 paid_ok = bool(
                                     status_raw
                                     in {"approved", "paid", "successful", "succeeded", "completed", "captured"}
-                                    or payments_response.get("ok") is True
-                                    or (payments_response.get("data") or {}).get("id")
-                                    or payments_response.get("id")
                                 )
                                 if paid_ok:
                                     break
@@ -5915,84 +6577,82 @@ class ClipPagoIntentarView(APIView):
                     {
                         "ok": False,
                         "error": "No se pudo completar el cobro con Checkout Transparente.",
-                        "clip_error": detalle,
                     },
                     status=502,
                 )
 
-            payment_id = str(
-                payments_response.get("id")
-                or (payments_response.get("data") or {}).get("id")
-                or ""
-            ).strip()
-            success_status = str(
+            identity = self._extract_clip_payment_identity(payments_response)
+            response_amount, amount_present = self._extract_clip_amount(payments_response)
+            success_status = self._normalize_clip_status(
                 payments_response.get("status")
                 or (payments_response.get("data") or {}).get("status")
-                or "approved"
-            ).strip().lower()
-
+            )
             try:
-                with transaction.atomic():
-                    marker_payload = {
-                        "reference": referencia,
-                        "tipo": tipo,
-                        "target_id": target_id,
-                        "monto_total": str(monto_total),
-                        "monto_cobrar": str(monto_cobrar),
-                        "clip_payment_id": payment_id,
-                        "clip_status": success_status,
-                    }
-                    self._registrar_nota_clip(tipo, target_id, "CLIP_PAGO_DIRECTO_OK", marker_payload)
-
-                    if tipo == "pedido":
-                        with connection.cursor() as cursor:
-                            stock_ok, stock_error = self._descontar_stock_pedido_si_no_aplicado(
-                                cursor=cursor,
-                                pedido_id=int(target_id),
-                                usuario_id=int(negocio_usuario_id),
-                                motivo="pago_clip_directo_aprobado",
-                            )
-                            if not stock_ok:
-                                return Response(
-                                    {
-                                        "ok": False,
-                                        "error": (
-                                            "Pago aprobado, pero no se pudo aplicar inventario local del pedido. "
-                                            "Contacta a administración para validación manual."
-                                        ),
-                                        "clip_error": stock_error,
-                                    },
-                                    status=409,
-                                )
-                    elif tipo == "cita":
-                        with connection.cursor() as cursor:
-                            metodo_pago_tarjeta_id = self._get_pago_tarjeta_id(cursor)
-                            if metodo_pago_tarjeta_id:
-                                cursor.execute(
-                                    """
-                                    INSERT INTO negocio.anticipo_cita (
-                                        cita_id, monto_anticipo, metodo_pago_id, comprobante_url, estado_validacion, fecha_validacion
-                                    )
-                                    VALUES (%s, %s, %s, %s, 'validado', NOW())
-                                    """,
-                                    [target_id, monto_cobrar, metodo_pago_tarjeta_id, f"clip://{payment_id or referencia}"],
-                                )
+                processing = self._process_clip_payment_once(
+                    tipo=tipo,
+                    target_id=int(target_id),
+                    actor_id=int(negocio_usuario_id),
+                    reference=referencia,
+                    status_value=success_status,
+                    identity=identity,
+                    received_amount=response_amount,
+                    amount_present=amount_present,
+                    source="consulta_directa",
+                )
             except DatabaseError:
-                return Response({"ok": False, "error": "Pago cobrado, pero no se pudo registrar en la BD local."}, status=500)
+                logger.exception("No se pudo aplicar localmente un pago directo Clip confirmado")
+                return Response(
+                    {"ok": False, "error": "No fue posible registrar el pago de forma segura."},
+                    status=500,
+                )
 
+            processing_result = str(processing.get("result", ""))
+            internal_state = "pagado" if processing_result in {"confirmed", "idempotent"} else "pendiente_conciliacion"
+            payment_request_id = str(identity.get("payment_request_id", "") or "")
+            transaction_id = str(identity.get("transaction_id", "") or "")
+            receipt_no = str(identity.get("receipt_no", "") or "")
+            self._save_external_payment_if_available(
+                reference_type=tipo,
+                reference_id=int(target_id),
+                payment_request_id=payment_request_id,
+                receipt_no=receipt_no,
+                checkout_url="",
+                amount=monto_cobrar,
+                state=internal_state,
+                request_payload={"reference": referencia, "tipo": tipo, "target_id": target_id},
+                response_payload=payments_response,
+            )
+            if processing_result == "suspicious":
+                logger.warning("Pago directo Clip inconsistente: reference=%s reason=%s", referencia, processing.get("reason"))
+                return Response({"ok": False, "error": "El pago requiere revisión manual."}, status=409)
+            if processing_result == "pending":
+                logger.warning("Pago directo Clip pendiente de conciliación: reference=%s reason=%s", referencia, processing.get("reason"))
+                return Response(
+                    {
+                        "ok": True,
+                        "provider": "clip",
+                        "reference": referencia,
+                        "estado_pago": "pendiente_conciliacion",
+                        "mensaje": "El pago está pendiente de conciliación.",
+                    },
+                    status=202,
+                )
             return Response(
                 {
                     "ok": True,
                     "provider": "clip",
                     "pago_directo": True,
                     "reference": referencia,
-                    "clip_payment_id": payment_id,
-                    "estado_pago": success_status or "approved",
+                    "payment_request_id": payment_request_id,
+                    "transaction_id": transaction_id,
+                    "receipt_no": receipt_no,
+                    "estado_pago": "pagado",
                     "monto_total": float(monto_total),
                     "monto_cobrar": float(monto_cobrar),
                     "tipo": tipo,
                     "modo_cobro": modo_cobro,
                     "penalizada": penalizada,
+                    "idempotente": processing_result == "idempotent",
                 }
             )
 
@@ -6234,53 +6894,50 @@ class ClipPagoIntentarView(APIView):
                         "No se pudo generar URL de pago en Clip con monto dinámico. "
                         "Revisa credenciales/endpoint de Clip y la configuración del backend."
                     ),
-                    "clip_error": clip_error_detail,
                 },
                 status=502,
             )
 
+        payment_request_id, receipt_no = self._extract_clip_identifiers(clip_response)
         try:
-            with transaction.atomic():
-                with connection.cursor() as cursor:
-                    marker_payload = {
-                        "reference": referencia,
-                        "tipo": tipo,
-                        "target_id": target_id,
-                        "modo_cobro": modo_cobro,
-                        "monto_total": str(monto_total),
-                        "monto_cobrar": str(monto_cobrar),
-                        "penalizada": penalizada,
-                    }
-                    if tipo == "pedido":
-                        cursor.execute("SELECT COALESCE(notas, '') FROM negocio.pedido WHERE pedido_id = %s", [target_id])
-                        row = cursor.fetchone()
-                        notas = self._append_nota((row[0] if row else ""), "CLIP_INTENTO", marker_payload)
-                        cursor.execute("UPDATE negocio.pedido SET notas = %s WHERE pedido_id = %s", [notas, target_id])
-                    else:
-                        cursor.execute("SELECT COALESCE(notas, '') FROM negocio.cita WHERE cita_id = %s", [target_id])
-                        row = cursor.fetchone()
-                        notas = self._append_nota((row[0] if row else ""), "CLIP_INTENTO", marker_payload)
-                        cursor.execute("UPDATE negocio.cita SET notas = %s WHERE cita_id = %s", [notas, target_id])
-
-                        metodo_pago_tarjeta_id = self._get_pago_tarjeta_id(cursor)
-                        if metodo_pago_tarjeta_id:
-                            cursor.execute(
-                                """
-                                INSERT INTO negocio.anticipo_cita (
-                                    cita_id, monto_anticipo, metodo_pago_id, comprobante_url, estado_validacion
-                                )
-                                VALUES (%s, %s, %s, %s, 'pendiente')
-                                """,
-                                [target_id, monto_cobrar, metodo_pago_tarjeta_id, f"clip://{referencia}"],
-                            )
+            registration = self._register_expected_payment(
+                tipo=tipo,
+                target_id=int(target_id),
+                reference=referencia,
+                expected_amount=monto_cobrar,
+                total_amount=monto_total,
+                modo_cobro=modo_cobro,
+                penalizada=penalizada,
+                payment_request_id=payment_request_id,
+                receipt_no=receipt_no,
+                payment_url=payment_url,
+            )
         except DatabaseError:
-            return Response({"ok": False, "error": "No se pudo registrar el intento de pago."}, status=500)
+            logger.exception("No se pudo registrar el pago esperado de Clip")
+            return Response({"ok": False, "error": "No fue posible registrar el intento de pago."}, status=500)
+        if not registration.get("ok"):
+            logger.warning("Registro esperado Clip rechazado: reference=%s reason=%s", referencia, registration.get("reason"))
+            return Response({"ok": False, "error": "El pago no pudo registrarse de forma consistente."}, status=409)
+
+        self._save_external_payment_if_available(
+            reference_type=tipo,
+            reference_id=int(target_id),
+            payment_request_id=payment_request_id,
+            receipt_no=receipt_no,
+            checkout_url=payment_url,
+            amount=monto_cobrar,
+            state="pendiente",
+            request_payload={"reference": referencia, "tipo": tipo, "target_id": target_id},
+            response_payload=clip_response,
+        )
 
         return Response(
             {
                 "ok": True,
                 "provider": "clip",
                 "reference": referencia,
+                "payment_request_id": payment_request_id,
+                "receipt_no": receipt_no,
                 "payment_url": payment_url,
                 "monto_total": float(monto_total),
                 "monto_cobrar": float(monto_cobrar),
@@ -6294,7 +6951,7 @@ class ClipPagoIntentarView(APIView):
 class ClipWebhookView(APIView):
     permission_classes = [AllowAny]
 
-    SUCCESS_CODES = {"approved", "paid", "successful", "succeeded", "completed"}
+    SUCCESS_CODES = {"approved", "paid", "successful", "succeeded", "completed", "captured"}
 
     def _to_money(self, value) -> Decimal:
         try:
@@ -6338,7 +6995,8 @@ class ClipWebhookView(APIView):
     def _validate_signature(self, request) -> bool:
         secret = str(getattr(settings, "CLIP_WEBHOOK_SECRET", "") or "").strip()
         if not secret:
-            return True
+            logger.error("Webhook Clip rechazado: CLIP_WEBHOOK_SECRET no configurado")
+            return False
 
         header_name = str(getattr(settings, "CLIP_WEBHOOK_SIGNATURE_HEADER", "X-Clip-Signature") or "X-Clip-Signature")
         header_key = f"HTTP_{header_name.upper().replace('-', '_')}"
@@ -6355,6 +7013,38 @@ class ClipWebhookView(APIView):
         bloque = f"[{marker}]{json.dumps(payload, ensure_ascii=False)}"
         return f"{base}\n{bloque}".strip() if base else bloque
 
+    def _marker_payloads(self, notes: str | None, marker: str) -> list[dict]:
+        prefix = f"[{marker}]"
+        result: list[dict] = []
+        for line in str(notes or "").splitlines():
+            if not line.startswith(prefix):
+                continue
+            try:
+                value = json.loads(line[len(prefix):])
+            except (TypeError, ValueError, json.JSONDecodeError):
+                continue
+            if isinstance(value, dict):
+                result.append(value)
+        return result
+
+    def _expected_payment(self, notes: str | None, reference: str) -> dict | None:
+        matches = [
+            item for item in self._marker_payloads(notes, "CLIP_PAGO_REGISTRO")
+            if str(item.get("reference", "")) == reference
+        ]
+        return matches[-1] if matches else None
+
+    def _already_applied(self, notes: str | None, reference: str, transaction_id: str) -> bool:
+        for item in self._marker_payloads(notes, "CLIP_WEBHOOK_OK"):
+            if str(item.get("reference", "")) != reference:
+                continue
+            existing_id = str(item.get("transaction_id", "") or "")
+            if transaction_id and existing_id == transaction_id:
+                return True
+            if not transaction_id:
+                return True
+        return False
+
     def post(self, request):
         if not self._validate_signature(request):
             return Response({"ok": False, "error": "Firma de webhook inválida."}, status=401)
@@ -6364,11 +7054,19 @@ class ClipWebhookView(APIView):
         except Exception:
             payload = request.data if isinstance(request.data, dict) else {}
 
-        status, reference, transaction_id, amount = self._extract_clip_event(payload)
+        processor = ClipPagoIntentarView()
+        identity = processor._extract_clip_payment_identity(payload)
+        amount, amount_present = processor._extract_clip_amount(payload)
+        status_value = processor._normalize_clip_status(
+            payload.get("status")
+            or payload.get("event")
+            or payload.get("type")
+            or (payload.get("data") or {}).get("status")
+        )
+        reference = str(identity.get("reference", "") or "")
         if not reference:
             return Response({"ok": False, "error": "Webhook sin referencia."}, status=400)
-
-        if status not in self.SUCCESS_CODES:
+        if status_value not in self.SUCCESS_CODES:
             return Response({"ok": True, "mensaje": "Evento recibido, sin acción por estado."})
 
         parts = reference.split("-")
@@ -6381,50 +7079,56 @@ class ClipWebhookView(APIView):
         except (TypeError, ValueError):
             return Response({"ok": False, "error": "Referencia inválida."}, status=400)
 
-        webhook_note = {
-            "reference": reference,
-            "status": status,
-            "transaction_id": transaction_id,
-            "amount": str(amount),
-            "at": timezone.now().isoformat(),
-        }
-
+        tipo = "pedido" if tipo_tag == "PED" else "cita" if tipo_tag == "CIT" else ""
+        if not tipo:
+            return Response({"ok": True, "mensaje": "Tipo de referencia no administrado."})
         try:
-            with transaction.atomic():
-                with connection.cursor() as cursor:
-                    if tipo_tag == "PED":
-                        cursor.execute("SELECT COALESCE(notas, '') FROM negocio.pedido WHERE pedido_id = %s", [target_id])
-                        row = cursor.fetchone()
-                        if not row:
-                            return Response({"ok": False, "error": "Pedido no encontrado para referencia."}, status=404)
-                        notas = self._append_nota(row[0], "CLIP_WEBHOOK_OK", webhook_note)
-                        cursor.execute("UPDATE negocio.pedido SET notas = %s WHERE pedido_id = %s", [notas, target_id])
-                    elif tipo_tag == "CIT":
-                        cursor.execute("SELECT COALESCE(notas, '') FROM negocio.cita WHERE cita_id = %s", [target_id])
-                        row = cursor.fetchone()
-                        if not row:
-                            return Response({"ok": False, "error": "Cita no encontrada para referencia."}, status=404)
-                        notas = self._append_nota(row[0], "CLIP_WEBHOOK_OK", webhook_note)
-                        cursor.execute("UPDATE negocio.cita SET notas = %s WHERE cita_id = %s", [notas, target_id])
-
-                        # Si había anticipo pendiente creado desde el intento Clip, márcalo como validado.
-                        cursor.execute(
-                            """
-                            UPDATE negocio.anticipo_cita ac
-                            SET estado_validacion = 'validado',
-                                fecha_validacion = NOW()
-                            WHERE ac.cita_id = %s
-                              AND ac.estado_validacion = 'pendiente'
-                              AND ac.comprobante_url = %s
-                            """,
-                            [target_id, f"clip://{reference}"],
-                        )
-                    else:
-                        return Response({"ok": True, "mensaje": "Tipo de referencia no administrado."})
+            with connection.cursor() as cursor:
+                table = "negocio.pedido" if tipo == "pedido" else "negocio.cita"
+                id_column = "pedido_id" if tipo == "pedido" else "cita_id"
+                cursor.execute(f"SELECT cliente_usuario_id FROM {table} WHERE {id_column} = %s", [target_id])
+                owner_row = cursor.fetchone()
+            if not owner_row:
+                return Response({"ok": False, "error": "Referencia de pago no encontrada."}, status=404)
+            processing = processor._process_clip_payment_once(
+                tipo=tipo,
+                target_id=target_id,
+                actor_id=int(owner_row[0]),
+                reference=reference,
+                status_value=status_value,
+                identity=identity,
+                received_amount=amount,
+                amount_present=amount_present,
+                source="webhook",
+            )
         except DatabaseError:
+            logger.exception("No se pudo procesar webhook Clip")
             return Response({"ok": False, "error": "No se pudo aplicar webhook de Clip."}, status=500)
 
-        return Response({"ok": True, "mensaje": "Webhook aplicado correctamente."})
+        result = str(processing.get("result", ""))
+        if result == "idempotent":
+            return Response({"ok": True, "mensaje": "Webhook ya procesado.", "idempotente": True})
+        if result == "suspicious":
+            logger.warning("Webhook Clip inconsistente: reference=%s reason=%s", reference, processing.get("reason"))
+            return Response({"ok": False, "error": "El evento de pago no coincide con el registro esperado."}, status=409)
+        if result == "pending":
+            logger.warning("Webhook Clip pendiente de conciliación: reference=%s reason=%s", reference, processing.get("reason"))
+            return Response({"ok": True, "mensaje": "Evento recibido y pendiente de conciliación."}, status=202)
+        if result != "confirmed":
+            return Response({"ok": False, "error": "No fue posible procesar el evento de pago."}, status=404)
+
+        processor._save_external_payment_if_available(
+            reference_type=tipo,
+            reference_id=target_id,
+            payment_request_id=str(identity.get("payment_request_id", "") or ""),
+            receipt_no=str(identity.get("receipt_no", "") or ""),
+            checkout_url="",
+            amount=processing.get("expected_amount") or amount,
+            state="pagado",
+            request_payload={"reference": reference, "source": "webhook"},
+            response_payload=payload,
+        )
+        return Response({"ok": True, "mensaje": "Webhook aplicado correctamente.", "idempotente": False})
 
 
 class PromocionValidarView(APIView):

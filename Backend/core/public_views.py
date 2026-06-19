@@ -14,7 +14,6 @@ def db_structure_error_response(error: Exception):
                 "Ejecuta el modelo SQL definido en MODELO_BD_STYLO_BARBER_CONNECT (1).md / "
                 "STYLO_BARBER_CONNECT_EJECUTAR.md en PostgreSQL y vuelve a intentar."
             ),
-            "error": str(error),
         },
         status=503,
     )
