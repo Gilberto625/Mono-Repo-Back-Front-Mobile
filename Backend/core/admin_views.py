@@ -2796,8 +2796,9 @@ class AdminEmpleadosView(APIView):
                 return Response({"ok": True, "empleado": self._serialize_empleado(row)})
         except DatabaseError as exc:
             return db_structure_error_response(exc)
-        except Exception as exc:
-            return Response({"ok": False, "error": str(exc)}, status=400)
+        except Exception:
+            logger.exception("No se pudo consultar el empleado")
+            return Response({"ok": False, "error": "No fue posible completar la operación."}, status=400)
 
 
 class AdminEmpleadoDetalleView(AdminEmpleadosView):
@@ -3073,8 +3074,9 @@ class AdminEmpleadoDetalleView(AdminEmpleadosView):
                 return self.get(request, empleado_id)
         except DatabaseError as exc:
             return db_structure_error_response(exc)
-        except Exception as exc:
-            return Response({"ok": False, "error": str(exc)}, status=400)
+        except Exception:
+            logger.exception("No se pudo actualizar el empleado")
+            return Response({"ok": False, "error": "No fue posible completar la operación."}, status=400)
 
     def delete(self, request, empleado_id: int):
         if not self._is_admin_or_secretaria(request):
@@ -3569,8 +3571,9 @@ class AdminConfiguracionView(APIView):
                     "costos_envio.paqueteria",
                 ),
             }
-        except ValueError as exc:
-            return Response({"detail": str(exc)}, status=400)
+        except ValueError:
+            logger.exception("Configuración administrativa inválida")
+            return Response({"detail": "La configuración contiene valores inválidos."}, status=400)
 
         if paqueterias_disponibles_raw is not None and not isinstance(paqueterias_disponibles_raw, (list, str)):
             return Response({"detail": "paqueterias_disponibles debe ser lista o texto."}, status=400)
@@ -5612,8 +5615,9 @@ class AdminServiciosView(APIView):
             detalle = self._get_servicio_base(servicio_id) or {"id": servicio_id}
             detalle.update(self._build_detalle_relaciones(servicio_id))
             return Response({"ok": True, "mensaje": "Servicio creado correctamente.", "servicio": detalle})
-        except ValueError as exc:
-            return Response({"ok": False, "error": str(exc)}, status=400)
+        except ValueError:
+            logger.exception("Datos inválidos al crear servicio")
+            return Response({"ok": False, "error": "Los datos del servicio son inválidos."}, status=400)
         except DatabaseError as exc:
             return db_structure_error_response(exc)
 
@@ -5714,8 +5718,9 @@ class AdminServicioDetalleView(AdminServiciosView):
             base = self._get_servicio_base(servicio_id) or {"id": servicio_id}
             base.update(self._build_detalle_relaciones(servicio_id))
             return Response({"ok": True, "mensaje": "Servicio actualizado correctamente.", "servicio": base})
-        except ValueError as exc:
-            return Response({"ok": False, "error": str(exc)}, status=400)
+        except ValueError:
+            logger.exception("Datos inválidos al actualizar servicio")
+            return Response({"ok": False, "error": "Los datos del servicio son inválidos."}, status=400)
         except DatabaseError as exc:
             return db_structure_error_response(exc)
 
@@ -5737,7 +5742,8 @@ class AdminServicioDetalleView(AdminServiciosView):
             if not row:
                 return Response({"ok": False, "error": "Servicio no encontrado."}, status=404)
             return Response({"ok": True, "mensaje": "Servicio eliminado correctamente."})
-        except DatabaseError as exc:
+        except DatabaseError:
+            logger.exception("No se pudo eliminar el servicio por relaciones existentes")
             return Response(
                 {
                     "ok": False,
@@ -5745,7 +5751,6 @@ class AdminServicioDetalleView(AdminServiciosView):
                         "No se puede eliminar el servicio porque está relacionado con otros registros "
                         "(por ejemplo citas o ventas). Puedes desactivarlo en su lugar."
                     ),
-                    "detail": str(exc),
                 },
                 status=409,
             )
@@ -6450,7 +6455,8 @@ class AdminProductoDetalleView(AdminProductosView):
             if not row:
                 return Response({"ok": False, "error": "Producto no encontrado."}, status=404)
             return Response({"ok": True, "mensaje": "Producto eliminado correctamente."})
-        except DatabaseError as exc:
+        except DatabaseError:
+            logger.exception("No se pudo eliminar el producto por relaciones existentes")
             return Response(
                 {
                     "ok": False,
@@ -6458,7 +6464,6 @@ class AdminProductoDetalleView(AdminProductosView):
                         "No se puede eliminar el producto porque está relacionado con otros registros "
                         "(por ejemplo ventas, pedidos o inventario). Puedes desactivarlo en su lugar."
                     ),
-                    "detail": str(exc),
                 },
                 status=409,
             )
@@ -6970,8 +6975,9 @@ class AdminLogoUploadView(APIView):
                     "public_id": result.get("public_id"),
                 }
             )
-        except Exception as exc:
-            return Response({"detail": f"No se pudo subir el logo a Cloudinary: {exc}"}, status=502)
+        except Exception:
+            logger.exception("No se pudo subir el logo administrativo")
+            return Response({"detail": "No se pudo subir el logo."}, status=502)
 
 
 class AdminRespaldoDBView(APIView):
@@ -7533,8 +7539,9 @@ class AdminRespaldoDBView(APIView):
             return Response({"ok": False, "error": "Acción no soportada."}, status=400)
         except DatabaseError as exc:
             return db_structure_error_response(exc)
-        except Exception as exc:
-            return Response({"ok": False, "error": str(exc)}, status=500)
+        except Exception:
+            logger.exception("No se pudo consultar el estado de respaldos")
+            return Response({"ok": False, "error": "No fue posible completar la operación."}, status=500)
 
     def post(self, request):
         if not self._is_admin(request):
@@ -7574,12 +7581,13 @@ class AdminRespaldoDBView(APIView):
                 zip_path, zip_name, size = self._crear_respaldo_completo_zip()
                 self._registrar_respaldo_historial(request, zip_name, size)
                 return self._file_response_zip_delete_after(zip_path, zip_name, size)
-            except RuntimeError as exc:
-                return Response({"ok": False, "error": str(exc)}, status=500)
-            except Exception as exc:
+            except RuntimeError:
+                logger.exception("No se pudo crear el respaldo completo")
+                return Response({"ok": False, "error": "No fue posible generar el respaldo."}, status=500)
+            except Exception:
                 logger.exception("respaldo BD completo")
                 return Response(
-                    {"ok": False, "error": f"No se pudo completar el respaldo: {exc}"},
+                    {"ok": False, "error": "No fue posible generar el respaldo."},
                     status=500,
                 )
 
@@ -7589,12 +7597,13 @@ class AdminRespaldoDBView(APIView):
                 zip_path, zip_name, size = self._crear_respaldo_logico_zip(kind)
                 self._registrar_respaldo_historial(request, zip_name, size)
                 return self._file_response_zip_delete_after(zip_path, zip_name, size)
-            except RuntimeError as exc:
-                return Response({"ok": False, "error": str(exc)}, status=500)
-            except Exception as exc:
+            except RuntimeError:
+                logger.exception("No se pudo crear el respaldo lógico")
+                return Response({"ok": False, "error": "No fue posible generar el respaldo."}, status=500)
+            except Exception:
                 logger.exception("respaldo BD lógico kind=%s", kind)
                 return Response(
-                    {"ok": False, "error": f"No se pudo completar el respaldo lógico: {exc}"},
+                    {"ok": False, "error": "No fue posible generar el respaldo."},
                     status=500,
                 )
 
@@ -7653,8 +7662,9 @@ class AdminRespaldoDBView(APIView):
             )
         except DatabaseError as exc:
             return db_structure_error_response(exc)
-        except Exception as exc:
-            return Response({"ok": False, "error": f"No se pudo generar el respaldo: {exc}"}, status=500)
+        except Exception:
+            logger.exception("No se pudo generar el respaldo seleccionado")
+            return Response({"ok": False, "error": "No fue posible generar el respaldo."}, status=500)
 
 
 class AdminMonitoreoBDView(APIView):
@@ -7834,5 +7844,6 @@ class AdminMonitoreoBDView(APIView):
             )
         except DatabaseError as exc:
             return db_structure_error_response(exc)
-        except Exception as exc:
-            return Response({"ok": False, "error": str(exc)}, status=500)
+        except Exception:
+            logger.exception("No se pudo consultar el monitoreo de base de datos")
+            return Response({"ok": False, "error": "No fue posible consultar el monitoreo."}, status=500)

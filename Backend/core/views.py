@@ -360,8 +360,9 @@ class PerfilAvatarUploadView(APIView):
                     "public_id": result.get("public_id"),
                 }
             )
-        except Exception as exc:
-            return Response({"ok": False, "error": f"No se pudo subir la imagen: {exc}"}, status=502)
+        except Exception:
+            logger.exception("No se pudo subir el avatar de perfil")
+            return Response({"ok": False, "error": "No se pudo subir la imagen."}, status=502)
 
 
 class ClienteComprobanteUploadView(APIView):
@@ -406,8 +407,9 @@ class ClienteComprobanteUploadView(APIView):
                     "public_id": result.get("public_id"),
                 }
             )
-        except Exception as exc:
-            return Response({"ok": False, "error": f"No se pudo subir la imagen: {exc}"}, status=502)
+        except Exception:
+            logger.exception("No se pudo subir el comprobante del cliente")
+            return Response({"ok": False, "error": "No se pudo subir la imagen."}, status=502)
 
 
 class Perfil2FAPreferenciaView(APIView):
@@ -2095,7 +2097,10 @@ class ClienteDashboardStatsView(APIView):
                                 AND (
                                     (
                                         LOWER(COALESCE(mp.codigo, '')) = 'tarjeta'
-                                        AND COALESCE(p.notas, '') ILIKE '%%[CLIP_PAGO_DIRECTO_OK]%%'
+                                        AND (
+                                            COALESCE(p.notas, '') ILIKE '%%[CLIP_PAGO_DIRECTO_OK]%%'
+                                            OR COALESCE(p.notas, '') ILIKE '%%[CLIP_PAGO_CONFIRMADO]%%'
+                                        )
                                     )
                                     OR (
                                         LOWER(COALESCE(mp.codigo, '')) = 'transferencia'
@@ -3501,7 +3506,10 @@ class SecretariaDashboardView(APIView):
                                 AND (
                                     (
                                         LOWER(COALESCE(mp.codigo, '')) = 'tarjeta'
-                                        AND COALESCE(p.notas, '') ILIKE '%%[CLIP_PAGO_DIRECTO_OK]%%'
+                                        AND (
+                                            COALESCE(p.notas, '') ILIKE '%%[CLIP_PAGO_DIRECTO_OK]%%'
+                                            OR COALESCE(p.notas, '') ILIKE '%%[CLIP_PAGO_CONFIRMADO]%%'
+                                        )
                                     )
                                     OR (
                                         LOWER(COALESCE(mp.codigo, '')) = 'transferencia'
@@ -3818,6 +3826,61 @@ class PedidosView(APIView):
             return self._to_money(data.get("amount")), True
         return Decimal("0.00"), False
 
+    def _active_expected_payment(self, tipo: str, target_id: int, expected_amount: Decimal) -> dict | None:
+        table = "negocio.pedido" if tipo == "pedido" else "negocio.cita"
+        id_column = "pedido_id" if tipo == "pedido" else "cita_id"
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT COALESCE(notas, '') FROM {table} WHERE {id_column} = %s", [target_id])
+            row = cursor.fetchone()
+        if not row:
+            return None
+        notes = str(row[0] or "")
+        confirmed_refs = {
+            str(item.get("reference", ""))
+            for item in self._marker_payloads(notes, "CLIP_PAGO_CONFIRMADO")
+        }
+        closed_refs = {
+            str(item.get("reference", ""))
+            for item in self._marker_payloads(notes, "CLIP_PAGO_CERRADO")
+        }
+        for item in reversed(self._marker_payloads(notes, "CLIP_PAGO_REGISTRO")):
+            reference = str(item.get("reference", ""))
+            if not reference or reference in confirmed_refs or reference in closed_refs:
+                continue
+            if self._to_money(item.get("monto_cobrar")) == expected_amount:
+                return item
+        return None
+
+    def _close_expected_payment(self, tipo: str, target_id: int, reference: str, reason: str) -> None:
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                table = "negocio.pedido" if tipo == "pedido" else "negocio.cita"
+                id_column = "pedido_id" if tipo == "pedido" else "cita_id"
+                cursor.execute(
+                    f"SELECT COALESCE(notas, '') FROM {table} WHERE {id_column} = %s FOR UPDATE",
+                    [target_id],
+                )
+                row = cursor.fetchone()
+                if not row:
+                    return
+                payload = {"reference": reference, "reason": reason, "closed_at": timezone.now().isoformat()}
+                notes, added = self._append_structured_note_once(
+                    str(row[0] or ""), "CLIP_PAGO_CERRADO", payload, ("reference",)
+                )
+                if added:
+                    cursor.execute(f"UPDATE {table} SET notas = %s WHERE {id_column} = %s", [notes, target_id])
+                if tipo == "cita":
+                    cursor.execute(
+                        """
+                        UPDATE negocio.anticipo_cita
+                        SET estado_validacion = 'rechazado'
+                        WHERE cita_id = %s
+                          AND comprobante_url = %s
+                          AND LOWER(COALESCE(estado_validacion, '')) = 'pendiente'
+                        """,
+                        [target_id, f"clip://{reference}"],
+                    )
+
     def _register_expected_payment(
         self,
         *,
@@ -3860,6 +3923,16 @@ class PedidosView(APIView):
                 confirmed = self._marker_payloads(notes, "CLIP_PAGO_CONFIRMADO")
                 if confirmed:
                     return {"ok": False, "reason": "already_confirmed"}
+                closed_refs = {
+                    str(item.get("reference", ""))
+                    for item in self._marker_payloads(notes, "CLIP_PAGO_CERRADO")
+                }
+                for registered in reversed(self._marker_payloads(notes, "CLIP_PAGO_REGISTRO")):
+                    registered_reference = str(registered.get("reference", ""))
+                    if not registered_reference or registered_reference == reference:
+                        continue
+                    if registered_reference not in closed_refs:
+                        return {"ok": False, "reason": "active_attempt_exists"}
                 existing = [
                     item for item in self._marker_payloads(notes, "CLIP_PAGO_REGISTRO")
                     if str(item.get("reference", "")) == reference
@@ -3937,12 +4010,33 @@ class PedidosView(APIView):
                 if not row:
                     return {"result": "error", "reason": "not_found"}
                 notes = str(row[0] or "")
+                def suspicious(reason: str) -> dict:
+                    nonlocal notes
+                    payload = {
+                        "reference": reference,
+                        "reason": reason,
+                        "payment_request_id": str(identity.get("payment_request_id", "") or ""),
+                        "transaction_id": str(identity.get("transaction_id", "") or ""),
+                        "receipt_no": str(identity.get("receipt_no", "") or ""),
+                        "monto_recibido": str(received_amount) if amount_present else "",
+                        "detected_at": timezone.now().isoformat(),
+                    }
+                    notes, added = self._append_structured_note_once(
+                        notes,
+                        "CLIP_PAGO_INCONSISTENTE",
+                        payload,
+                        ("reference", "reason", "payment_request_id", "transaction_id"),
+                    )
+                    if added:
+                        cursor.execute(f"UPDATE {table} SET notas = %s WHERE {id_column} = %s", [notes, target_id])
+                    return {"result": "suspicious", "reason": reason}
+
                 expected_matches = [
                     item for item in self._marker_payloads(notes, "CLIP_PAGO_REGISTRO")
                     if str(item.get("reference", "")) == reference
                 ]
                 if not expected_matches:
-                    return {"result": "suspicious", "reason": "missing_expected_payment"}
+                    return suspicious("missing_expected_payment")
                 expected = expected_matches[-1]
                 expected_amount = self._to_money(expected.get("monto_cobrar"))
                 expected_request_id = str(expected.get("payment_request_id", "") or "")
@@ -3964,15 +4058,15 @@ class PedidosView(APIView):
                     identity_conflict = bool(comparable and not any(comparable))
                     amount_conflict = amount_present and self._to_money(confirmed.get("monto")) != received_amount
                     if identity_conflict or amount_conflict:
-                        return {"result": "suspicious", "reason": "confirmed_identity_conflict"}
+                        return suspicious("confirmed_identity_conflict")
                     return {"result": "idempotent", "reason": "already_confirmed", "expected_amount": expected_amount}
                 if confirmations:
-                    return {"result": "suspicious", "reason": "target_already_confirmed"}
+                    return suspicious("target_already_confirmed")
                 if expected_request_id and incoming_request_id and expected_request_id != incoming_request_id:
-                    return {"result": "suspicious", "reason": "payment_request_mismatch"}
+                    return suspicious("payment_request_mismatch")
                 if amount_present:
                     if received_amount <= 0 or received_amount != expected_amount:
-                        return {"result": "suspicious", "reason": "amount_mismatch"}
+                        return suspicious("amount_mismatch")
                 else:
                     trusted_identity = bool(
                         (provider_reference and provider_reference == reference)
@@ -4005,7 +4099,7 @@ class PedidosView(APIView):
                     )
                     advance = cursor.fetchone()
                     if not advance or self._to_money(advance[1]) != expected_amount:
-                        return {"result": "suspicious", "reason": "advance_not_found_or_amount_mismatch"}
+                        return suspicious("advance_not_found_or_amount_mismatch")
                     if str(advance[2]) != "validado":
                         cursor.execute(
                             """
@@ -4030,6 +4124,8 @@ class PedidosView(APIView):
                         "SELECT estado_cita_id FROM negocio.estado_cita WHERE LOWER(COALESCE(codigo, '')) = 'confirmada' LIMIT 1"
                     )
                     confirmed_state = cursor.fetchone()
+                    if not appointment or not confirmed_state:
+                        raise DatabaseError("No existe estado confirmado para aplicar pago de cita")
                     if appointment and confirmed_state and str(appointment[1]) != "confirmada":
                         cursor.execute(
                             "UPDATE negocio.cita SET estado_cita_id = %s WHERE cita_id = %s",
@@ -4139,9 +4235,10 @@ class PedidosView(APIView):
                         return False
                     existing = None
                     if "pago_externo_id" in columns:
+                        payment_id_expr = "COALESCE(payment_request_id, '')" if "payment_request_id" in columns else "''"
                         cursor.execute(
-                            """
-                            SELECT pago_externo_id
+                            f"""
+                            SELECT pago_externo_id, monto, {payment_id_expr}, LOWER(COALESCE(estado, ''))
                             FROM negocio.pago_externo
                             WHERE proveedor = %s AND referencia_tipo = %s AND referencia_id = %s
                             ORDER BY pago_externo_id DESC
@@ -4152,6 +4249,27 @@ class PedidosView(APIView):
                         )
                         existing = cursor.fetchone()
                     if existing:
+                        existing_amount = self._to_money(existing[1])
+                        existing_payment_id = str(existing[2] or "")
+                        existing_state = str(existing[3] or "")
+                        if existing_amount != amount:
+                            logger.warning(
+                                "Pago externo Clip inconsistente: tipo=%s id=%s monto_existente=%s monto_nuevo=%s",
+                                reference_type,
+                                reference_id,
+                                existing_amount,
+                                amount,
+                            )
+                            return False
+                        if existing_payment_id and payment_request_id and existing_payment_id != payment_request_id:
+                            logger.warning(
+                                "Pago externo Clip con payment_request_id divergente: tipo=%s id=%s",
+                                reference_type,
+                                reference_id,
+                            )
+                            return False
+                        if existing_state == "pagado" and state != "pagado":
+                            return True
                         mutable = [name for name in selected if name not in {"proveedor", "referencia_tipo", "referencia_id"}]
                         assignments = ", ".join(f'"{name}" = %s' for name in mutable)
                         cursor.execute(
@@ -4799,8 +4917,9 @@ class PedidosView(APIView):
                         "total": float(total),
                     }
                 )
-        except DatabaseError as exc:
-            return Response({"ok": False, "error": f"No se pudo crear el pedido: {exc}"}, status=500)
+        except DatabaseError:
+            logger.exception("No se pudo crear el pedido")
+            return Response({"ok": False, "error": "No se pudo crear el pedido."}, status=500)
 
     def _cliente_get(self, request):
         negocio_usuario_id = self._get_negocio_usuario_id(request.user)
@@ -4914,8 +5033,9 @@ class PedidosView(APIView):
                         }
                     )
             return Response({"ok": True, "pedidos": pedidos})
-        except DatabaseError as exc:
-            return Response({"ok": False, "error": f"No se pudieron consultar pedidos: {exc}"}, status=500)
+        except DatabaseError:
+            logger.exception("No se pudieron consultar los pedidos del cliente")
+            return Response({"ok": False, "error": "No se pudieron consultar los pedidos."}, status=500)
 
     def _secretaria_get(self, request, pedido_id: int | None = None):
         permiso = self._asegurar_rol_secretaria(request)
@@ -5668,6 +5788,8 @@ class ClipPagoIntentarView(APIView):
     _normalize_clip_status = PedidosView._normalize_clip_status
     _extract_clip_payment_identity = PedidosView._extract_clip_payment_identity
     _extract_clip_amount = PedidosView._extract_clip_amount
+    _active_expected_payment = PedidosView._active_expected_payment
+    _close_expected_payment = PedidosView._close_expected_payment
     _register_expected_payment = PedidosView._register_expected_payment
     _process_clip_payment_once = PedidosView._process_clip_payment_once
 
@@ -5927,19 +6049,6 @@ class ClipPagoIntentarView(APIView):
                     pass
         return ""
 
-    def _registrar_nota_clip(self, tipo: str, target_id: int, marker: str, payload: dict) -> None:
-        with connection.cursor() as cursor:
-            if tipo == "pedido":
-                cursor.execute("SELECT COALESCE(notas, '') FROM negocio.pedido WHERE pedido_id = %s", [target_id])
-                row = cursor.fetchone()
-                notas = self._append_nota((row[0] if row else ""), marker, payload)
-                cursor.execute("UPDATE negocio.pedido SET notas = %s WHERE pedido_id = %s", [notas, target_id])
-            else:
-                cursor.execute("SELECT COALESCE(notas, '') FROM negocio.cita WHERE cita_id = %s", [target_id])
-                row = cursor.fetchone()
-                notas = self._append_nota((row[0] if row else ""), marker, payload)
-                cursor.execute("UPDATE negocio.cita SET notas = %s WHERE cita_id = %s", [notas, target_id])
-
     def _get_estado_pedido_id(self, cursor, codigo: str) -> int | None:
         cursor.execute(
             """
@@ -6072,10 +6181,7 @@ class ClipPagoIntentarView(APIView):
                 [pedido_id, estado_pagado_id, usuario_id, "Inventario descontado por pago de tarjeta aprobado"],
             )
         else:
-            cursor.execute(
-                "UPDATE negocio.pedido SET notas = %s WHERE pedido_id = %s",
-                [notas_nuevas, pedido_id],
-            )
+            raise DatabaseError("No existe estado de pedido pagado para aplicar el cobro")
         return True, ""
 
     def _autocancelar_pedido_por_pago_fallido(self, pedido_id: int, usuario_id: int, clip_error: str) -> bool:
@@ -6083,6 +6189,7 @@ class ClipPagoIntentarView(APIView):
         Si falla el cobro con tarjeta, revierte efectos del pedido creado en checkout:
         estado cancelado, historial, inventario y uso de promoción.
         """
+        logger.warning("Autocancelación por fallo Clip: pedido_id=%s detalle=%s", pedido_id, str(clip_error or "")[:300])
         try:
             with transaction.atomic():
                 with connection.cursor() as cursor:
@@ -6188,7 +6295,6 @@ class ClipPagoIntentarView(APIView):
                     row_nota = cursor.fetchone()
                     nota_payload = {
                         "motivo": "pago_tarjeta_fallido",
-                        "clip_error": str(clip_error or "")[:300],
                         "fecha": timezone.now().isoformat(),
                     }
                     notas = self._append_nota(
@@ -6332,6 +6438,31 @@ class ClipPagoIntentarView(APIView):
         except DatabaseError:
             return Response({"ok": False, "error": "No se pudo preparar el pago."}, status=500)
 
+        active_payment = self._active_expected_payment(tipo, int(target_id), monto_cobrar)
+        if active_payment:
+            existing_url = str(active_payment.get("payment_url", "") or "")
+            if existing_url and not card_token_id:
+                return Response(
+                    {
+                        "ok": True,
+                        "provider": "clip",
+                        "reference": str(active_payment.get("reference", "") or ""),
+                        "payment_request_id": str(active_payment.get("payment_request_id", "") or ""),
+                        "receipt_no": str(active_payment.get("receipt_no", "") or ""),
+                        "payment_url": existing_url,
+                        "monto_total": float(monto_total),
+                        "monto_cobrar": float(monto_cobrar),
+                        "tipo": tipo,
+                        "modo_cobro": modo_cobro,
+                        "penalizada": penalizada,
+                        "idempotente": True,
+                    }
+                )
+            return Response(
+                {"ok": False, "error": "Ya existe un pago Clip pendiente de conciliación."},
+                status=409,
+            )
+
         referencia = f"SBC-{tipo[:3].upper()}-{target_id}-{int(time.time())}"
         success_url = str(getattr(settings, "CLIP_RETURN_SUCCESS_URL", "") or "").strip()
         cancel_url = str(getattr(settings, "CLIP_RETURN_CANCEL_URL", "") or "").strip()
@@ -6368,6 +6499,20 @@ class ClipPagoIntentarView(APIView):
         # Flujo recomendado de Clip Checkout Transparente:
         # frontend tokeniza tarjeta con clip-sdk.js y backend cobra con /payments.
         if card_token_id:
+            api_key_public = self._clip_api_key_public(clip_cfg)
+            api_key_sec, api_secret_sec = self._clip_resolve_api_credentials(clip_cfg)
+            auth_token = self._normalize_clip_auth_token(str(clip_cfg.get("clip_auth_token", "") or "").strip())
+            if not auth_token:
+                auth_token = self._normalize_clip_auth_token(str(getattr(settings, "CLIP_AUTH_TOKEN", "") or "").strip())
+            if not auth_token and not api_key_public and not (api_key_sec and api_secret_sec):
+                return Response(
+                    {
+                        "ok": False,
+                        "error": "Falta API Key (o API Key + Secret) de Clip para cobrar con Checkout Transparente.",
+                    },
+                    status=400,
+                )
+
             expected_registration = self._register_expected_payment(
                 tipo=tipo,
                 target_id=int(target_id),
@@ -6381,19 +6526,6 @@ class ClipPagoIntentarView(APIView):
                 return Response(
                     {"ok": False, "error": "No fue posible registrar de forma segura el pago esperado."},
                     status=409,
-                )
-            api_key_public = self._clip_api_key_public(clip_cfg)
-            api_key_sec, api_secret_sec = self._clip_resolve_api_credentials(clip_cfg)
-            auth_token = self._normalize_clip_auth_token(str(clip_cfg.get("clip_auth_token", "") or "").strip())
-            if not auth_token:
-                auth_token = self._normalize_clip_auth_token(str(getattr(settings, "CLIP_AUTH_TOKEN", "") or "").strip())
-            if not auth_token and not api_key_public and not (api_key_sec and api_secret_sec):
-                return Response(
-                    {
-                        "ok": False,
-                        "error": "Falta API Key (o API Key + Secret) de Clip para cobrar con Checkout Transparente.",
-                    },
-                    status=400,
                 )
 
             # Solo api-gw para /payments: api.payclip.com/payments está detrás de reglas CF que bloquean
@@ -6567,6 +6699,10 @@ class ClipPagoIntentarView(APIView):
 
             if not paid_ok:
                 detalle = " | ".join(transparent_errors[:4]) if transparent_errors else "Sin respuesta válida de Clip /payments."
+                try:
+                    self._close_expected_payment(tipo, int(target_id), referencia, "respuesta_no_confirmada")
+                except DatabaseError:
+                    logger.exception("No se pudo cerrar el intento Clip no confirmado")
                 if tipo == "pedido" and target_id:
                     self._autocancelar_pedido_por_pago_fallido(
                         pedido_id=int(target_id),
@@ -6674,6 +6810,24 @@ class ClipPagoIntentarView(APIView):
                     ),
                 },
                 status=400,
+            )
+        try:
+            expected_registration = self._register_expected_payment(
+                tipo=tipo,
+                target_id=int(target_id),
+                reference=referencia,
+                expected_amount=monto_cobrar,
+                total_amount=monto_total,
+                modo_cobro=modo_cobro,
+                penalizada=penalizada,
+            )
+        except DatabaseError:
+            logger.exception("No se pudo reservar el intento de pago Clip")
+            return Response({"ok": False, "error": "No fue posible registrar el intento de pago."}, status=500)
+        if not expected_registration.get("ok"):
+            return Response(
+                {"ok": False, "error": "Ya existe un pago procesado o pendiente para esta referencia."},
+                status=409,
             )
         base_url = str(getattr(settings, "CLIP_API_BASE_URL", "https://api-gw.payclip.com") or "").strip().rstrip("/")
         alt_base_url = str(getattr(settings, "CLIP_API_BASE_URL_ALT", "https://api.payclip.com") or "").strip().rstrip("/")
@@ -6887,6 +7041,10 @@ class ClipPagoIntentarView(APIView):
                 referencia,
                 clip_error_detail,
             )
+            try:
+                self._close_expected_payment(tipo, int(target_id), referencia, "enlace_no_generado")
+            except DatabaseError:
+                logger.exception("No se pudo cerrar el intento Clip sin enlace")
             return Response(
                 {
                     "ok": False,
@@ -6953,45 +7111,6 @@ class ClipWebhookView(APIView):
 
     SUCCESS_CODES = {"approved", "paid", "successful", "succeeded", "completed", "captured"}
 
-    def _to_money(self, value) -> Decimal:
-        try:
-            return Decimal(str(value or "0")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-        except (InvalidOperation, ValueError, TypeError):
-            return Decimal("0.00")
-
-    def _extract_clip_event(self, payload: dict) -> tuple[str, str, str, Decimal]:
-        status = str(
-            payload.get("status")
-            or payload.get("event")
-            or payload.get("type")
-            or (payload.get("data") or {}).get("status")
-            or ""
-        ).strip().lower()
-
-        reference = str(
-            payload.get("reference")
-            or payload.get("customTransactionId")
-            or payload.get("custom_transaction_id")
-            or (payload.get("metadata") or {}).get("reference")
-            or (payload.get("data") or {}).get("reference")
-            or ""
-        ).strip()
-
-        transaction_id = str(
-            payload.get("transaction_id")
-            or payload.get("id")
-            or (payload.get("data") or {}).get("id")
-            or ""
-        ).strip()
-
-        amount_raw = (
-            payload.get("amount")
-            or (payload.get("data") or {}).get("amount")
-            or 0
-        )
-        amount = self._to_money(amount_raw)
-        return status, reference, transaction_id, amount
-
     def _validate_signature(self, request) -> bool:
         secret = str(getattr(settings, "CLIP_WEBHOOK_SECRET", "") or "").strip()
         if not secret:
@@ -7007,43 +7126,6 @@ class ClipWebhookView(APIView):
         expected = hmac.new(secret.encode("utf-8"), request.body, hashlib.sha256).hexdigest()
         incoming_clean = incoming.replace("sha256=", "").strip().lower()
         return constant_time_compare(incoming_clean, expected.lower())
-
-    def _append_nota(self, actual: str | None, marker: str, payload: dict) -> str:
-        base = str(actual or "").rstrip()
-        bloque = f"[{marker}]{json.dumps(payload, ensure_ascii=False)}"
-        return f"{base}\n{bloque}".strip() if base else bloque
-
-    def _marker_payloads(self, notes: str | None, marker: str) -> list[dict]:
-        prefix = f"[{marker}]"
-        result: list[dict] = []
-        for line in str(notes or "").splitlines():
-            if not line.startswith(prefix):
-                continue
-            try:
-                value = json.loads(line[len(prefix):])
-            except (TypeError, ValueError, json.JSONDecodeError):
-                continue
-            if isinstance(value, dict):
-                result.append(value)
-        return result
-
-    def _expected_payment(self, notes: str | None, reference: str) -> dict | None:
-        matches = [
-            item for item in self._marker_payloads(notes, "CLIP_PAGO_REGISTRO")
-            if str(item.get("reference", "")) == reference
-        ]
-        return matches[-1] if matches else None
-
-    def _already_applied(self, notes: str | None, reference: str, transaction_id: str) -> bool:
-        for item in self._marker_payloads(notes, "CLIP_WEBHOOK_OK"):
-            if str(item.get("reference", "")) != reference:
-                continue
-            existing_id = str(item.get("transaction_id", "") or "")
-            if transaction_id and existing_id == transaction_id:
-                return True
-            if not transaction_id:
-                return True
-        return False
 
     def post(self, request):
         if not self._validate_signature(request):

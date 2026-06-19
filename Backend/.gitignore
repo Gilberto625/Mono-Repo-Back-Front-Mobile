@@ -1,6 +1,9 @@
 # Excluir archivos por extensión
 *.pdf
 *.md
+!AGENTS.md
+!README.md
+!BACKEND_CONTEXT.md
 *.mp4
 .sql
 .json
@@ -17,7 +20,6 @@ dist/
 build/
 *.log
 .DS_Store
-env.example
 .env copy
 # Base de datos
 db.sqlite3
