@@ -64,11 +64,66 @@ export const API_ENDPOINTS = {
     dashboard: '/secretaria/dashboard/',
     appointments: '/secretaria/citas/',
     orders: '/secretaria/pedidos/'
+  },
+  uploads: {
+    admin: '/admin/upload/',
+    adminDeleteImage: '/admin/delete-image/',
+    adminLogo: '/admin/configuracion/upload-logo/'
   }
 } as const;
 
 export function apiEndpoint(apiUrl: string, path: string): string {
   return `${apiUrl.replace(/\/$/, '')}${path}`;
+}
+
+export function withResourceId(basePath: string, id: number | string, suffix = ''): string {
+  const root = basePath.endsWith('/') ? basePath : `${basePath}/`;
+  const tail = suffix ? (suffix.startsWith('/') ? suffix.slice(1) : suffix) : '';
+  return tail ? `${root}${id}/${tail}` : `${root}${id}/`;
+}
+
+export function adminEmployeeDetailPath(id: number | string): string {
+  return withResourceId(API_ENDPOINTS.admin.employees, id);
+}
+
+export function adminServiceDetailPath(id: number | string): string {
+  return withResourceId(API_ENDPOINTS.admin.services, id);
+}
+
+export function adminProductDetailPath(id: number | string): string {
+  return withResourceId(API_ENDPOINTS.admin.products, id);
+}
+
+export function adminProductStockPath(id: number | string): string {
+  return withResourceId(API_ENDPOINTS.admin.products, id, 'stock');
+}
+
+export function adminPromotionDetailPath(id: number | string): string {
+  return withResourceId(API_ENDPOINTS.admin.promotions, id);
+}
+
+export function adminChairDetailPath(id: number | string): string {
+  return withResourceId(API_ENDPOINTS.admin.chairs, id);
+}
+
+export function adminBrandDetailPath(id: number | string): string {
+  return withResourceId(API_ENDPOINTS.admin.brands, id);
+}
+
+export function adminLegalContentDetailPath(id: number | string): string {
+  return withResourceId(API_ENDPOINTS.admin.legalContent, id);
+}
+
+export function secretariaAppointmentDetailPath(id: number | string): string {
+  return withResourceId(API_ENDPOINTS.secretaria.appointments, id);
+}
+
+export function secretariaAppointmentUpdatePath(id: number | string): string {
+  return withResourceId(API_ENDPOINTS.secretaria.appointments, id, 'actualizar');
+}
+
+export function secretariaOrderDetailPath(id: number | string): string {
+  return withResourceId(API_ENDPOINTS.secretaria.orders, id);
 }
 
 export function publicServiceDetailPath(serviceId: number | string): string {

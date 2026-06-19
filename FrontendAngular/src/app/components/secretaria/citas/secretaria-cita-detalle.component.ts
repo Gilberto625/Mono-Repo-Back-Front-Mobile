@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { SidebarComponent } from '../../shared/sidebar/sidebar.component';
 import { BreadcrumbComponent } from '../../shared/breadcrumb/breadcrumb.component';
 import { environment } from '../../../../environments/environment';
+import { apiEndpoint, secretariaAppointmentDetailPath, secretariaAppointmentUpdatePath } from '../../../core/api/api-endpoints';
 
 interface CitaDetalle {
   id: number;
@@ -65,7 +66,7 @@ export class SecretariaCitaDetalleComponent implements OnInit {
 
   cargarCita(id: number): void {
     this.cargando.set(true);
-    this.http.get<any>(`${this.apiUrl}/secretaria/citas/${id}/`).subscribe({
+    this.http.get<any>(apiEndpoint(this.apiUrl, secretariaAppointmentDetailPath(id))).subscribe({
       next: (res) => {
         if (res?.ok) {
           this.cita.set(res.cita);
@@ -89,7 +90,7 @@ export class SecretariaCitaDetalleComponent implements OnInit {
     this.error.set('');
 
     this.http.put<any>(
-      `${this.apiUrl}/secretaria/citas/${c.id}/actualizar/`,
+      apiEndpoint(this.apiUrl, secretariaAppointmentUpdatePath(c.id)),
       { anticipo_validado: true, estado: 'confirmada' },
       {}
     ).subscribe({
@@ -127,7 +128,7 @@ export class SecretariaCitaDetalleComponent implements OnInit {
     this.error.set('');
 
     this.http.put<any>(
-      `${this.apiUrl}/secretaria/citas/${c.id}/actualizar/`,
+      apiEndpoint(this.apiUrl, secretariaAppointmentUpdatePath(c.id)),
       {
         rechazar_comprobante: true,
         notas_cancelacion: motivo || 'Comprobante de pago rechazado'
@@ -172,7 +173,7 @@ export class SecretariaCitaDetalleComponent implements OnInit {
     }
 
     this.http.put<any>(
-      `${this.apiUrl}/secretaria/citas/${c.id}/actualizar/`,
+      apiEndpoint(this.apiUrl, secretariaAppointmentUpdatePath(c.id)),
       body,
       {}
     ).subscribe({

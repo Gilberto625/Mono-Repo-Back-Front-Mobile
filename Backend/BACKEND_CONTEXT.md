@@ -56,6 +56,7 @@ Mantener documentado el estado actual del backend para Cursor, Codex y desarroll
 
 | Fecha | Cambio | Nota |
 |---|---|---|
+| 2026-06-19 | Fase 2.4 limpieza repo + E2E guards | pycache fuera de Git, E2E_STAGING_PASSWORD, suite 20/20. |
 | 2026-06-19 | Fase 2.3 E2E Neon staging | Diagnóstico esquema `negocio` OK; seed idempotente `seed_e2e_staging`; scripts diagnóstico/E2E; sin cambios de lógica en views. |
 | 2026-06-18 | Fase 1 crítica de seguridad | DRF autenticado por defecto, RBAC reutilizable, configuración por entorno y OTP fuera de respuestas. |
 | 2026-06-18 | Citas autoritativas | Precio, promoción, duración, anticipo, penalización y anticipación se calculan en Django; creación atómica con bloqueo por barbero. |
@@ -115,7 +116,22 @@ Comando: `python manage.py seed_e2e_staging` (`--dry-run` disponible).
 | Servicio | `E2E_TEST Corte Básico` |
 | Producto | `E2E_TEST Pomada` (+ stock mínimo en `inventario_existencia`) |
 
-Password de prueba definida en el comando (constante `E2E_PASSWORD`), no en `.env`.
+Password de prueba: variable `E2E_STAGING_PASSWORD` (ver `.env.example`); fallback solo staging en el comando.
+
+### Fase 2.4 — Limpieza repo (2026-06-19)
+
+**Auditoría commit `ddb10f4`:** archivos legítimos únicamente (scripts E2E + docs). Sin `db.sqlite3`, `.env`, `node_modules`, `dist`, `.tools`.
+
+**Artefactos indebidos preexistentes en el repo:**
+
+* ~50 archivos `Backend/**/__pycache__/*.pyc` rastreados → `git rm --cached` (archivos locales conservados).
+* `.gitignore` reforzado en Backend y FrontendAngular.
+
+**Seed E2E:** password desde `E2E_STAGING_PASSWORD` (`decouple`), documentada en `.env.example`.
+
+**E2E suite ampliada:** guards API (cliente 403 en admin/secretaria), 20/20 pruebas OK en Neon staging.
+
+**Sin cambios** en `core/views.py`.
 
 ### Scripts auxiliares (read-only o controlados)
 

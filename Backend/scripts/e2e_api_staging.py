@@ -14,8 +14,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 django.setup()
 
+from decouple import config
+
 BASE = os.environ.get("E2E_API_BASE", "http://127.0.0.1:8000/api")
-PASSWORD = "E2E_TEST_Stylo2026!"
+PASSWORD = config("E2E_STAGING_PASSWORD", default="E2E_TEST_Stylo2026!")
 RESULTS: list[dict] = []
 
 
@@ -213,7 +215,20 @@ def main():
     else:
         record("clip_intent", "POST", "/pagos/clip/intentar/", 0, False, "sin pedido")
 
-    # Dashboard admin
+    # Guards API (proxy de guards visuales)
+    st, _ = req("GET", "/admin/dashboard/", token=client_token)
+    record("guard_cliente_admin", "GET", "/admin/dashboard/", st, st in (401, 403))
+    st, _ = req("GET", "/admin/empleados/", token=client_token)
+    record("guard_cliente_admin_empleados", "GET", "/admin/empleados/", st, st in (401, 403))
+    st, _ = req("GET", "/secretaria/dashboard/", token=client_token)
+    record("guard_cliente_secretaria", "GET", "/secretaria/dashboard/", st, st in (401, 403))
+    st, _ = req("GET", "/mis-citas/")
+    record("guard_anon_mis_citas", "GET", "/mis-citas/", st, st == 401)
+    st, _ = req("GET", "/admin/dashboard/", token=admin_token)
+    record("guard_admin_dashboard", "GET", "/admin/dashboard/", st, st == 200)
+
+    # Dashboard admin cliente stats
+    # Dashboard admin stats
     st, _ = req("GET", "/dashboard-stats/", token=admin_token)
     record("dashboard_admin", "GET", "/dashboard-stats/", st, st == 200)
 

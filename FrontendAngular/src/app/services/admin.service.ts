@@ -6,7 +6,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, of, throwError, timer } from 'rxjs';
 import { map, tap, catchError, switchMap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { API_ENDPOINTS, apiEndpoint, apiEndpointWithQuery } from '../core/api/api-endpoints';
+import { API_ENDPOINTS, apiEndpoint, apiEndpointWithQuery, adminBrandDetailPath, adminChairDetailPath, adminEmployeeDetailPath, adminLegalContentDetailPath, adminProductDetailPath, adminProductStockPath, adminPromotionDetailPath, adminServiceDetailPath } from '../core/api/api-endpoints';
 
 // Interfaces
 /** Respuesta de `GET /admin/sillas/` (lista y formularios de empleado). */
@@ -546,7 +546,7 @@ export class AdminService {
   }
 
   getEmpleados(rol?: string): Observable<any> {
-    let url = `${this.apiUrl}/admin/empleados/`;
+    let url = apiEndpoint(this.apiUrl, API_ENDPOINTS.admin.employees);
     if (rol) {
       url += `?rol=${rol}`;
     }
@@ -572,7 +572,7 @@ export class AdminService {
   }
 
   getEmpleado(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/admin/empleados/${id}/`, {
+    return this.http.get(apiEndpoint(this.apiUrl, adminEmployeeDetailPath(id)), {
       headers: this.getHeaders(),
       withCredentials: true
     }).pipe(
@@ -585,21 +585,21 @@ export class AdminService {
   }
 
   crearEmpleado(data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/admin/empleados/`, data, {
+    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.admin.employees), data, {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
   actualizarEmpleado(id: number, data: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/admin/empleados/${id}/`, data, {
+    return this.http.put(apiEndpoint(this.apiUrl, adminEmployeeDetailPath(id)), data, {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
   eliminarEmpleado(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/admin/empleados/${id}/`, {
+    return this.http.delete(apiEndpoint(this.apiUrl, adminEmployeeDetailPath(id)), {
       headers: this.getHeaders(),
       withCredentials: true
     });
@@ -746,7 +746,7 @@ export class AdminService {
   }
 
   getSillas(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/admin/sillas/`, {
+    return this.http.get(apiEndpoint(this.apiUrl, API_ENDPOINTS.admin.chairs), {
       headers: this.getHeaders(),
       withCredentials: true
     }).pipe(
@@ -760,21 +760,21 @@ export class AdminService {
   }
 
   crearSilla(data: { numero: string; nombre?: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/admin/sillas/`, data, {
+    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.admin.chairs), data, {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
   eliminarSilla(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/admin/sillas/${id}/`, {
+    return this.http.delete(apiEndpoint(this.apiUrl, adminChairDetailPath(id)), {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
   getMarcas(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/admin/marcas/`, {
+    return this.http.get(apiEndpoint(this.apiUrl, API_ENDPOINTS.admin.brands), {
       headers: this.getHeaders(),
       withCredentials: true
     }).pipe(
@@ -788,7 +788,7 @@ export class AdminService {
   }
 
   crearMarca(data: { nombre: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/admin/marcas/`, data, {
+    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.admin.brands), data, {
       headers: this.getHeaders(),
       withCredentials: true
     });
@@ -893,7 +893,7 @@ export class AdminService {
     }
 
     this.serviciosInFlight = true;
-    return this.http.get(`${this.apiUrl}/admin/servicios/`, {
+    return this.http.get(apiEndpoint(this.apiUrl, API_ENDPOINTS.admin.services), {
       headers: this.getHeaders(),
       withCredentials: true
     }).pipe(
@@ -966,7 +966,7 @@ export class AdminService {
   }
 
   getServicio(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/admin/servicios/${id}/`, {
+    return this.http.get(apiEndpoint(this.apiUrl, adminServiceDetailPath(id)), {
       headers: this.getHeaders(),
       withCredentials: true
     }).pipe(
@@ -979,21 +979,21 @@ export class AdminService {
   }
 
   crearServicio(data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/admin/servicios/`, data, {
+    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.admin.services), data, {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
   actualizarServicio(id: number, data: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/admin/servicios/${id}/`, data, {
+    return this.http.put(apiEndpoint(this.apiUrl, adminServiceDetailPath(id)), data, {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
   eliminarServicio(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/admin/servicios/${id}/`, {
+    return this.http.delete(apiEndpoint(this.apiUrl, adminServiceDetailPath(id)), {
       headers: this.getHeaders(),
       withCredentials: true
     });
@@ -1170,7 +1170,7 @@ export class AdminService {
         }
         return of(cached);
       }
-      const url = `${this.apiUrl}/admin/productos/?activo=1`;
+      const url = apiEndpointWithQuery(this.apiUrl, API_ENDPOINTS.admin.products, { activo: 1 });
       return this.http.get(url, {
         headers: this.getHeaders(),
         withCredentials: true,
@@ -1189,7 +1189,7 @@ export class AdminService {
     const params = this.buildProductosCatalogParams(q);
 
     return this.http
-      .get(`${this.apiUrl}/admin/productos/`, {
+      .get(apiEndpoint(this.apiUrl, API_ENDPOINTS.admin.products), {
         params,
         headers: this.getHeaders(),
         withCredentials: true,
@@ -1229,7 +1229,7 @@ export class AdminService {
   }
 
   getProducto(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/admin/productos/${id}/`, {
+    return this.http.get(apiEndpoint(this.apiUrl, adminProductDetailPath(id)), {
       headers: this.getHeaders(),
       withCredentials: true
     }).pipe(
@@ -1242,21 +1242,21 @@ export class AdminService {
   }
 
   crearProducto(data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/admin/productos/`, data, {
+    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.admin.products), data, {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
   actualizarProducto(id: number, data: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/admin/productos/${id}/`, data, {
+    return this.http.put(apiEndpoint(this.apiUrl, adminProductDetailPath(id)), data, {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
   eliminarProducto(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/admin/productos/${id}/`, {
+    return this.http.delete(apiEndpoint(this.apiUrl, adminProductDetailPath(id)), {
       headers: this.getHeaders(),
       withCredentials: true
     });
@@ -1266,35 +1266,35 @@ export class AdminService {
   // PROMOCIONES
   // ============================================
   getPromociones(estado: 'activas' | 'programadas' | 'finalizadas' | 'pausadas' | 'todas' = 'todas'): Observable<any> {
-    return this.http.get(`${this.apiUrl}/admin/promociones/?estado=${encodeURIComponent(estado)}`, {
+    return this.http.get(apiEndpointWithQuery(this.apiUrl, API_ENDPOINTS.admin.promotions, { estado }), {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
   getPromocion(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/admin/promociones/${id}/`, {
+    return this.http.get(apiEndpoint(this.apiUrl, adminPromotionDetailPath(id)), {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
   crearPromocion(data: Partial<PromocionAdmin>): Observable<any> {
-    return this.http.post(`${this.apiUrl}/admin/promociones/`, data, {
+    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.admin.promotions), data, {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
   actualizarPromocion(id: number, data: Partial<PromocionAdmin>): Observable<any> {
-    return this.http.put(`${this.apiUrl}/admin/promociones/${id}/`, data, {
+    return this.http.put(apiEndpoint(this.apiUrl, adminPromotionDetailPath(id)), data, {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
   eliminarPromocion(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/admin/promociones/${id}/`, {
+    return this.http.delete(apiEndpoint(this.apiUrl, adminPromotionDetailPath(id)), {
       headers: this.getHeaders(),
       withCredentials: true
     });
@@ -1303,7 +1303,7 @@ export class AdminService {
   actualizarStock(id: number, cantidad: number, operacion: 'sumar' | 'establecer' = 'sumar', notas?: string): Observable<any> {
     const body: { cantidad: number; operacion: string; notas?: string } = { cantidad, operacion };
     if (notas !== undefined) body.notas = notas;
-    return this.http.put(`${this.apiUrl}/admin/productos/${id}/stock/`, body, {
+    return this.http.put(apiEndpoint(this.apiUrl, adminProductStockPath(id)), body, {
       headers: this.getHeaders(),
       withCredentials: true
     });
@@ -1749,7 +1749,8 @@ export class AdminService {
   uploadImage(file: File | string, folder: string = 'barberia'): Observable<any> {
     if (typeof file === 'string') {
       // Es base64
-      return this.http.post(`${this.apiUrl}/admin/upload/`, 
+      return this.http.post(
+        apiEndpoint(this.apiUrl, API_ENDPOINTS.uploads.admin),
         { image: file, folder },
         {
           headers: this.getHeaders(),
@@ -1763,7 +1764,7 @@ export class AdminService {
       formData.append('folder', folder);
       
       // No usar Content-Type header para FormData
-      return this.http.post(`${this.apiUrl}/admin/upload/`, formData, {
+      return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.uploads.admin), formData, {
         withCredentials: true
       });
     }
@@ -1774,7 +1775,8 @@ export class AdminService {
    * @param publicId ID público de la imagen en Cloudinary
    */
   deleteImage(publicId: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/admin/delete-image/`, 
+    return this.http.post(
+      apiEndpoint(this.apiUrl, API_ENDPOINTS.uploads.adminDeleteImage),
       { public_id: publicId },
       {
         headers: this.getHeaders(),
@@ -1793,7 +1795,7 @@ export class AdminService {
       return of(cached);
     }
 
-    return this.http.get(`${this.apiUrl}/admin/contenido-legal/`, {
+    return this.http.get(apiEndpoint(this.apiUrl, API_ENDPOINTS.admin.legalContent), {
       headers: this.getHeaders(),
       withCredentials: true
     }).pipe(
@@ -1804,21 +1806,21 @@ export class AdminService {
   }
 
   crearContenidoLegal(data: { tipo: string; titulo: string; contenido: string; activo?: boolean }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/admin/contenido-legal/`, data, {
+    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.admin.legalContent), data, {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
   actualizarContenidoLegal(id: number, data: Partial<{ titulo: string; contenido: string; activo: boolean }>): Observable<any> {
-    return this.http.put(`${this.apiUrl}/admin/contenido-legal/${id}/`, data, {
+    return this.http.put(apiEndpoint(this.apiUrl, adminLegalContentDetailPath(id)), data, {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
   eliminarContenidoLegal(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/admin/contenido-legal/${id}/`, {
+    return this.http.delete(apiEndpoint(this.apiUrl, adminLegalContentDetailPath(id)), {
       headers: this.getHeaders(),
       withCredentials: true
     });
