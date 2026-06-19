@@ -61,6 +61,7 @@ Mantener documentado el estado actual del backend para Cursor, Codex y desarroll
 | 2026-06-18 | Endurecimiento Clip | Monto y referencia internos, estados aprobados explícitos, firma obligatoria, control de monto e idempotencia por transacción. |
 | 2026-06-18 | Uploads seguros | Solo JPG/PNG/WebP validados por extensión, MIME y firma; SVG y fuentes remotas/base64 rechazados. |
 | 2026-06-18 | Fase 1.1 crítica | Confirmación Clip centralizada, idempotencia por referencia/identidad/monto, conciliación directo-webhook y respuestas técnicas saneadas. |
+| 2026-06-18 | Fase 1.2 pruebas críticas | 23 pruebas aisladas cubren settings seguros, OTP, RBAC/IDOR, reglas de citas, revalidación de horario, idempotencia Clip y errores genéricos. |
 | Pendiente | Inicializar backend |  |
 
 ## Estado y límites después de Fase 1
@@ -74,3 +75,12 @@ Mantener documentado el estado actual del backend para Cursor, Codex y desarroll
 - `CLIP_PAGO_CONFIRMADO` es el marcador canónico. Reintentos con la misma identidad son idempotentes; identidades o montos divergentes quedan marcados como `CLIP_PAGO_INCONSISTENTE` sin reaplicar anticipo, estado ni inventario.
 - Pago directo y webhook usan la misma operación transaccional. Si Clip omite el monto, solo se confirma cuando coincide una referencia o `payment_request_id` confiable; de lo contrario queda pendiente de conciliación.
 - Variables mínimas documentadas en `.env.example`: `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS`, `DATABASE_URL` y `CLIP_WEBHOOK_SECRET`.
+
+## Cobertura automatizada Fase 1.2
+
+- Las pruebas unitarias viven en `tests/` y usan `SimpleTestCase`, cursores simulados y mocks; no llaman Clip, Cloudinary ni Neon.
+- Se verifica que los montos enviados por cliente no sustituyan precio, descuento o anticipo calculados por Django.
+- Se cubren primera cita, penalización de diez citas, anticipo del 50 %, anticipación por demanda y revalidación final contra doble reserva.
+- Se cubren estados Clip permitidos, monto divergente, identidad confiable cuando falta monto, conciliación directo-webhook e idempotencia de webhook repetido.
+- Queda pendiente una suite de integración sobre PostgreSQL temporal con el esquema `negocio` real para validar SQL, bloqueos concurrentes y restricciones de base de datos.
+- Queda pendiente una prueba de contrato contra Clip sandbox/staging; las pruebas actuales no dependen de la API real.
