@@ -15,15 +15,16 @@ respaldos_db/
 node_modules/
 .venv-rasp/
 .venv/
-.env
 dist/
 build/
 *.log
 .DS_Store
 .env copy
+
 # Base de datos
 db.sqlite3
 *.sqlite3
+
 # collectstatic (Render / producción)
 staticfiles/
 
@@ -31,3 +32,12 @@ staticfiles/
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Entorno
+.env
+.env.*
+!.env.example

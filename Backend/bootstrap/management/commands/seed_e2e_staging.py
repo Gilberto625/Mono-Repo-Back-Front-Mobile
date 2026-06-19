@@ -7,12 +7,16 @@ Uso:
   USE_LOCAL_DB=False python manage.py seed_e2e_staging
   USE_LOCAL_DB=False python manage.py seed_e2e_staging --dry-run
 """
+from decouple import config
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 
-E2E_PASSWORD = "E2E_TEST_Stylo2026!"
+E2E_PASSWORD = config(
+    "E2E_STAGING_PASSWORD",
+    default="E2E_TEST_Stylo2026!",
+)
 USERS = {
     "e2e_admin_stylo": {
         "email": "e2e_admin_stylo@test.stylo.local",
