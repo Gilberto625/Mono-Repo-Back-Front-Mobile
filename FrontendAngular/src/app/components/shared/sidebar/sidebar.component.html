@@ -29,7 +29,7 @@
             [routerLinkActiveOptions]="item.route === logoRoute ? { exact: true } : { exact: false }"
             class="sidebar-link"
           >
-            <span class="sidebar-link-icon" [innerHTML]="item.icon"></span>
+            <span class="sidebar-link-icon" aria-hidden="true">{{ item.icon }}</span>
             {{ item.label }}
           </a>
         </li>

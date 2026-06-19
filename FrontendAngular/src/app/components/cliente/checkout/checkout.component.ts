@@ -437,7 +437,7 @@ export class CheckoutComponent implements OnInit {
       if (!container) {
         throw new Error('No se encontró el contenedor del formulario de tarjeta.');
       }
-      container.innerHTML = '';
+      container.replaceChildren();
       this.clipSdkInstance = new window.ClipSDK(this.clipApiKey);
       this.clipCard = this.clipSdkInstance.element.create('Card', { locale: 'es', theme: 'dark' });
       this.clipCard.mount('clip-checkout-sdk');
@@ -507,9 +507,15 @@ export class CheckoutComponent implements OnInit {
   }
 
   private redirigirAClip(url: string): void {
-    const paymentUrl = String(url || '').trim();
-    if (!paymentUrl) return;
-    const normalized = /^https?:\/\//i.test(paymentUrl) ? paymentUrl : `https://${paymentUrl}`;
+    let normalized: string;
+    try {
+      const paymentUrl = new URL(String(url || '').trim());
+      if (paymentUrl.protocol !== 'https:') throw new Error('Protocolo no permitido');
+      normalized = paymentUrl.toString();
+    } catch {
+      this.error.set('El backend no devolvió una URL segura de pago.');
+      return;
+    }
     // Intenta abrir en nueva pestaña; si el navegador lo bloquea, redirige en la misma pestaña.
     const popup = window.open(normalized, '_blank', 'noopener,noreferrer');
     if (popup) {
@@ -545,41 +551,35 @@ export class CheckoutComponent implements OnInit {
             this.pedidoService.clipIntentarPago({
               tipo: 'pedido',
               pedido_id: nuevoPedidoId,
-              modo_cobro: 'total',
-              penalizada: false,
               card_token_id: cardTokenId || undefined,
               cliente_email: String(this.usuario?.email || '').trim() || undefined,
               cliente_phone: String((this.usuario as any)?.telefono || (this.usuario as any)?.phone || '').trim() || undefined,
             }).subscribe({
               next: (clipRes: any) => {
                 this.procesando.set(false);
-                const paymentUrl = String(clipRes?.payment_url || '').trim();
+                const paymentUrl = String(clipRes?.checkout_url || '').trim();
                 if (clipRes?.ok && paymentUrl) {
                   this.carritoService.vaciarCarrito();
                   this.redirigirAClip(paymentUrl);
                   return;
                 }
                 if (clipRes?.ok && clipRes?.pago_directo) {
+                  const estadoPago = this.pedidoService.normalizarEstadoPago(clipRes?.estado_pago);
+                  if (estadoPago === 'rechazado' || estadoPago === 'inconsistente') {
+                    this.error.set('Clip no confirmó el pago. Consulta el estado del pedido antes de reintentar.');
+                    return;
+                  }
                   this.pedidoExitoso.set(true);
-                  this.pedidoId.set(res.pedido_id);
-                  const st = String(clipRes?.estado_pago || '').toLowerCase();
-                  this.estadoPedido.set(st === 'pending' ? 'comprobando_pago' : 'pagado');
-                  this.carritoService.vaciarCarrito();
+                  this.pedidoId.set(nuevoPedidoId);
+                  this.estadoPedido.set(estadoPago === 'confirmado' ? 'pagado' : 'comprobando_pago');
+                  if (estadoPago === 'confirmado') this.carritoService.vaciarCarrito();
                   return;
                 }
-                this.error.set(
-                  clipRes?.clip_error
-                  || clipRes?.error
-                  || 'No se pudo iniciar el pago con Clip.'
-                );
+                this.error.set('No se pudo iniciar el pago con Clip. Consulta el estado del pedido antes de reintentar.');
               },
               error: (clipErr: any) => {
                 this.procesando.set(false);
-                this.error.set(
-                  clipErr?.error?.clip_error
-                  || clipErr?.error?.error
-                  || 'Error al iniciar pago con Clip.'
-                );
+                this.error.set('No se pudo iniciar el pago con Clip. Consulta el estado del pedido antes de reintentar.');
               }
             });
             return;
@@ -657,9 +657,9 @@ export class CheckoutComponent implements OnInit {
 
   getIconoPago(metodo: string): string {
     const iconos: Record<string, string> = {
-      'efectivo': '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
-      'tarjeta': '<rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>',
-      'transferencia': '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+      'efectivo': '$',
+      'tarjeta': '▰',
+      'transferencia': '⇄',
     };
     return iconos[metodo] || '';
   }

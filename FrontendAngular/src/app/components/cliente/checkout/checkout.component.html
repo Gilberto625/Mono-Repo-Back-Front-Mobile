@@ -164,14 +164,12 @@
                     @if (metodo.disponible) {
                       <button type="button" class="opcion-card" [class.selected]="metodoPago() === metodo.id"
                               (click)="seleccionarPago(metodo.id)">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                             [innerHTML]="getIconoPago(metodo.id)"></svg>
+                        <span class="opcion-icon" aria-hidden="true">{{ getIconoPago(metodo.id) }}</span>
                         <span class="opcion-title">{{ metodo.nombre }}</span>
                       </button>
                     } @else {
                       <div class="opcion-card disabled">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity="0.3"
-                             [innerHTML]="getIconoPago(metodo.id)"></svg>
+                        <span class="opcion-icon" aria-hidden="true" style="opacity: 0.3">{{ getIconoPago(metodo.id) }}</span>
                         <span class="opcion-title" style="opacity: 0.4;">{{ metodo.nombre }}</span>
                         <span class="opcion-desc-disabled">{{ metodo.razon }}</span>
                       </div>
@@ -202,7 +200,7 @@
                       </div>
                     }
                     <div class="banco-dato">
-                      <span class="banco-label">Monto a transferir:</span>
+                        <span class="banco-label">Monto estimado a transferir:</span>
                       <span class="banco-valor text-gold" style="font-size: 18px; font-weight: 700;">${{ totalFinal }} MXN</span>
                     </div>
 
@@ -241,8 +239,8 @@
                   <div class="banco-info mt-lg">
                     <h4 class="mb-sm">Pago con tarjeta de crédito / débito</h4>
                     <p class="text-small text-muted mb-sm">
-                      Al confirmar, Clip procesará el cobro con el monto exacto de tu pedido:
-                      <strong>${{ totalFinal }} MXN</strong> (productos + envío).
+                      Vista previa estimada: <strong>${{ totalFinal }} MXN</strong>.
+                      Django calculará el total oficial antes de solicitar el cobro a Clip.
                     </p>
                     <p class="text-caption text-muted mb-0">
                       El sistema tokeniza tu tarjeta de forma segura (Checkout Transparente) y realiza el cobro automáticamente.
@@ -355,7 +353,7 @@
                         Procesando...
                       }
                     } @else {
-                      Confirmar pedido — ${{ totalFinal }} MXN
+                      Confirmar pedido — Django calculará el total
                     }
                   </button>
                 </div>
@@ -368,7 +366,7 @@
           <!-- ============================================ -->
           <div class="checkout-sidebar">
             <div class="card" style="position: sticky; top: var(--spacing-lg);">
-              <h4 class="mb-md">Resumen del pedido</h4>
+              <h4 class="mb-md">Resumen estimado del pedido</h4>
 
               @for (item of carritoService.items(); track item.productoId) {
                 <div class="flex-between mb-sm text-small">
@@ -397,7 +395,7 @@
               <hr style="border: none; border-top: 1px solid var(--divider-color); margin: var(--spacing-md) 0;">
 
               <div class="flex-between">
-                <span style="font-weight: 700; font-size: 18px;">Total</span>
+                <span style="font-weight: 700; font-size: 18px;">Total estimado</span>
                 <span class="text-gold" style="font-weight: 700; font-size: 20px;">${{ totalFinal }} MXN</span>
               </div>
             </div>

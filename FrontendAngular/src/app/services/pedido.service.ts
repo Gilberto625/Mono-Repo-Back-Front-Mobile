@@ -1,8 +1,9 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { API_ENDPOINTS, apiEndpoint } from '../core/api/api-endpoints';
 
 export interface ItemPedidoReq {
   producto_id: number;
@@ -55,6 +56,17 @@ export interface PromocionValidarReq {
   items?: Array<{ producto_id: number; cantidad: number; precio_unitario: number }>;
 }
 
+export type EstadoPagoClip = 'confirmado' | 'pendiente' | 'rechazado' | 'inconsistente';
+
+export interface ClipPagoRespuesta {
+  ok: boolean;
+  checkout_url?: string;
+  estado_pago?: string;
+  pago_directo?: boolean;
+  message?: string;
+  error?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -69,52 +81,35 @@ export class PedidoService {
   pedidos = signal<PedidoResp[]>([]);
   cargando = signal(false);
 
-  private getHeaders(): HttpHeaders {
-    const accessToken = localStorage.getItem('accessToken') || '';
-    let headers = new HttpHeaders();
-    if (accessToken) {
-      headers = headers.set('Authorization', `Bearer ${accessToken}`);
-    }
-    return headers;
-  }
-
   crearPedido(data: CrearPedidoReq): Observable<any> {
-    return this.http.post(`${this.apiUrl}/pedidos/crear/`, data, {
-      headers: this.getHeaders(),
-      withCredentials: true
-    });
+    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.createOrder), data, { withCredentials: true });
   }
 
   validarPromocion(data: PromocionValidarReq): Observable<any> {
-    return this.http.post(`${this.apiUrl}/promociones/validar/`, data, {
-      headers: this.getHeaders(),
-      withCredentials: true
-    });
+    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.validatePromotion), data, { withCredentials: true });
   }
 
   clipIntentarPago(payload: {
     tipo: 'pedido' | 'cita';
     pedido_id?: number;
     cita_id?: number;
-    modo_cobro?: 'total' | 'anticipo_monto' | 'anticipo_porcentaje';
-    anticipo_monto?: number;
-    anticipo_porcentaje?: number;
-    penalizada?: boolean;
     card_token_id?: string;
     cliente_email?: string;
     cliente_phone?: string;
-  }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/pagos/clip/intentar/`, payload, {
-      headers: this.getHeaders(),
+  }): Observable<ClipPagoRespuesta> {
+    return this.http.post<any>(apiEndpoint(this.apiUrl, API_ENDPOINTS.clipPayment), payload, {
       withCredentials: true
-    });
+    }).pipe(map((response) => ({
+      ...response,
+      checkout_url: String(response?.checkout_url || response?.payment_url || '').trim() || undefined
+    })));
   }
 
   clipConfig(): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}/pagos/clip/intentar/`,
+      apiEndpoint(this.apiUrl, API_ENDPOINTS.clipPayment),
       { accion: 'config' },
-      { headers: this.getHeaders(), withCredentials: true }
+      { withCredentials: true }
     );
   }
 
@@ -129,8 +124,7 @@ export class PedidoService {
 
     this.pedidosInFlight = true;
     this.cargando.set(this.pedidos().length === 0);
-    this.http.get<{ ok: boolean; pedidos: PedidoResp[] }>(`${this.apiUrl}/pedidos/`, {
-      headers: this.getHeaders(),
+    this.http.get<{ ok: boolean; pedidos: PedidoResp[] }>(apiEndpoint(this.apiUrl, API_ENDPOINTS.orders), {
       withCredentials: true
     }).pipe(
       tap({
@@ -153,6 +147,20 @@ export class PedidoService {
         this.pedidosInFlight = false;
       }
     });
+  }
+
+  consultarEstadoPedido(pedidoId: number): Observable<PedidoResp | null> {
+    return this.http.get<{ ok: boolean; pedidos: PedidoResp[] }>(apiEndpoint(this.apiUrl, API_ENDPOINTS.orders), {
+      withCredentials: true
+    }).pipe(map((response) => response?.pedidos?.find((pedido) => pedido.id === pedidoId) || null));
+  }
+
+  normalizarEstadoPago(estado: unknown): EstadoPagoClip {
+    const value = String(estado || '').trim().toLowerCase();
+    if (['approved', 'paid', 'completed', 'aprobado', 'pagado', 'completado'].includes(value)) return 'confirmado';
+    if (['rejected', 'failed', 'cancelled', 'rechazado', 'fallido', 'cancelado'].includes(value)) return 'rechazado';
+    if (['inconsistent', 'suspicious', 'inconsistente', 'sospechoso'].includes(value)) return 'inconsistente';
+    return 'pendiente';
   }
 
   getPedidosCacheSnapshot(): PedidoResp[] {

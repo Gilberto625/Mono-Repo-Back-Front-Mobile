@@ -647,23 +647,23 @@ export class AdminService {
    * Si anticipo_pagado > 0, cuenta como ganancia el día que se agenda.
    */
   createCita(data: {
-    cliente_id: number;
     barbero_id?: number;
     servicio_id: number;
     fecha: string;
     hora: string;
-    duracion_minutos: number;
-    precio_total: number;
-    anticipo_pagado?: number;
     comprobante_pago?: string;
     codigo_descuento?: string;
-    descuento_monto?: number;
     notas?: string;
-  }): Observable<{ ok: boolean; id: number; fecha: string; hora: string; precio_total: number; anticipo_pagado: number; comprobante_pago?: string }> {
+  }): Observable<{
+    ok: boolean; id: number; fecha: string; hora: string;
+    precio_total: number; descuento: number; requiere_anticipo: boolean;
+    porcentaje_anticipo: number; anticipo_requerido: number;
+    anticipo_pagado: number; monto_restante: number; comprobante_pago?: string;
+  }> {
     return this.http.post(`${this.apiUrl}/citas/`, data, {
       headers: this.getHeaders(),
       withCredentials: true
-    }) as Observable<{ ok: boolean; id: number; fecha: string; hora: string; precio_total: number; anticipo_pagado: number; comprobante_pago?: string }>;
+    }) as Observable<any>;
   }
 
   /** Consultar política de pago para citas (incluye estado de penalización del cliente). */

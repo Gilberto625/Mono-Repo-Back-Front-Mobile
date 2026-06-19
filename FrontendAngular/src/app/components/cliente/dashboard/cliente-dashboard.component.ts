@@ -1,12 +1,11 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SidebarComponent } from '../../shared/sidebar/sidebar.component';
 import { BreadcrumbComponent } from '../../shared/breadcrumb/breadcrumb.component';
 import { AuthService } from '../../../services/auth.service';
 import { CarritoService } from '../../../services/carrito.service';
-import { environment } from '../../../../environments/environment';
+import { CitaService } from '../../../services/cita.service';
 
 interface ProximaCita {
   id: number;
@@ -43,11 +42,9 @@ interface DashboardStats {
 })
 export class ClienteDashboardComponent implements OnInit {
   private authService = inject(AuthService);
-  private http = inject(HttpClient);
+  private citaService = inject(CitaService);
   private router = inject(Router);
   carritoService = inject(CarritoService);
-
-  private apiUrl = environment.apiUrl;
 
   cargando = signal(true);
   stats = signal<DashboardStats | null>(null);
@@ -71,15 +68,6 @@ export class ClienteDashboardComponent implements OnInit {
     this.cargarDashboard();
   }
 
-  private getHeaders(): HttpHeaders {
-    const accessToken = localStorage.getItem('accessToken') || '';
-    let headers = new HttpHeaders();
-    if (accessToken) {
-      headers = headers.set('Authorization', `Bearer ${accessToken}`);
-    }
-    return headers;
-  }
-
   private cargarDashboard(): void {
     this.cargando.set(true);
 
@@ -93,10 +81,7 @@ export class ClienteDashboardComponent implements OnInit {
     }
 
     // Cargar stats del backend
-    this.http.get<{ ok: boolean; stats: DashboardStats }>(
-      `${this.apiUrl}/dashboard-stats/`,
-      { headers: this.getHeaders(), withCredentials: true }
-    ).subscribe({
+    this.citaService.obtenerDashboardCliente<DashboardStats>().subscribe({
       next: (res) => {
         if (res.ok && res.stats) {
           const s = res.stats;

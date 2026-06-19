@@ -620,16 +620,12 @@ export class AgendarCitaComponent implements OnInit {
 
   /** Monto final que se pagará como anticipo */
   get montoAnticipo(): number {
-    if (this.anticipoObligatorio) {
-      return Math.max(this.montoAnticipoObligatorio, this.anticipoVoluntario());
-    }
-    if (this.quierePagarAnticipo()) return this.anticipoVoluntario();
-    return 0;
+    return this.anticipoObligatorio ? this.montoAnticipoObligatorio : 0;
   }
 
   /** Si va a pagar algo de anticipo */
   get pagaraAnticipo(): boolean {
-    return this.montoAnticipo > 0;
+    return this.anticipoObligatorio;
   }
 
   calcularRestante(): number {
@@ -765,7 +761,7 @@ export class AgendarCitaComponent implements OnInit {
       if (!win.ClipSDK) throw new Error('No se pudo cargar clip-sdk.js');
       const container = document.getElementById('clip-cita-card');
       if (!container) throw new Error('No se encontró el formulario de tarjeta.');
-      container.innerHTML = '';
+      container.replaceChildren();
       this.clipSdkInstance = new win.ClipSDK(this.clipPublicKey);
       this.clipCard = this.clipSdkInstance.element.create('Card', { locale: 'es', theme: 'dark' });
       this.clipCard.mount('clip-cita-card');
@@ -870,7 +866,6 @@ export class AgendarCitaComponent implements OnInit {
       return;
     }
 
-    const userId = Number(user.id);
     let comprobanteUrl = '';
     try {
       if (anticipo > 0 && metodoAnticipo === 'transferencia' && this.comprobanteFile()) {
@@ -887,46 +882,43 @@ export class AgendarCitaComponent implements OnInit {
       }
 
       const resCita: any = await firstValueFrom(this.adminService.createCita({
-        cliente_id: userId,
         barbero_id: Number(barbero.id),
         servicio_id: Number(servicio.id),
         fecha: fechaStr,
         hora: horaStr,
-        duracion_minutos: this.totalDuracionReserva,
-        precio_total: this.totalServicioFinal,
-        anticipo_pagado: anticipo,
         comprobante_pago: comprobanteUrl,
         codigo_descuento: this.promoAplicada()?.codigo || '',
-        descuento_monto: this.descuentoAplicadoMonto,
         notas: this.buildNotasComplementos()
-      } as any));
+      }));
 
       if (!resCita?.ok || !resCita?.id) {
         throw new Error('No se pudo crear la cita.');
       }
 
-      if (anticipo > 0 && metodoAnticipo === 'tarjeta') {
+      if (resCita.requiere_anticipo && metodoAnticipo === 'tarjeta') {
         const tokenId = await this.tokenizarTarjetaClip();
         const clienteEmail = String(user.email || '').trim();
         const clientePhone = String((user as any)?.telefono || '').trim();
-        const clipRes: any = await firstValueFrom(this.pedidoService.clipIntentarPago({
+        const clipRes = await firstValueFrom(this.pedidoService.clipIntentarPago({
           tipo: 'cita',
           cita_id: Number(resCita.id),
-          modo_cobro: anticipo >= this.totalServicioFinal ? 'total' : 'anticipo_monto',
-          anticipo_monto: anticipo,
-          penalizada: this.anticipoObligatorio,
           card_token_id: tokenId,
           cliente_email: clienteEmail || undefined,
           cliente_phone: clientePhone || undefined,
         }));
-        if (!clipRes?.ok) {
-          throw new Error(clipRes?.clip_error || clipRes?.error || 'No se pudo procesar el pago con tarjeta.');
+        const estadoPago = this.pedidoService.normalizarEstadoPago(clipRes?.estado_pago);
+        if (!clipRes?.ok || estadoPago === 'rechazado' || estadoPago === 'inconsistente') {
+          throw new Error('No fue posible confirmar el pago con Clip.');
+        }
+        if (clipRes.checkout_url) {
+          this.redirigirAClipSeguro(clipRes.checkout_url);
+          return;
         }
       }
 
       this.creandoCita.set(false);
-      const msg = anticipo > 0
-        ? '¡Cita agendada con éxito! Tu anticipo fue registrado.'
+      const msg = resCita.requiere_anticipo
+        ? 'Cita creada. El estado del anticipo se confirmará desde el backend.'
         : '¡Cita agendada con éxito!';
       this.exitoCita.set(msg);
       setTimeout(() => {
@@ -936,7 +928,17 @@ export class AgendarCitaComponent implements OnInit {
       this.subiendoComprobante.set(false);
       this.creandoCita.set(false);
       this.exitoCita.set('');
-      this.errorCita.set(err?.error?.error || err?.message || 'Error al crear la cita. Intenta de nuevo.');
+      this.errorCita.set('No fue posible crear la cita. Revisa los datos e intenta de nuevo.');
+    }
+  }
+
+  private redirigirAClipSeguro(checkoutUrl: string): void {
+    try {
+      const url = new URL(checkoutUrl);
+      if (url.protocol !== 'https:') throw new Error('Protocolo no permitido');
+      window.location.assign(url.toString());
+    } catch {
+      throw new Error('El backend no devolvió una URL segura de pago.');
     }
   }
 }

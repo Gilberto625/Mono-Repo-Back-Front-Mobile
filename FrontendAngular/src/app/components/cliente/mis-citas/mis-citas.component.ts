@@ -1,10 +1,9 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SidebarComponent } from '../../shared/sidebar/sidebar.component';
 import { BreadcrumbComponent } from '../../shared/breadcrumb/breadcrumb.component';
-import { environment } from '../../../../environments/environment';
+import { CitaService } from '../../../services/cita.service';
 
 interface CitaBackend {
   id: number;
@@ -29,8 +28,7 @@ interface CitaBackend {
   styleUrl: './mis-citas.component.css'
 })
 export class MisCitasComponent implements OnInit {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
+  private readonly citaService = inject(CitaService);
 
   private readonly cacheKey = 'cliente_mis_citas_v1';
   private readonly cacheTtlMs = 30 * 1000;
@@ -49,25 +47,13 @@ export class MisCitasComponent implements OnInit {
     this.cargarCitas();
   }
 
-  private getHeaders(): HttpHeaders {
-    const accessToken = localStorage.getItem('accessToken') || '';
-    let headers = new HttpHeaders();
-    if (accessToken) {
-      headers = headers.set('Authorization', `Bearer ${accessToken}`);
-    }
-    return headers;
-  }
-
   private cargarCitas(): void {
     if (this.inFlight) return;
     if (this.isCacheFresh()) return;
 
     this.inFlight = true;
     this.cargando.set(this.citas().length === 0);
-    this.http.get<{ ok: boolean; citas: CitaBackend[] }>(
-      `${this.apiUrl}/mis-citas/`,
-      { headers: this.getHeaders(), withCredentials: true }
-    ).subscribe({
+    this.citaService.listarMisCitas<CitaBackend>().subscribe({
       next: (res) => {
         if (res.ok) {
           this.citas.set(res.citas);

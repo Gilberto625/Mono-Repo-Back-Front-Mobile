@@ -1,7 +1,6 @@
 import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { RolUsuario } from '../../../models';
 import { LogoService } from '../../../services/logo.service';
 import { AuthService } from '../../../services/auth.service';
@@ -9,7 +8,7 @@ import { AuthService } from '../../../services/auth.service';
 interface MenuItem {
   label: string;
   route: string;
-  icon: SafeHtml;
+  icon: string;
 }
 
 export interface MenuSection {
@@ -25,7 +24,6 @@ export interface MenuSection {
 })
 export class SidebarComponent {
   @Input() rol: RolUsuario = 'cliente';
-  private readonly sanitizer = inject(DomSanitizer);
   private readonly authService = inject(AuthService);
   readonly logoService = inject(LogoService);
 
@@ -161,8 +159,8 @@ export class SidebarComponent {
     return menus[this.rol];
   }
 
-  private sanitize(html: string): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(html);
+  private sanitize(_icon: string): string {
+    return '•';
   }
 
   onLogout(): void {

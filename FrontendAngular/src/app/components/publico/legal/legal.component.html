@@ -21,7 +21,7 @@
       <div class="legal-grid" appScrollReveal="stagger">
         @for (c of contenidos; track c.tipo) {
           <div class="legal-card card--premium-hover">
-            <div class="legal-card-icon" [innerHTML]="getIcono(c.tipo)"></div>
+            <div class="legal-card-icon" aria-hidden="true">{{ getIcono(c.tipo) }}</div>
             <h2 class="legal-card-titulo">{{ c.titulo }}</h2>
             <p class="legal-card-contenido">{{ c.contenido }}</p>
           </div>

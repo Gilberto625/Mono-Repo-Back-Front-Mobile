@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, catchError, firstValueFrom, map, of, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, firstValueFrom, map, of, switchMap, tap, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Auth, GoogleAuthProvider, signInWithPopup, signOut, UserCredential } from '@angular/fire/auth';
+import { TokenService } from '../core/auth/token.service';
+import { API_ENDPOINTS, apiEndpoint } from '../core/api/api-endpoints';
 
 export interface Usuario {
   id?: number;
@@ -47,7 +49,6 @@ interface LoginApiResponse {
   canal?: string;
   destino?: string;
   mensaje?: string;
-  codigo_debug?: string;
   access?: string;
   refresh?: string;
   usuario?: Usuario;
@@ -94,9 +95,10 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private auth: Auth
+    private auth: Auth,
+    private tokenService: TokenService
   ) {
-    const accessToken = localStorage.getItem('accessToken');
+    const accessToken = this.tokenService.getAccessToken();
     const storedUser = localStorage.getItem('currentUser');
 
     if (!accessToken || !storedUser || this.isTokenExpired(accessToken)) {
@@ -131,7 +133,7 @@ export class AuthService {
   }
 
   private hasValidAccessToken(): boolean {
-    const token = localStorage.getItem('accessToken');
+    const token = this.tokenService.getAccessToken();
     if (!token) return false;
     return !this.isTokenExpired(token);
   }
@@ -159,9 +161,6 @@ export class AuthService {
    */
   register(data: RegisterData): Observable<any> {
     const url = `${this.apiUrl}/register/`;
-    console.log('🔵 Registrando usuario en:', url);
-    console.log('🔵 Datos enviados:', { ...data, contrasena: '***' });
-    
     return this.http.post(
       url,
       data,
@@ -384,22 +383,21 @@ export class AuthService {
   }
 
   private storeTokens(tokens: JwtTokenResponse): void {
-    localStorage.setItem('accessToken', tokens.access);
-    localStorage.setItem('refreshToken', tokens.refresh);
+    this.tokenService.setTokens(tokens.access, tokens.refresh);
   }
 
   refreshToken(): Observable<string | null> {
-    const refresh = localStorage.getItem('refreshToken');
+    const refresh = this.tokenService.getRefreshToken();
     if (!refresh) {
       return of(null);
     }
 
-    return this.http.post<{ access: string }>(`${this.apiUrl}/auth/token/refresh/`, { refresh }).pipe(
+    return this.http.post<{ access: string }>(apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.refresh), { refresh }).pipe(
       map((resp) => {
         if (!resp?.access) {
           return null;
         }
-        localStorage.setItem('accessToken', resp.access);
+        this.tokenService.setAccessToken(resp.access);
         return resp.access;
       }),
       catchError(() => {
@@ -455,16 +453,6 @@ export class AuthService {
       return fallback;
     }
 
-    const backendMessage =
-      error?.error?.detail ||
-      error?.error?.error ||
-      error?.error?.message ||
-      error?.message;
-
-    if (typeof backendMessage === 'string' && backendMessage.trim()) {
-      return backendMessage.trim();
-    }
-
     if (error?.status === 0) {
       return 'No se pudo conectar con el servidor.';
     }
@@ -497,8 +485,7 @@ export class AuthService {
     this.isAuthenticatedSubject.next(false);
     localStorage.removeItem('currentUser');
     localStorage.removeItem('userRole');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    this.tokenService.clear();
     localStorage.removeItem('registerEmail');
     localStorage.removeItem('testOTP');
     localStorage.removeItem('recoveryTempToken');
@@ -510,98 +497,49 @@ export class AuthService {
    * Obtener pregunta secreta
    */
   obtenerPreguntaSecreta(email: string): Observable<any> {
-    return this.http.post(
-      `${this.apiUrl}/obtener-pregunta-secreta/`,
-      { email },
-      {
-        headers: this.getHeaders(),
-        withCredentials: true
-      }
-    );
+    return this.funcionalidadNoDisponible('La recuperación por pregunta secreta');
   }
 
   /**
    * Verificar respuesta secreta
    */
   verificarRespuestaSecreta(email: string, respuestaSecreta: string): Observable<any> {
-    return this.http.post(
-      `${this.apiUrl}/recuperar/`,
-      { email, respuestaSecreta },
-      {
-        headers: this.getHeaders(),
-        withCredentials: true
-      }
-    );
+    return this.funcionalidadNoDisponible('La recuperación por pregunta secreta');
   }
 
   /**
    * Restablecer contraseña
    */
   restablecerContrasena(tempToken: string, nuevaContrasena: string): Observable<any> {
-    return this.http.post(
-      `${this.apiUrl}/restablecer/`,
-      { tempToken, nuevaContrasena },
-      {
-        headers: this.getHeaders(),
-        withCredentials: true
-      }
-    );
+    return this.actualizarContrasenaOTP(tempToken, nuevaContrasena);
   }
 
   /**
    * Solicitar recuperación de contraseña por email
    */
   solicitarRecuperacionEmail(email: string): Observable<any> {
-    return this.http.post(
-      `${this.apiUrl}/recuperar/email/`,
-      { email },
-      {
-        headers: this.getHeaders(),
-        withCredentials: true
-      }
-    );
+    return this.funcionalidadNoDisponible('La recuperación mediante enlace');
   }
 
   /**
    * Restablecer contraseña con token de email
    */
   restablecerConTokenEmail(token: string, nuevaContrasena: string): Observable<any> {
-    return this.http.post(
-      `${this.apiUrl}/restablecer/email/`,
-      { token, nuevaContrasena },
-      {
-        headers: this.getHeaders(),
-        withCredentials: true
-      }
-    );
+    return this.funcionalidadNoDisponible('La recuperación mediante enlace');
   }
 
   /**
    * Configurar TOTP - Obtener QR code
    */
   configurarTOTP(email: string): Observable<any> {
-    return this.http.post(
-      `${this.apiUrl}/totp/configurar/`,
-      { email },
-      {
-        headers: this.getHeaders(),
-        withCredentials: true
-      }
-    );
+    return this.funcionalidadNoDisponible('La configuración TOTP');
   }
 
   /**
    * Habilitar TOTP después de verificar código
    */
   habilitarTOTP(email: string, codigo: string): Observable<any> {
-    return this.http.post(
-      `${this.apiUrl}/totp/habilitar/`,
-      { email, codigo },
-      {
-        headers: this.getHeaders(),
-        withCredentials: true
-      }
-    );
+    return this.funcionalidadNoDisponible('La configuración TOTP');
   }
 
   /**
@@ -628,28 +566,14 @@ export class AuthService {
    * Generar códigos de respaldo
    */
   generarCodigosRespaldo(email: string): Observable<any> {
-    return this.http.post(
-      `${this.apiUrl}/backup-codes/generar/`,
-      { email },
-      {
-        headers: this.getHeaders(),
-        withCredentials: true
-      }
-    );
+    return this.funcionalidadNoDisponible('Los códigos de respaldo');
   }
 
   /**
    * Obtener estado de seguridad del usuario
    */
   obtenerEstadoSeguridad(email: string): Observable<EstadoSeguridad> {
-    return this.http.post<EstadoSeguridad>(
-      `${this.apiUrl}/seguridad/estado/`,
-      { email },
-      {
-        headers: this.getHeaders(),
-        withCredentials: true
-      }
-    );
+    return this.funcionalidadNoDisponible('El panel de seguridad');
   }
 
   /**
@@ -670,14 +594,14 @@ export class AuthService {
    * Cambiar contraseña (usuario autenticado)
    */
   cambiarContrasena(email: string, contrasenaActual: string, nuevaContrasena: string): Observable<any> {
-    return this.http.post(
-      `${this.apiUrl}/cambiar-contrasena/`,
-      { email, contrasena_actual: contrasenaActual, nueva_contrasena: nuevaContrasena },
-      {
-        headers: this.getHeaders(),
-        withCredentials: true
-      }
-    );
+    return this.cambiarContrasenaUsuario(contrasenaActual, nuevaContrasena);
+  }
+
+  private funcionalidadNoDisponible(nombre: string): Observable<never> {
+    return throwError(() => ({
+      status: 501,
+      error: { error: `${nombre} estará disponible próximamente.` }
+    }));
   }
 
   // ========== MÉTODOS OTP POR CORREO (Brevo) ==========

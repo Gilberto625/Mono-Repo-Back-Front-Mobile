@@ -1,12 +1,25 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Cita, Barbero, HorarioDisponible, Usuario, TipoDemanda } from '../models';
 import { AdminService, HorarioDiaConfig } from './admin.service';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CitaService {
   private adminService = inject(AdminService);
+  private http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
+
+  listarMisCitas<T>(): Observable<{ ok: boolean; citas: T[] }> {
+    return this.http.get<{ ok: boolean; citas: T[] }>(`${this.apiUrl}/mis-citas/`, { withCredentials: true });
+  }
+
+  obtenerDashboardCliente<T>(): Observable<{ ok: boolean; stats: T }> {
+    return this.http.get<{ ok: boolean; stats: T }>(`${this.apiUrl}/dashboard-stats/`, { withCredentials: true });
+  }
 
   /** Horarios de atención por día (0=Lunes .. 6=Domingo). Si no está cargado, se usa 09:00-20:00 y todos los días abiertos. */
   private horariosAtencion = signal<HorarioDiaConfig[] | null>(null);

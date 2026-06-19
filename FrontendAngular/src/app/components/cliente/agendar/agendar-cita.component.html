@@ -498,8 +498,8 @@
                       <p style="font-weight: 600; margin: 0 0 4px;">Anticipo obligatorio por inasistencia</p>
                       <p style="margin: 0; font-size: 0.85rem;">
                         Tienes {{ politicaPago()?.total_inasistencias }} inasistencia(s) sin cancelar. 
-                        Debes pagar un anticipo del {{ politicaPago()?.porcentaje_anticipo }}% (${{ montoAnticipoObligatorio | number:'1.2-2' }} MXN) para confirmar tu cita.
-                        Puedes pagarlo por transferencia o tarjeta de crédito / débito, e incluso liquidar el total si lo deseas.
+                        El anticipo mostrado es estimado: {{ politicaPago()?.porcentaje_anticipo }}% (${{ montoAnticipoObligatorio | number:'1.2-2' }} MXN).
+                        Django calculará y confirmará el importe oficial al crear la cita.
                         Te faltan {{ politicaPago()?.citas_restantes_penalizacion }} cita(s) cumplida(s) de {{ politicaPago()?.citas_penalizacion_total }} para liberar esta penalización.
                       </p>
                     </div>
@@ -563,7 +563,7 @@
                       <input type="number" class="anticipo-input"
                              [value]="montoAnticipo"
                              [min]="montoAnticipoObligatorio" [max]="totalServicioFinal"
-                             (input)="setAnticipoVoluntario(+$any($event.target).value)"
+                             disabled
                              placeholder="0">
                       <span class="anticipo-input-suffix">MXN</span>
                     </div>
@@ -594,10 +594,10 @@
 
                 <div class="pago-voluntario mb-lg">
                   <label class="pago-voluntario-toggle">
-                    <input type="checkbox" [checked]="quierePagarAnticipo()" (change)="quierePagarAnticipo.set(!quierePagarAnticipo()); setAnticipoVoluntario(0)">
+                    <input type="checkbox" [checked]="false" disabled>
                     <span class="pago-voluntario-label">
-                      <span style="font-weight: 600;">¿Deseas dejar anticipo? (Opcional)</span>
-                      <span class="text-small text-muted">Puedes adelantar una parte o el total por transferencia o tarjeta de crédito / débito.</span>
+                      <span style="font-weight: 600;">Anticipo voluntario</span>
+                      <span class="text-small text-muted">Próximamente. El backend aún no admite esta intención de pago.</span>
                     </span>
                   </label>
                 </div>
@@ -703,7 +703,7 @@
             <hr style="border: none; border-top: 1px solid var(--divider-color); margin: var(--spacing-md) 0;">
 
             <div class="flex-between mb-sm">
-              <span style="font-weight: 600;">Total del servicio</span>
+              <span style="font-weight: 600;">Total estimado del servicio</span>
               <span style="font-weight: 600;">${{ totalServicioFinal | number:'1.2-2' }}</span>
             </div>
 
@@ -746,7 +746,7 @@
               } @else if (creandoCita()) {
                 Agendando...
               } @else if (pagaraAnticipo) {
-                Confirmar cita · Anticipo ${{ montoAnticipo | number:'1.2-2' }}
+                Confirmar cita · Django calculará el anticipo
               } @else {
                 Confirmar cita · Pago al llegar
               }

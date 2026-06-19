@@ -2,6 +2,7 @@ import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/comm
 import { inject } from '@angular/core';
 import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { TokenService } from '../core/auth/token.service';
 
 let isRefreshing = false;
 const refreshTokenSubject = new BehaviorSubject<string | null>(null);
@@ -16,7 +17,7 @@ function addAuthHeader(req: HttpRequest<unknown>, token: string) {
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
-  const accessToken = localStorage.getItem('accessToken');
+  const accessToken = inject(TokenService).getAccessToken();
 
   // Evita modificar la solicitud de refresh para no enviar un access token vencido.
   const isRefreshRequest = req.url.includes('/auth/token/refresh/');
