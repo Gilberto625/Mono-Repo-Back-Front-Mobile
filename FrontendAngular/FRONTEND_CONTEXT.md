@@ -8,7 +8,7 @@ Mantener documentado el estado actual del frontend Angular para Cursor, Codex y 
 
 ## Estado actual
 
-Angular Fase 1 crítica y **Fase 2.0 (toolchain)** fueron aplicadas.
+Angular Fase 1 crítica, **Fase 2.0 (toolchain)** y **Fase 2.1 (integración API — parcial)** fueron aplicadas.
 
 ### Fase 1 — seguridad e integración crítica
 
@@ -39,6 +39,48 @@ Objetivos cerrados:
 
 **Nota de entorno:** el sistema global puede seguir en Node 24; para este proyecto usar Node 20 vía nvm/fnm o `.nvmrc` antes de `npm ci` / `npm install`.
 
+### Fase 2.1 — integración API (parcial)
+
+Objetivos cerrados en código:
+
+* `API_ENDPOINTS` ampliado: auth, client, public, orders, promotions, payments, admin (más usadas), secretaria.
+* Helpers: `apiEndpoint()`, `apiEndpointWithQuery()`, `publicServiceDetailPath()`.
+* Servicios migrados a `API_ENDPOINTS`: `auth.service`, `cita.service`, `pedido.service`, `servicio.service`, `producto.service`, `logo.service`, rutas cliente en `admin.service`.
+* `environment.ts` alineado a `http://127.0.0.1:8000/api` (igual que development).
+* `security-dashboard` muestra mensaje “Próximamente” ante HTTP 501 (TOTP/seguridad no expuesto).
+
+Pruebas manuales HTTP (backend local, `USE_LOCAL_DB=False` → Neon):
+
+| Flujo | Resultado | Notas |
+| ----- | --------- | ----- |
+| `GET /api/health/` | 200 OK | Backend responde |
+| `GET /api/public/servicios/` | 503 | Catálogo no disponible (probable fallo DB/Neon) |
+| `GET /api/public/productos/` | No probado (mismo contexto 503) | Pendiente con DB estable |
+| `POST /api/login/` (credencial inválida) | 500 | Requiere revisión backend; no se usaron credenciales reales |
+| `GET /api/mis-citas/` sin token | 401 OK | Protección backend correcta |
+| Crear cita / pedido / Clip | **No ejecutado** | Neon sensible; requiere confirmación o `USE_LOCAL_DB=True` |
+| Login UI / refresh / rol | **No ejecutado E2E** | Pendiente con credenciales de prueba y DB estable |
+
+Build post-cambios: `npm run build` OK (Node 20.19.0).
+
+## API_ENDPOINTS (Fase 2.1)
+
+Rutas centralizadas en `src/app/core/api/api-endpoints.ts`:
+
+| Grupo | Rutas |
+| ----- | ----- |
+| `health` | `/health/` |
+| `auth.*` | login, register, refresh, perfil, 2FA, OTP recuperación |
+| `client.*` | dashboard-stats, mis-citas, citas, política-pago, barberos, disponibilidad, comprobantes |
+| `public.*` | servicios, productos, contacto, configuracion-publica, legal |
+| `orders.*` | list, create |
+| `promotions.validate` | validar cupón |
+| `payments.clipIntent` | intentar pago Clip |
+| `admin.*` | dashboard, configuración, servicios, productos, empleados, promociones, inventario, reportes, legal |
+| `secretaria.*` | dashboard, citas, pedidos |
+
+**Pendiente en `API_ENDPOINTS`:** rutas admin CRUD con `:id`, secretaria detalle/actualizar, alexa, upload admin (siguen como strings en `admin.service` y componentes secretaria).
+
 ## Arquitectura esperada
 
 ```txt
@@ -67,6 +109,10 @@ La estructura actual todavía no está completamente migrada a core/shared/layou
 | ------- | --- |
 | `.nvmrc` | Versión Node 20.19.0 para nvm / fnm |
 | `.node-version` | Versión Node para asdf / rbenv-style tools |
+
+### Archivos modificados en Fase 2.1 (referencia)
+
+`core/api/api-endpoints.ts`, `services/auth.service.ts`, `services/cita.service.ts`, `services/pedido.service.ts`, `services/servicio.service.ts`, `services/producto.service.ts`, `services/logo.service.ts`, `services/admin.service.ts` (rutas cliente), `environments/environment.ts`, `components/security-dashboard/security-dashboard.component.ts`.
 
 ### Archivos modificados en Fase 2.0 (referencia)
 
@@ -101,9 +147,9 @@ npm run build
 | ------------------- | --------- | --------------------------------------------------------------------------------------- |
 | public/landing      | Parcial   | Existe interfaz pública; falta rediseño premium completo.                               |
 | auth                | Parcial   | TokenService e interceptor centralizados; pendiente migración futura a cookie HttpOnly. |
-| client/appointments | Parcial   | Agendado corregido para no enviar montos críticos; falta prueba real Angular ↔ Django.  |
-| client/orders       | Parcial   | Pedido ya no envía total final como autoridad; falta prueba real con backend.           |
-| client/payments     | Parcial   | Checkout valida estado_pago y usa checkout_url del backend; falta prueba Clip staging.  |
+| client/appointments | Parcial   | Endpoints centralizados; POST sin montos críticos; E2E pendiente (DB/Neon).             |
+| client/orders       | Parcial   | Endpoints centralizados; POST sin total; E2E pendiente (DB/Neon).                       |
+| client/payments     | Parcial   | Clip vía backend; E2E pendiente staging/sandbox.                                        |
 | secretary/agenda    | Pendiente | Agenda operativa pendiente de revisión.                                                 |
 | barber/schedule     | Pendiente | Agenda barbero pendiente de revisión.                                                   |
 | admin/dashboard     | Parcial   | Existe admin.service; pendiente desacoplar por dominios.                                |
@@ -197,34 +243,32 @@ No enviar: `subtotal`, `descuento`, `costo_envio`, `total`.
 
 | Fecha      | Cambio                    | Nota                                                                                                     |
 | ---------- | ------------------------- | -------------------------------------------------------------------------------------------------------- |
-| 2026-06-18 | Angular Fase 2.0 toolchain | Node 20 LTS fijado, engines en package.json, lock regenerado, npm ci y build validados.                  |
+| 2026-06-18 | Angular Fase 2.1 integración API (parcial) | API_ENDPOINTS ampliado, servicios cliente migrados, pruebas HTTP limitadas (Neon).       |
+| 2026-06-18 | Angular Fase 2.0 toolchain | Node 20 LTS fijado, engines en package.json, lock regenerado, npm ci y build validados.  |
 | 2026-06-18 | Angular Fase 1 crítica    | XSS cerrado, TokenService creado, API_ENDPOINTS creado, pagos/citas alineados al backend, build exitoso. |
 
 ## Riesgos pendientes
 
 * JWT sigue en localStorage como mitigación temporal; migración futura a cookie HttpOnly.
 * Node global del sistema puede seguir en v24; desarrolladores deben activar Node 20 (nvm/fnm) antes de instalar dependencias.
-* Falta probar flujo real Angular ↔ Django con backend levantado.
-* Falta probar Clip en staging/sandbox o entorno controlado.
-* API_ENDPOINTS todavía no cubre todas las rutas (login, perfil, citas en admin.service siguen como strings).
+* **Backend local con `USE_LOCAL_DB=False`:** catálogo público devolvió 503; login con credencial inválida devolvió 500. Resolver conectividad Neon o usar `USE_LOCAL_DB=True` para E2E.
+* No se ejecutaron pruebas de creación (cita/pedido/Clip) contra Neon sin confirmación explícita.
+* Falta E2E completo: login UI, refresh, agendar, checkout, estado de pago.
+* Falta probar Clip en staging/sandbox.
+* Rutas admin/secretaria con parámetros dinámicos aún no migradas a `API_ENDPOINTS`.
 * admin.service.ts sigue concentrando varios dominios.
 * Totales locales en UI (carrito, checkout, agendar) deben mantenerse solo como informativos.
 * Cupones pueden enviar subtotal para prevalidación, pero Django debe recalcular al confirmar.
-* setup-totp usa bypassSecurityTrustUrl para QR; mantener deshabilitado o controlado hasta que backend exponga endpoint seguro.
-* Checkout efectivo/transferencia marca éxito de pedido registrado, no de pago confirmado; el estado final debe venir del backend.
+* setup-totp usa bypassSecurityTrustUrl para QR; mantener deshabilitado hasta que backend exponga endpoint seguro.
+* Checkout efectivo/transferencia marca éxito de pedido registrado, no de pago confirmado.
 
 ## Próxima fase recomendada
 
-Angular Fase 2.1 — integración API:
+Angular Fase 2.2 — E2E con entorno seguro:
 
-1. Migrar endpoints restantes a API_ENDPOINTS.
-2. Probar integración Angular ↔ Django:
-
-   * login
-   * agendar cita
-   * pedido
-   * checkout
-   * estado de pago
-3. Revisar guards por rol.
-4. Configurar CI con Node 20 LTS (usar `.nvmrc`).
-5. Después iniciar rediseño premium completo.
+1. Levantar backend con `USE_LOCAL_DB=True` o base temporal confirmada.
+2. Probar login, refresh, logout y redirección por rol en UI.
+3. Probar agendar cita, pedido, checkout y consulta de estado de pago.
+4. Migrar rutas admin/secretaria restantes a `API_ENDPOINTS`.
+5. Investigar 503 en catálogo público y 500 en login (backend/DB).
+6. Configurar CI con Node 20 LTS (`.nvmrc`).

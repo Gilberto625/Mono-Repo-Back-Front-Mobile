@@ -160,9 +160,8 @@ export class AuthService {
    * REGISTRO: Paso 1 - Registrar usuario y enviar código 2FA
    */
   register(data: RegisterData): Observable<any> {
-    const url = `${this.apiUrl}/register/`;
     return this.http.post(
-      url,
+      apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.register),
       data,
       {
         headers: this.getHeaders(),
@@ -176,7 +175,7 @@ export class AuthService {
    */
   verifyRegister2FA(tempToken: string, codigo: string): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}/register/2fa/verificar/`,
+      apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.register2faVerify),
       { tempToken, codigo },
       {
         headers: this.getHeaders(),
@@ -198,7 +197,7 @@ export class AuthService {
   login(data: LoginData): Observable<any> {
     const email = (data.email || '').trim();
     return this.http.post<LoginApiResponse>(
-      `${this.apiUrl}/login/`,
+      apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.login),
       { email, password: data.password }
     ).pipe(
       map((response) => {
@@ -230,7 +229,7 @@ export class AuthService {
    */
   verifyLogin2FA(tempToken: string, codigo: string): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}/login/2fa/verificar/`,
+      apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.login2faVerify),
       { tempToken, codigo },
       {
         headers: this.getHeaders(),
@@ -279,7 +278,7 @@ export class AuthService {
       // Enviar el token al backend Django
       const response = await firstValueFrom(
         this.http.post(
-          `${this.apiUrl}/login/google/`,
+          apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.loginGoogle),
           { idToken },
           {
             headers: this.getHeaders(),
@@ -547,7 +546,7 @@ export class AuthService {
    */
   verificarTOTPLogin(tempToken: string, codigo: string, tipo: 'totp' | 'backup'): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}/login/2fa/verificar/`,
+      apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.login2faVerify),
       { tempToken, codigo, tipo },
       {
         headers: this.getHeaders(),
@@ -581,7 +580,7 @@ export class AuthService {
    */
   solicitarCodigoEmail(tempToken: string): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}/login/2fa/solicitar-codigo/`,
+      apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.login2faRequestCode),
       { tempToken },
       {
         headers: this.getHeaders(),
@@ -611,7 +610,7 @@ export class AuthService {
    */
   verificarOTPRegistro(tempToken: string, codigo: string): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}/verificar-otp/`,
+      apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.verifyOtp),
       { tempToken, codigo },
       {
         headers: this.getHeaders(),
@@ -632,7 +631,7 @@ export class AuthService {
    */
   reenviarOTP(correo: string): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}/reenviar-otp/`,
+      apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.resendOtp),
       { correo },
       {
         headers: this.getHeaders(),
@@ -647,7 +646,7 @@ export class AuthService {
    * Obtener perfil completo del usuario
    */
   getPerfil(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/perfil/`, {
+    return this.http.get(apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.profile), {
       withCredentials: true
     });
   }
@@ -656,7 +655,7 @@ export class AuthService {
    * Actualizar perfil del usuario
    */
   actualizarPerfil(data: Partial<{nombre: string; apellido: string; telefono: string; fecha_nacimiento: string; direccion: string; avatar_url: string}>): Observable<any> {
-    return this.http.put(`${this.apiUrl}/perfil/`, data, {
+    return this.http.put(apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.profile), data, {
       withCredentials: true
     }).pipe(
       tap((response: any) => {
@@ -684,7 +683,7 @@ export class AuthService {
    * Cambiar contraseña del usuario autenticado
    */
   cambiarContrasenaUsuario(contrasenaActual: string, nuevaContrasena: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/perfil/cambiar-contrasena/`, {
+    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.profilePassword), {
       contrasena_actual: contrasenaActual,
       nueva_contrasena: nuevaContrasena
     }, {
@@ -693,13 +692,13 @@ export class AuthService {
   }
 
   getPerfil2FAConfig(): Observable<Perfil2FAConfig> {
-    return this.http.get<Perfil2FAConfig>(`${this.apiUrl}/perfil/2fa/`, {
+    return this.http.get<Perfil2FAConfig>(apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.profile2fa), {
       withCredentials: true
     });
   }
 
   actualizarPerfil2FAConfig(email2FA: boolean): Observable<any> {
-    return this.http.put(`${this.apiUrl}/perfil/2fa/`, { email_2fa: email2FA }, {
+    return this.http.put(apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.profile2fa), { email_2fa: email2FA }, {
       withCredentials: true
     });
   }
@@ -710,7 +709,7 @@ export class AuthService {
   uploadAvatar(file: File): Observable<any> {
     const formData = new FormData();
     formData.append('image', file);
-    return this.http.post(`${this.apiUrl}/perfil/upload-avatar/`, formData, {
+    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.profileAvatar), formData, {
       withCredentials: true
     });
   }
@@ -722,7 +721,7 @@ export class AuthService {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('folder', folder);
-    return this.http.post(`${this.apiUrl}/comprobantes/upload/`, formData, {
+    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.client.receiptsUpload), formData, {
       withCredentials: true
     });
   }
@@ -733,7 +732,7 @@ export class AuthService {
    */
   solicitarRecuperacionOTP(email: string): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}/recuperar-otp/`,
+      apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.recoverOtp),
       { email },
       {
         headers: this.getHeaders(),
@@ -747,7 +746,7 @@ export class AuthService {
    */
   verificarOTPRecuperacion(tempToken: string, codigo: string): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}/verificar-otp-recuperacion/`,
+      apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.verifyRecoveryOtp),
       { tempToken, codigo },
       {
         headers: this.getHeaders(),
@@ -761,7 +760,7 @@ export class AuthService {
    */
   reenviarOTPRecuperacion(correo: string): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}/reenviar-otp-recuperacion/`,
+      apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.resendRecoveryOtp),
       { correo, email: correo },  // Enviar ambos campos para compatibilidad
       {
         headers: this.getHeaders(),
@@ -775,7 +774,7 @@ export class AuthService {
    */
   actualizarContrasenaOTP(tempToken: string, nuevaContrasena: string): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}/actualizar-contrasena-otp/`,
+      apiEndpoint(this.apiUrl, API_ENDPOINTS.auth.updatePasswordOtp),
       { tempToken, nuevaContrasena },
       {
         headers: this.getHeaders(),

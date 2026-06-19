@@ -6,6 +6,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, of, throwError, timer } from 'rxjs';
 import { map, tap, catchError, switchMap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { API_ENDPOINTS, apiEndpoint, apiEndpointWithQuery } from '../core/api/api-endpoints';
 
 // Interfaces
 /** Respuesta de `GET /admin/sillas/` (lista y formularios de empleado). */
@@ -460,7 +461,7 @@ export class AdminService {
   // DASHBOARD
   // ============================================
   getDashboardStats(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/admin/dashboard/`, {
+    return this.http.get(apiEndpoint(this.apiUrl, API_ENDPOINTS.admin.dashboard), {
       headers: this.getHeaders(),
       withCredentials: true
     });
@@ -611,8 +612,9 @@ export class AdminService {
     if (cached) {
       return of(cached);
     }
-    let url = `${this.apiUrl}/barberos/`;
-    if (servicioId) url += `?servicio_id=${servicioId}`;
+    let url = apiEndpointWithQuery(this.apiUrl, API_ENDPOINTS.client.barbers, {
+      servicio_id: servicioId
+    });
     return this.http.get(url, {
       withCredentials: true
     }).pipe(
@@ -631,7 +633,11 @@ export class AdminService {
     if (cached) {
       return of(cached);
     }
-    return this.http.get(`${this.apiUrl}/disponibilidad/?barbero_id=${barberoId}&fecha=${fecha}&duracion=${duracion}`, {
+    return this.http.get(apiEndpointWithQuery(this.apiUrl, API_ENDPOINTS.client.availability, {
+      barbero_id: barberoId,
+      fecha,
+      duracion
+    }), {
       withCredentials: true
     }).pipe(
       tap((res: any) => {
@@ -660,7 +666,7 @@ export class AdminService {
     porcentaje_anticipo: number; anticipo_requerido: number;
     anticipo_pagado: number; monto_restante: number; comprobante_pago?: string;
   }> {
-    return this.http.post(`${this.apiUrl}/citas/`, data, {
+    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.client.appointments), data, {
       headers: this.getHeaders(),
       withCredentials: true
     }) as Observable<any>;
@@ -686,7 +692,9 @@ export class AdminService {
     if (cached) {
       return of(cached);
     }
-    return this.http.get(`${this.apiUrl}/citas/politica-pago/?cliente_id=${clienteId}`, {
+    return this.http.get(apiEndpointWithQuery(this.apiUrl, API_ENDPOINTS.client.appointmentPaymentPolicy, {
+      cliente_id: clienteId
+    }), {
       withCredentials: true
     }).pipe(
       tap((res: any) => {
@@ -1341,7 +1349,7 @@ export class AdminService {
     if (cached) {
       return of(cached);
     }
-    return this.http.get(`${this.apiUrl}/admin/configuracion/`, {
+    return this.http.get(apiEndpoint(this.apiUrl, API_ENDPOINTS.admin.configuration), {
       headers: this.getHeaders(),
       withCredentials: true
     }).pipe(
@@ -1368,13 +1376,13 @@ export class AdminService {
       }
     }
 
-    return this.http.get(`${this.apiUrl}/public/contacto/`, {
+    return this.http.get(apiEndpoint(this.apiUrl, API_ENDPOINTS.public.contact), {
       headers,
       withCredentials: true
     }).pipe(
       catchError(() => {
         // Compatibilidad con backend que expone /configuracion-publica/ en lugar de /public/contacto/.
-        return this.http.get(`${this.apiUrl}/configuracion-publica/`, {
+        return this.http.get(apiEndpoint(this.apiUrl, API_ENDPOINTS.public.publicConfig), {
           headers,
           withCredentials: true
         });
@@ -1818,7 +1826,7 @@ export class AdminService {
 
   /** Público: contenidos activos (sin auth). */
   getContenidoLegalPublico(tipo?: string): Observable<any> {
-    let url = `${this.apiUrl}/contenido-legal/`;
+    let url = apiEndpoint(this.apiUrl, API_ENDPOINTS.public.legal);
     if (tipo) url += `?tipo=${encodeURIComponent(tipo)}`;
     return this.http.get(url, {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' }),

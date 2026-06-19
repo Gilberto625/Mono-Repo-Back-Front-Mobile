@@ -82,11 +82,11 @@ export class PedidoService {
   cargando = signal(false);
 
   crearPedido(data: CrearPedidoReq): Observable<any> {
-    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.createOrder), data, { withCredentials: true });
+    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.orders.create), data, { withCredentials: true });
   }
 
   validarPromocion(data: PromocionValidarReq): Observable<any> {
-    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.validatePromotion), data, { withCredentials: true });
+    return this.http.post(apiEndpoint(this.apiUrl, API_ENDPOINTS.promotions.validate), data, { withCredentials: true });
   }
 
   clipIntentarPago(payload: {
@@ -97,7 +97,7 @@ export class PedidoService {
     cliente_email?: string;
     cliente_phone?: string;
   }): Observable<ClipPagoRespuesta> {
-    return this.http.post<any>(apiEndpoint(this.apiUrl, API_ENDPOINTS.clipPayment), payload, {
+    return this.http.post<any>(apiEndpoint(this.apiUrl, API_ENDPOINTS.payments.clipIntent), payload, {
       withCredentials: true
     }).pipe(map((response) => ({
       ...response,
@@ -107,7 +107,7 @@ export class PedidoService {
 
   clipConfig(): Observable<any> {
     return this.http.post(
-      apiEndpoint(this.apiUrl, API_ENDPOINTS.clipPayment),
+      apiEndpoint(this.apiUrl, API_ENDPOINTS.payments.clipIntent),
       { accion: 'config' },
       { withCredentials: true }
     );
@@ -124,7 +124,7 @@ export class PedidoService {
 
     this.pedidosInFlight = true;
     this.cargando.set(this.pedidos().length === 0);
-    this.http.get<{ ok: boolean; pedidos: PedidoResp[] }>(apiEndpoint(this.apiUrl, API_ENDPOINTS.orders), {
+    this.http.get<{ ok: boolean; pedidos: PedidoResp[] }>(apiEndpoint(this.apiUrl, API_ENDPOINTS.orders.list), {
       withCredentials: true
     }).pipe(
       tap({
@@ -150,7 +150,7 @@ export class PedidoService {
   }
 
   consultarEstadoPedido(pedidoId: number): Observable<PedidoResp | null> {
-    return this.http.get<{ ok: boolean; pedidos: PedidoResp[] }>(apiEndpoint(this.apiUrl, API_ENDPOINTS.orders), {
+    return this.http.get<{ ok: boolean; pedidos: PedidoResp[] }>(apiEndpoint(this.apiUrl, API_ENDPOINTS.orders.list), {
       withCredentials: true
     }).pipe(map((response) => response?.pedidos?.find((pedido) => pedido.id === pedidoId) || null));
   }

@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { API_ENDPOINTS, apiEndpoint } from '../core/api/api-endpoints';
 
 export interface LogoConfig {
   logo_tipo: 'texto' | 'imagen';
@@ -35,7 +36,7 @@ export class LogoService {
   }
 
   cargar(): void {
-    this.http.get<any>(`${this.apiUrl}/public/contacto/`, {
+    this.http.get<any>(apiEndpoint(this.apiUrl, API_ENDPOINTS.public.contact), {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' })
     }).subscribe({
       next: (res) => {

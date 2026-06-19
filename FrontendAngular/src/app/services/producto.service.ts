@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { Producto } from '../models';
 import { environment } from '../../environments/environment';
+import { API_ENDPOINTS, apiEndpoint } from '../core/api/api-endpoints';
 
 @Injectable({
   providedIn: 'root'
@@ -60,7 +61,7 @@ export class ProductoService {
     }
     this.productosInFlight = true;
 
-    this.http.get<any>(`${this.apiUrl}/public/productos/`).pipe(
+    this.http.get<any>(apiEndpoint(this.apiUrl, API_ENDPOINTS.public.products)).pipe(
       map((res: any) => {
         // Compatibilidad: algunos backends públicos responden arreglo directo y otros { ok, productos }.
         if (Array.isArray(res)) return res;
@@ -119,7 +120,7 @@ export class ProductoService {
     }
 
     // El backend actual expone listado público; resolvemos el detalle desde listado.
-    return this.http.get<any>(`${this.apiUrl}/public/productos/`).pipe(
+    return this.http.get<any>(apiEndpoint(this.apiUrl, API_ENDPOINTS.public.products)).pipe(
       map((res: any) => {
         let list: any[] = [];
         if (Array.isArray(res)) {

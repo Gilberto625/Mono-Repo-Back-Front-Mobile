@@ -60,9 +60,15 @@ export class SecurityDashboardComponent implements OnInit {
       },
       error: (error) => {
         this.loading = false;
-        const errorMsg = error.error?.error || 'Error al cargar estado de seguridad';
-        this.showMessage(errorMsg, 'error');
-        // Usar valores por defecto en caso de error
+        if (Number(error?.status) === 501) {
+          this.modalService.showInfo(
+            error?.error?.error || 'El panel de seguridad estará disponible próximamente.',
+            'Próximamente'
+          );
+        } else {
+          const errorMsg = error?.error?.error || 'No se pudo cargar el estado de seguridad.';
+          this.showMessage(errorMsg, 'error');
+        }
         this.estadoSeguridad = {
           email_2fa: false,
           totp_habilitado: false,

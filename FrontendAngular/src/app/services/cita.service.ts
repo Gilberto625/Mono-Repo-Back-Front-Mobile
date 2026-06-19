@@ -4,6 +4,7 @@ import { AdminService, HorarioDiaConfig } from './admin.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { API_ENDPOINTS, apiEndpoint } from '../core/api/api-endpoints';
 
 @Injectable({
   providedIn: 'root'
@@ -14,11 +15,11 @@ export class CitaService {
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
 
   listarMisCitas<T>(): Observable<{ ok: boolean; citas: T[] }> {
-    return this.http.get<{ ok: boolean; citas: T[] }>(`${this.apiUrl}/mis-citas/`, { withCredentials: true });
+    return this.http.get<{ ok: boolean; citas: T[] }>(apiEndpoint(this.apiUrl, API_ENDPOINTS.client.myAppointments), { withCredentials: true });
   }
 
   obtenerDashboardCliente<T>(): Observable<{ ok: boolean; stats: T }> {
-    return this.http.get<{ ok: boolean; stats: T }>(`${this.apiUrl}/dashboard-stats/`, { withCredentials: true });
+    return this.http.get<{ ok: boolean; stats: T }>(apiEndpoint(this.apiUrl, API_ENDPOINTS.client.dashboardStats), { withCredentials: true });
   }
 
   /** Horarios de atención por día (0=Lunes .. 6=Domingo). Si no está cargado, se usa 09:00-20:00 y todos los días abiertos. */

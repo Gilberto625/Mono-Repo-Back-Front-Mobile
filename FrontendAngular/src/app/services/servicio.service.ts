@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { Servicio } from '../models';
 import { environment } from '../../environments/environment';
+import { API_ENDPOINTS, apiEndpoint, publicServiceDetailPath } from '../core/api/api-endpoints';
 
 @Injectable({
   providedIn: 'root'
@@ -50,7 +51,7 @@ export class ServicioService {
     if (this.isCacheFresh()) return;
 
     this.serviciosInFlight = true;
-    this.http.get<any>(`${this.apiUrl}/public/servicios/`).pipe(
+    this.http.get<any>(apiEndpoint(this.apiUrl, API_ENDPOINTS.public.services)).pipe(
       map(res => {
         if (Array.isArray(res)) return res;
         if (res?.ok && Array.isArray(res.servicios)) return res.servicios;
@@ -74,7 +75,7 @@ export class ServicioService {
 
   /** Obtener un servicio por ID (público, para vista detalle) */
   getServicioPublicoById(id: string): Observable<Servicio | null> {
-    return this.http.get<any>(`${this.apiUrl}/public/servicios/${id}/`).pipe(
+    return this.http.get<any>(apiEndpoint(this.apiUrl, publicServiceDetailPath(id))).pipe(
       map(res => {
         if (res?.ok && res.servicio) return this.mapServicioFromApi(res.servicio);
         if (res && !res.ok && !res.servicio && !Array.isArray(res) && res.id) return this.mapServicioFromApi(res);
