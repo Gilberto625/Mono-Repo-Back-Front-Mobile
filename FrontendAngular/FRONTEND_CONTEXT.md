@@ -8,7 +8,9 @@ Mantener documentado el estado actual del frontend Angular para Cursor, Codex y 
 
 ## Estado actual
 
-Angular Fase 1 crítica fue aplicada.
+Angular Fase 1 crítica y **Fase 2.0 (toolchain)** fueron aplicadas.
+
+### Fase 1 — seguridad e integración crítica
 
 Objetivos cerrados:
 
@@ -23,7 +25,19 @@ Objetivos cerrados:
 * pedido.service.ts ya no envía total final como autoridad de negocio en crear pedido.
 * checkout.component.ts valida estado_pago antes de mostrar éxito de pago Clip.
 * agendar-cita.component.ts usa montos del backend o valores claramente informativos en UI.
-* npm run build fue ejecutado correctamente.
+
+### Fase 2.0 — estabilización de toolchain
+
+Objetivos cerrados:
+
+* Node **20.19.0 LTS** fijado en `.nvmrc` y `.node-version`.
+* `package.json` declara `engines`: Node `>=20.9.0 <21`, npm `>=10 <11`.
+* `package-lock.json` regenerado con **Node 20.19.0 / npm 10.8.2** (no con Node 24/npm 11).
+* `npm ci` validado en instalación limpia (sin `node_modules` previo).
+* `npm run build` validado tras `npm ci`.
+* `.tools/` ignorado en Git (Node portable local opcional; no commitear).
+
+**Nota de entorno:** el sistema global puede seguir en Node 24; para este proyecto usar Node 20 vía nvm/fnm o `.nvmrc` antes de `npm ci` / `npm install`.
 
 ## Arquitectura esperada
 
@@ -47,9 +61,39 @@ La estructura actual todavía no está completamente migrada a core/shared/layou
 | `src/app/core/auth/token.service.ts` | Lectura/escritura centralizada de JWT en localStorage |
 | `src/app/core/api/api-endpoints.ts` | Rutas críticas: auth refresh, pedidos, promociones, Clip |
 
+### Archivos nuevos en Fase 2.0
+
+| Archivo | Rol |
+| ------- | --- |
+| `.nvmrc` | Versión Node 20.19.0 para nvm / fnm |
+| `.node-version` | Versión Node para asdf / rbenv-style tools |
+
+### Archivos modificados en Fase 2.0 (referencia)
+
+`.gitignore` (ignora `.tools/`), `package.json` (`engines`), `package-lock.json` (regenerado con Node 20).
+
 ### Archivos modificados en Fase 1 (referencia)
 
-`main.ts`, `interceptors/auth.interceptor.ts`, `services/modal.service.ts`, `services/auth.service.ts`, `services/pedido.service.ts`, `services/cita.service.ts`, `services/admin.service.ts`, `components/cliente/checkout/*`, `components/cliente/agendar/*`, `components/cliente/dashboard/*`, `components/cliente/mis-citas/*`, `components/publico/legal/legal.component.html`, `components/shared/sidebar/*`, `package-lock.json`.
+`main.ts`, `interceptors/auth.interceptor.ts`, `services/modal.service.ts`, `services/auth.service.ts`, `services/pedido.service.ts`, `services/cita.service.ts`, `services/admin.service.ts`, `components/cliente/checkout/*`, `components/cliente/agendar/*`, `components/cliente/dashboard/*`, `components/cliente/mis-citas/*`, `components/publico/legal/legal.component.html`, `components/shared/sidebar/*`.
+
+## Toolchain (Fase 2.0)
+
+| Herramienta | Versión fijada / validada |
+| ----------- | ------------------------- |
+| Node        | 20.19.0 LTS (`.nvmrc`, `.node-version`) |
+| npm         | 10.8.2 (rango `>=10 <11` en `engines`) |
+| Angular     | 17.3.x (sin cambio de major) |
+
+Comandos de validación (con Node 20 activo):
+
+```bash
+cd FrontendAngular
+node -v    # debe ser v20.x
+npm -v     # debe ser 10.x
+rm -rf node_modules
+npm ci
+npm run build
+```
 
 ## Módulos esperados
 
@@ -151,15 +195,15 @@ No enviar: `subtotal`, `descuento`, `costo_envio`, `total`.
 
 ## Cambios recientes
 
-| Fecha      | Cambio                 | Nota                                                                                                     |
-| ---------- | ---------------------- | -------------------------------------------------------------------------------------------------------- |
-| 2026-06-18 | Angular Fase 1 crítica | XSS cerrado, TokenService creado, API_ENDPOINTS creado, pagos/citas alineados al backend, build exitoso. |
+| Fecha      | Cambio                    | Nota                                                                                                     |
+| ---------- | ------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 2026-06-18 | Angular Fase 2.0 toolchain | Node 20 LTS fijado, engines en package.json, lock regenerado, npm ci y build validados.                  |
+| 2026-06-18 | Angular Fase 1 crítica    | XSS cerrado, TokenService creado, API_ENDPOINTS creado, pagos/citas alineados al backend, build exitoso. |
 
 ## Riesgos pendientes
 
 * JWT sigue en localStorage como mitigación temporal; migración futura a cookie HttpOnly.
-* npm ci falla con Node 24/npm 11; se recomienda Node 20 LTS para CI estable.
-* package-lock.json no debe confirmarse si fue regenerado con Node 24/npm 11 sin validar `npm ci` en limpio.
+* Node global del sistema puede seguir en v24; desarrolladores deben activar Node 20 (nvm/fnm) antes de instalar dependencias.
 * Falta probar flujo real Angular ↔ Django con backend levantado.
 * Falta probar Clip en staging/sandbox o entorno controlado.
 * API_ENDPOINTS todavía no cubre todas las rutas (login, perfil, citas en admin.service siguen como strings).
@@ -171,18 +215,16 @@ No enviar: `subtotal`, `descuento`, `costo_envio`, `total`.
 
 ## Próxima fase recomendada
 
-Angular Fase 2:
+Angular Fase 2.1 — integración API:
 
-1. Fijar Node 20 LTS.
-2. Regenerar package-lock.json con Node 20.
-3. Validar npm ci en limpio.
-4. Migrar endpoints restantes a API_ENDPOINTS.
-5. Probar integración Angular ↔ Django:
+1. Migrar endpoints restantes a API_ENDPOINTS.
+2. Probar integración Angular ↔ Django:
 
    * login
    * agendar cita
    * pedido
    * checkout
    * estado de pago
-6. Revisar guards por rol.
-7. Después iniciar rediseño premium completo.
+3. Revisar guards por rol.
+4. Configurar CI con Node 20 LTS (usar `.nvmrc`).
+5. Después iniciar rediseño premium completo.

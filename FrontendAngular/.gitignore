@@ -36,6 +36,9 @@ Thumbs.db
 # Angular
 .angular/
 
+# Local toolchain (portable Node for dev/CI bootstrap)
+.tools/
+
 # Nova_Graf-main (carpeta de referencia)
 Nova_Graf-main/
 *.md
