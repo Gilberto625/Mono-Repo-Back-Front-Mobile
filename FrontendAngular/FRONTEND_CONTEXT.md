@@ -8,7 +8,7 @@ Mantener documentado el estado actual del frontend Angular para Cursor, Codex y 
 
 ## Estado actual
 
-Angular Fase 1 crítica, **Fase 2.0 (toolchain)**, **Fase 2.1 (integración API — parcial)** y **Fase 2.2 (E2E entorno seguro — parcial)** fueron aplicadas.
+Angular Fase 1 crítica, **Fase 2.0 (toolchain)**, **Fase 2.1 (integración API — parcial)**, **Fase 2.2 (E2E SQLite — parcial)** y **Fase 2.3 (E2E Neon staging controlado)** fueron aplicadas.
 
 ### Fase 1 — seguridad e integración crítica
 
@@ -138,6 +138,81 @@ Usuarios E2E creados solo en SQLite local (no Neon): `e2e_admin`, `e2e_cliente` 
 
 **Correcciones realizadas en Fase 2.2:** ninguna en código Angular ni Backend. Solo documentación en este archivo.
 
+### Fase 2.3 — E2E Neon staging controlado
+
+**Entorno:** Neon PostgreSQL staging (`USE_LOCAL_DB=False`). Django `http://127.0.0.1:8000`. Sin operaciones destructivas (sin DROP/TRUNCATE/DELETE masivo).
+
+**Diagnóstico Fase A (sin modificar datos existentes):**
+
+| Endpoint | Status | Causa / hallazgo |
+| -------- | ------ | -------------- |
+| `GET /api/public/servicios/` | **200** | Esquema `negocio` OK en Neon; 503 de Fase 2.1/2.2 era por SQLite (`USE_LOCAL_DB=True`) |
+| `GET /api/public/productos/` | **200** | Igual |
+| `POST /api/login/` inválido | **401** | Comportamiento correcto en Neon (no reproducible el 500 de Fase 2.1) |
+| Esquema `negocio` | **OK** | Presente |
+| Tablas críticas | **OK** | usuario, rol, usuario_rol, servicio, empleado, cita, producto, inventario_existencia, codigo_verificacion |
+| Datos mínimos previos | **OK** | 15 servicios activos, 3 barberos, 19 productos; sin usuarios `e2e_*` hasta seed |
+
+**Fase B (corrección backend):** no requirió cambios. Catálogo y login inválido ya responden correctamente en Neon.
+
+**Fase C — Seed mínimo autorizado** (`python manage.py seed_e2e_staging`):
+
+| Recurso | Identificador |
+| ------- | ------------- |
+| Admin | `e2e_admin_stylo` |
+| Cliente | `e2e_cliente_stylo` (2FA deshabilitado para E2E) |
+| Barbero | `e2e_barbero_stylo` + horario + `barbero_servicio` |
+| Servicio | `E2E_TEST Corte Básico` (id 16) |
+| Producto | `E2E_TEST Pomada` (id 21, stock 10) |
+
+Password de prueba documentada en `Backend/bootstrap/management/commands/seed_e2e_staging.py` (no en `.env`).
+
+**Pruebas E2E HTTP (Neon staging):**
+
+| # | Flujo | Método | Endpoint | Status | Notas |
+| - | ----- | ------ | -------- | ------ | ----- |
+| 1 | Health | GET | `/api/health/` | **200** | OK |
+| 2 | Catálogo servicios | GET | `/api/public/servicios/` | **200** | Incluye `E2E_TEST Corte Básico` |
+| 3 | Catálogo productos | GET | `/api/public/productos/` | **200** | Incluye `E2E_TEST Pomada` |
+| 4 | Login inválido | POST | `/api/login/` | **401** | OK |
+| 5 | Login admin | POST | `/api/login/` | **200** | JWT; `rol: admin` |
+| 6 | Login cliente | POST | `/api/login/` | **200** | `requires2fa: false` |
+| 7 | Refresh | POST | `/api/auth/token/refresh/` | **200** | OK |
+| 8 | Mis citas sin token | GET | `/api/mis-citas/` | **401** | OK |
+| 9 | Mis citas cliente | GET | `/api/mis-citas/` | **200** | OK |
+| 10 | Barberos | GET | `/api/barberos/` | **200** | `e2e_barbero_stylo` disponible |
+| 11 | Disponibilidad | GET | `/api/disponibilidad/` | **200** | 32 slots |
+| 12 | Crear cita | POST | `/api/citas/` | **201** | Payload sin montos; backend devuelve totales |
+| 13 | Crear pedido | POST | `/api/pedidos/crear/` | **200** | Payload sin `total`/`subtotal`; backend: `total: 99.0` |
+| 14 | Clip intent | POST | `/api/pagos/clip/intentar/` | **502** | Sin pago real; Clip no generó URL (credenciales/config staging) |
+| 15 | Dashboard admin | GET | `/api/dashboard-stats/` | **200** | OK |
+
+**Contratos Angular verificados en E2E:**
+
+* Cita POST: solo campos permitidos (sin `precio_total`, `anticipo_monto`, etc.).
+* Pedido POST: `metodo_entrega: recoger_local` (como `checkout.component.ts`); sin `total`/`subtotal` en request.
+* Clip: payload sin monto; no se confirmó pago en frontend.
+
+**Guards (revisión estática + prueba manual UI parcial):**
+
+* `authGuard`, `clienteGuard`, `secretariaGuard`, `barberoGuard`, `adminGuard` en `app.routes.ts`.
+* Cliente autenticado recibe 403 en `/api/admin/dashboard/` y `/api/admin/empleados/` (esperado).
+
+**Toolchain Fase 2.3:**
+
+| Comando | Resultado |
+| ------- | --------- |
+| `python manage.py check` | 0 issues |
+| `python manage.py test` | 23 OK, 1 skipped |
+| `npm ci` | **EPERM** en Windows (`esbuild.exe` en uso); `node_modules` parcialmente corrupto |
+| `npm run build` | **Bloqueado** por `ng` ausente tras EPERM; build OK en Fase 2.0/2.2 con Node 20.19.0 |
+
+**Scripts E2E backend (no Angular):**
+
+* `Backend/scripts/diagnose_neon_staging.py` — diagnóstico read-only esquema/datos.
+* `Backend/scripts/e2e_api_staging.py` — suite HTTP controlada.
+* `Backend/bootstrap/management/commands/seed_e2e_staging.py` — seed idempotente.
+
 ## API_ENDPOINTS (Fase 2.1)
 
 Rutas centralizadas en `src/app/core/api/api-endpoints.ts`:
@@ -222,9 +297,9 @@ npm run build
 | ------------------- | --------- | --------------------------------------------------------------------------------------- |
 | public/landing      | Parcial   | Existe interfaz pública; falta rediseño premium completo.                               |
 | auth                | Parcial   | TokenService e interceptor centralizados; pendiente migración futura a cookie HttpOnly. |
-| client/appointments | Parcial   | Contrato POST verificado en código; E2E POST bloqueado (SQLite sin `negocio`).            |
-| client/orders       | Parcial   | Contrato POST verificado en código; E2E POST bloqueado (SQLite sin `negocio`).            |
-| client/payments     | Parcial   | Clip vía backend verificado en código; E2E pendiente PG local o sandbox.                |
+| client/appointments | Parcial   | E2E POST OK en Neon staging; payload sin montos críticos verificado.                     |
+| client/orders       | Parcial   | E2E POST OK en Neon staging; totales solo desde backend.                                 |
+| client/payments     | Parcial   | Clip intent probado; 502 por config Clip staging; sin pago real.                       |
 | secretary/agenda    | Pendiente | Agenda operativa pendiente de revisión.                                                 |
 | barber/schedule     | Pendiente | Agenda barbero pendiente de revisión.                                                   |
 | admin/dashboard     | Parcial   | Existe admin.service; pendiente desacoplar por dominios.                                |
@@ -318,6 +393,7 @@ No enviar: `subtotal`, `descuento`, `costo_envio`, `total`.
 
 | Fecha      | Cambio                    | Nota                                                                                                     |
 | ---------- | ------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 2026-06-19 | Angular Fase 2.3 E2E Neon staging | Catálogo/login OK, seed E2E, cita/pedido E2E; Clip 502 sin pago real.                    |
 | 2026-06-19 | Angular Fase 2.2 E2E entorno seguro (parcial) | SQLite local, health/auth OK, catálogo/citas bloqueados por esquema `negocio`; build OK. |
 | 2026-06-18 | Angular Fase 2.1 integración API (parcial) | API_ENDPOINTS ampliado, servicios cliente migrados, pruebas HTTP limitadas (Neon).       |
 | 2026-06-18 | Angular Fase 2.0 toolchain | Node 20 LTS fijado, engines en package.json, lock regenerado, npm ci y build validados.  |
@@ -327,25 +403,23 @@ No enviar: `subtotal`, `descuento`, `costo_envio`, `total`.
 
 * JWT sigue en localStorage como mitigación temporal; migración futura a cookie HttpOnly.
 * Node global del sistema puede seguir en v24; desarrolladores deben activar Node 20 (nvm/fnm) antes de instalar dependencias.
-* **`USE_LOCAL_DB=True` no es suficiente para E2E completo:** SQLite no tiene esquema `negocio`; catálogo, citas, pedidos y login cliente con 2FA fallan. Se requiere PostgreSQL local/temporal con esquema `negocio` o fixture de prueba.
-* **Neon productivo:** catálogo devolvió 503 en Fase 2.1; no ejecutar POST destructivos sin confirmación.
-* E2E UI pendiente: navegador, guards visuales, agendar, checkout, estado de pago (bloqueado por DB).
-* Clip sandbox/staging no probado en esta fase.
+* **Neon staging:** datos `E2E_TEST_*` / `e2e_*_stylo` conviven con datos reales; no ejecutar limpiezas masivas.
+* **Clip staging:** intent devuelve 502 (credenciales/endpoint); rotar secretos expuestos y validar sandbox antes de E2E Clip completo.
+* **npm ci EPERM** en Windows si `esbuild.exe` está bloqueado; cerrar procesos Angular/IDE y reinstalar `node_modules`.
+* E2E UI navegador completo (guards visuales, checkout Clip redirect) pendiente de sesión manual.
 * Rutas admin/secretaria con parámetros dinámicos aún no migradas a `API_ENDPOINTS`.
 * admin.service.ts sigue concentrando varios dominios.
 * Totales locales en UI (carrito, checkout, agendar) deben mantenerse solo como informativos.
 * Cupones pueden enviar subtotal para prevalidación, pero Django debe recalcular al confirmar.
 * setup-totp usa bypassSecurityTrustUrl para QR; mantener deshabilitado hasta que backend exponga endpoint seguro.
 * Checkout efectivo/transferencia marca éxito de pedido registrado, no de pago confirmado.
-* `Backend/db.sqlite3` y usuarios E2E locales no deben commitearse.
 
 ## Próxima fase recomendada
 
-Angular Fase 2.3 — E2E completo con PostgreSQL de prueba:
+Angular Fase 2.4 — E2E UI y Clip sandbox:
 
-1. Levantar PostgreSQL local o contenedor con esquema `negocio` (migraciones o dump de staging, no Neon productivo).
-2. Ejecutar E2E: catálogo 200, crear cita/pedido, Clip intent, guards en UI.
-3. Investigar 503 catálogo en Neon (backend/DB) con autorización explícita.
-4. Opcional: flag `E2E_SKIP_2FA` o usuario cliente sin 2FA solo en entorno de prueba (requiere cambio backend autorizado).
-5. Migrar rutas admin/secretaria restantes a `API_ENDPOINTS`.
-6. Configurar CI con Node 20 LTS (`.nvmrc`) y job E2E contra PG temporal.
+1. Reparar `node_modules` (cerrar procesos, `npm ci` con Node 20).
+2. Probar guards en navegador con usuarios `e2e_*_stylo`.
+3. Configurar Clip sandbox y repetir intent hasta obtener `checkout_url` https (sin completar pago real).
+4. Migrar rutas admin/secretaria restantes a `API_ENDPOINTS`.
+5. CI con Node 20 + job E2E contra Neon staging (solo datos prefijados).

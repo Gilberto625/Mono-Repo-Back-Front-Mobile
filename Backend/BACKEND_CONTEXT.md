@@ -56,6 +56,7 @@ Mantener documentado el estado actual del backend para Cursor, Codex y desarroll
 
 | Fecha | Cambio | Nota |
 |---|---|---|
+| 2026-06-19 | Fase 2.3 E2E Neon staging | Diagnóstico esquema `negocio` OK; seed idempotente `seed_e2e_staging`; scripts diagnóstico/E2E; sin cambios de lógica en views. |
 | 2026-06-18 | Fase 1 crítica de seguridad | DRF autenticado por defecto, RBAC reutilizable, configuración por entorno y OTP fuera de respuestas. |
 | 2026-06-18 | Citas autoritativas | Precio, promoción, duración, anticipo, penalización y anticipación se calculan en Django; creación atómica con bloqueo por barbero. |
 | 2026-06-18 | Endurecimiento Clip | Monto y referencia internos, estados aprobados explícitos, firma obligatoria, control de monto e idempotencia por transacción. |
@@ -84,3 +85,68 @@ Mantener documentado el estado actual del backend para Cursor, Codex y desarroll
 - Se cubren estados Clip permitidos, monto divergente, identidad confiable cuando falta monto, conciliación directo-webhook e idempotencia de webhook repetido.
 - Queda pendiente una suite de integración sobre PostgreSQL temporal con el esquema `negocio` real para validar SQL, bloqueos concurrentes y restricciones de base de datos.
 - Queda pendiente una prueba de contrato contra Clip sandbox/staging; las pruebas actuales no dependen de la API real.
+
+## Fase 2.3 — E2E Neon staging controlado (2026-06-19)
+
+### Diagnóstico 503/500
+
+| Síntoma | Causa raíz | Corrección |
+| ------- | ---------- | ---------- |
+| `GET /api/public/servicios/` → 503 | `USE_LOCAL_DB=True` (SQLite sin esquema `negocio`) | Usar Neon staging con `USE_LOCAL_DB=False` |
+| `GET /api/public/servicios/` → 503 en Neon (Fase 2.1) | No reproducido en Fase 2.3; esquema y tablas OK | Ninguna en código |
+| `POST /api/login/` inválido → 500 (Fase 2.1) | No reproducido en Neon Fase 2.3; responde **401** | Ninguna en código |
+| `POST /api/login/` cliente en SQLite → 500 | Ruta 2FA intenta escribir en `negocio.codigo_verificacion` inexistente | No usar SQLite para E2E de negocio |
+
+### Entorno validado
+
+- `USE_LOCAL_DB=False`, motor PostgreSQL, esquema `negocio` presente.
+- Tablas críticas verificadas: `usuario`, `rol`, `usuario_rol`, `servicio`, `empleado`, `cita`, `producto`, `inventario_existencia`, `codigo_verificacion`.
+- Catálogo público: **200** con datos existentes + seed E2E.
+
+### Seed E2E (idempotente, sin borrar datos)
+
+Comando: `python manage.py seed_e2e_staging` (`--dry-run` disponible).
+
+| Recurso | Username / nombre |
+| ------- | ----------------- |
+| Admin | `e2e_admin_stylo` |
+| Cliente | `e2e_cliente_stylo` (`verificacion_2fa=false`) |
+| Barbero | `e2e_barbero_stylo` |
+| Servicio | `E2E_TEST Corte Básico` |
+| Producto | `E2E_TEST Pomada` (+ stock mínimo en `inventario_existencia`) |
+
+Password de prueba definida en el comando (constante `E2E_PASSWORD`), no en `.env`.
+
+### Scripts auxiliares (read-only o controlados)
+
+| Archivo | Uso |
+| ------- | --- |
+| `scripts/diagnose_neon_staging.py` | Esquema, tablas, conteos, usuarios E2E |
+| `scripts/e2e_api_staging.py` | Suite HTTP contra `http://127.0.0.1:8000/api` |
+| `bootstrap/management/commands/seed_e2e_staging.py` | Seed mínimo idempotente |
+
+### Resultados E2E API (Neon staging)
+
+| Endpoint | Status | Notas |
+| -------- | ------ | ----- |
+| `GET /api/health/` | 200 | OK |
+| `GET /api/public/servicios/` | 200 | OK |
+| `GET /api/public/productos/` | 200 | OK |
+| `POST /api/login/` inválido | 401 | OK |
+| `POST /api/login/` `e2e_admin_stylo` | 200 | JWT |
+| `POST /api/login/` `e2e_cliente_stylo` | 200 | Sin 2FA |
+| `POST /api/citas/` | 201 | Totales calculados en backend |
+| `POST /api/pedidos/crear/` | 200 | `total` devuelto por backend (ej. 99.0) |
+| `POST /api/pagos/clip/intentar/` | 502 | Clip no generó URL; sin pago real |
+
+### Cambios de código Fase 2.3
+
+- **Sin cambios** en `core/views.py`, `public_views.py` ni lógica de negocio.
+- Solo herramientas de seed/diagnóstico/E2E y documentación.
+
+### Riesgos pendientes
+
+- Rotar secretos expuestos (Neon, Firebase, Brevo, Cloudinary, Datadog, Clip).
+- Clip staging requiere credenciales/endpoint válidos para obtener `checkout_url` https.
+- Datos `E2E_TEST_*` en Neon staging: no ejecutar limpiezas masivas.
+- Suite de integración automatizada en CI contra Neon staging aún pendiente.
