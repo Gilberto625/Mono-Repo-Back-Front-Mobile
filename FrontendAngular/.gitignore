@@ -39,9 +39,11 @@ Thumbs.db
 # Nova_Graf-main (carpeta de referencia)
 Nova_Graf-main/
 *.md
+!FRONTEND_CONTEXT.md
+!AGENTS.md
+!README.md
 *.pdf
 *.mp4
 *.jpg
 *.png
-*.md
 *.sh
