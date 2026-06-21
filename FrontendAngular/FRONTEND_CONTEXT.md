@@ -8,7 +8,7 @@ Mantener documentado el estado actual del frontend Angular para Cursor, Codex y 
 
 ## Estado actual
 
-Angular Fase 1 crítica, **Fase 2.0 (toolchain)**, **Fase 2.1 (integración API — parcial)**, **Fase 2.2 (E2E SQLite — parcial)**, **Fase 2.3 (E2E Neon staging)** y **Fase 2.4 (limpieza repo + E2E UI/API + API_ENDPOINTS)** fueron aplicadas.
+Angular Fase 1 crítica, **Fase 2.0 (toolchain)**, **Fase 2.1 (integración API — parcial)**, **Fase 2.2 (E2E SQLite — parcial)**, **Fase 2.3 (E2E Neon staging)**, **Fase 2.4 (limpieza repo + E2E API + API_ENDPOINTS)** y **Fase 2.5 (Clip diagnóstico + Playwright + CI)** fueron aplicadas.
 
 ### Fase 1 — seguridad e integración crítica
 
@@ -225,6 +225,23 @@ Password de prueba documentada en `Backend/bootstrap/management/commands/seed_e2
 
 **Toolchain:** `npm ci` y `npm run build` OK (Node 20.19.0).
 
+### Fase 2.5 — Clip staging + Playwright + CI
+
+**Clip staging (diagnóstico, sin pago real):**
+
+| Hallazgo | Detalle |
+| -------- | ------- |
+| Status | **502** en `POST /api/pagos/clip/intentar/` |
+| Causa probable | `CLIP_API_KEY` y `CLIP_API_SECRET` **MISSING**; OAuth omitido |
+| `CLIP_AUTH_TOKEN` | SET pero insuficiente solo para checkout URL |
+| Endpoint | `https://api-gw.payclip.com/paymentrequest` |
+| Angular | No envía monto; checkout muestra mensaje backend seguro en 502 |
+| `checkout_url` | **No obtenido** — pendiente credenciales Clip sandbox |
+
+**Playwright:** `e2e/guards.spec.ts`, `e2e/auth.spec.ts` — **13/13 passed** (local + Neon staging).
+
+**CI:** `.github/workflows/ci.yml` — backend check/test + frontend build. Playwright Neon no en CI (comentado).
+
 ## API_ENDPOINTS (Fase 2.1 + 2.4)
 
 Rutas centralizadas en `src/app/core/api/api-endpoints.ts`:
@@ -408,6 +425,7 @@ No enviar: `subtotal`, `descuento`, `costo_envio`, `total`.
 
 | Fecha      | Cambio                    | Nota                                                                                                     |
 | ---------- | ------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 2026-06-19 | Angular Fase 2.5 Clip + Playwright + CI | Clip 502 diagnosticado; Playwright 13/13; workflow CI básico. |
 | 2026-06-19 | Angular Fase 2.4 limpieza + E2E UI/API | pycache fuera de Git, API_ENDPOINTS CRUD admin, guards E2E 20/20, Clip 502. |
 | 2026-06-19 | Angular Fase 2.3 E2E Neon staging | Catálogo/login OK, seed E2E, cita/pedido E2E; Clip 502 sin pago real.                    |
 | 2026-06-19 | Angular Fase 2.2 E2E entorno seguro (parcial) | SQLite local, health/auth OK, catálogo/citas bloqueados por esquema `negocio`; build OK. |
@@ -432,9 +450,9 @@ No enviar: `subtotal`, `descuento`, `costo_envio`, `total`.
 
 ## Próxima fase recomendada
 
-Angular Fase 2.5 — Playwright + Clip sandbox:
+Angular Fase 2.6 — Clip sandbox operativo + CI E2E opcional:
 
-1. Configurar Clip sandbox y validar `checkout_url` https (sin completar pago).
-2. Playwright opcional para guards visuales en rutas protegidas.
-3. Migrar rutas admin restantes a `API_ENDPOINTS`.
-4. CI con Node 20 + job E2E Neon staging.
+1. Configurar `CLIP_API_KEY` + `CLIP_API_SECRET` sandbox en `.env` (rotar credenciales expuestas).
+2. Repetir intent hasta obtener `checkout_url` https (sin completar pago real).
+3. Habilitar job Playwright en CI con secretos `E2E_STAGING_*` (manual/workflow_dispatch).
+4. Migrar rutas admin restantes a `API_ENDPOINTS`.
