@@ -56,8 +56,9 @@ Mantener documentado el estado actual del backend para Cursor, Codex y desarroll
 
 | Fecha | Cambio | Nota |
 |---|---|---|
+| 2026-06-19 | Fase 2.5 Clip diagnóstico + CI | diagnose_clip_staging.py; 502 por credenciales Clip faltantes; workflow CI. |
 | 2026-06-19 | Fase 2.4 limpieza repo + E2E guards | pycache fuera de Git, E2E_STAGING_PASSWORD, suite 20/20. |
-| 2026-06-19 | Fase 2.3 E2E Neon staging | Diagnóstico esquema `negocio` OK; seed idempotente `seed_e2e_staging`; scripts diagnóstico/E2E; sin cambios de lógica en views. |
+| 2026-06-19 | Fase 2.3 E2E Neon staging | Diagnóstico esquema `negocio` OK; seed idempotente; scripts E2E. |
 | 2026-06-18 | Fase 1 crítica de seguridad | DRF autenticado por defecto, RBAC reutilizable, configuración por entorno y OTP fuera de respuestas. |
 | 2026-06-18 | Citas autoritativas | Precio, promoción, duración, anticipo, penalización y anticipación se calculan en Django; creación atómica con bloqueo por barbero. |
 | 2026-06-18 | Endurecimiento Clip | Monto y referencia internos, estados aprobados explícitos, firma obligatoria, control de monto e idempotencia por transacción. |
@@ -65,6 +66,29 @@ Mantener documentado el estado actual del backend para Cursor, Codex y desarroll
 | 2026-06-18 | Fase 1.1 crítica | Confirmación Clip centralizada, idempotencia por referencia/identidad/monto, conciliación directo-webhook y respuestas técnicas saneadas. |
 | 2026-06-18 | Fase 1.2 pruebas críticas | 23 pruebas aisladas cubren settings seguros, OTP, RBAC/IDOR, reglas de citas, revalidación de horario, idempotencia Clip y errores genéricos. |
 | Pendiente | Inicializar backend |  |
+
+### Fase 2.5 — Clip diagnóstico + CI (2026-06-19)
+
+**Script:** `scripts/diagnose_clip_staging.py` — reporta presencia de variables Clip sin valores.
+
+**Diagnóstico 502 Clip:**
+
+| Variable | Estado |
+| -------- | ------ |
+| `CLIP_API_KEY` | MISSING |
+| `CLIP_API_SECRET` | MISSING |
+| `CLIP_AUTH_TOKEN` | SET (insuficiente solo para checkout URL) |
+| `CLIP_API_BASE_URL` | SET |
+| `CLIP_WEBHOOK_SECRET` | SET |
+| DB `clip_habilitado` | True |
+| DB credenciales Clip | MISSING |
+| OAuth | SKIPPED (sin key/secret) |
+
+**Causa probable:** backend no puede autenticarse con Clip para crear `paymentrequest`; Clip devuelve error → 502 controlado.
+
+**Sin cambios** en `core/views.py`. `.env.example` documenta `CLIP_API_KEY`/`CLIP_API_SECRET` para staging.
+
+**CI:** `.github/workflows/ci.yml` — Python 3.12 + Node 20; `USE_LOCAL_DB=True` en CI para tests unitarios.
 
 ## Estado y límites después de Fase 1
 
@@ -163,6 +187,6 @@ Password de prueba: variable `E2E_STAGING_PASSWORD` (ver `.env.example`); fallba
 ### Riesgos pendientes
 
 - Rotar secretos expuestos (Neon, Firebase, Brevo, Cloudinary, Datadog, Clip).
-- Clip staging requiere credenciales/endpoint válidos para obtener `checkout_url` https.
+- **Clip staging:** configurar `CLIP_API_KEY` + `CLIP_API_SECRET` sandbox para obtener `checkout_url` https.
 - Datos `E2E_TEST_*` en Neon staging: no ejecutar limpiezas masivas.
-- Suite de integración automatizada en CI contra Neon staging aún pendiente.
+- Playwright E2E Neon en CI pendiente (job comentado en workflow).

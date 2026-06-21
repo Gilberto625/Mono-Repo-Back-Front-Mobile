@@ -575,11 +575,20 @@ export class CheckoutComponent implements OnInit {
                   if (estadoPago === 'confirmado') this.carritoService.vaciarCarrito();
                   return;
                 }
-                this.error.set('No se pudo iniciar el pago con Clip. Consulta el estado del pedido antes de reintentar.');
+                const errMsg = String(clipRes?.error || '').trim();
+                if (errMsg && !/traceback|exception|sql/i.test(errMsg)) {
+                  this.error.set(errMsg);
+                } else {
+                  this.error.set('No se pudo iniciar el pago con Clip. Consulta el estado del pedido antes de reintentar.');
+                }
               },
               error: (clipErr: any) => {
                 this.procesando.set(false);
-                this.error.set('No se pudo iniciar el pago con Clip. Consulta el estado del pedido antes de reintentar.');
+                const detalle = String(clipErr?.error?.error || clipErr?.error?.detail || '').trim();
+                const msg = detalle && !/traceback|exception|sql/i.test(detalle)
+                  ? detalle
+                  : 'No se pudo iniciar el pago con Clip. Consulta el estado del pedido antes de reintentar.';
+                this.error.set(msg);
               }
             });
             return;
