@@ -440,7 +440,7 @@ No enviar: `subtotal`, `descuento`, `costo_envio`, `total`.
 * **Neon staging:** datos `E2E_TEST_*` / `e2e_*_stylo` conviven con datos reales; no ejecutar limpiezas masivas.
 * **Clip staging:** intent devuelve 502 (credenciales/endpoint); rotar secretos expuestos y validar sandbox antes de E2E Clip completo.
 * **npm ci EPERM** resuelto en Fase 2.4 (reinstalación limpia con Node 20).
-* E2E UI navegador con Playwright pendiente; guards validados vía API + estática.
+* E2E UI navegador con Playwright básico validado 13/13; queda pendiente ampliar cobertura visual y CI con secretos.
 * Rutas admin restantes (reportes, respaldo-db, monitoreo) aún no migradas a `API_ENDPOINTS`.
 * admin.service.ts sigue concentrando varios dominios.
 * Totales locales en UI (carrito, checkout, agendar) deben mantenerse solo como informativos.
